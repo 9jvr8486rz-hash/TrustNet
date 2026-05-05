@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — TrustNet</title>
+<link rel="stylesheet" href="/styles/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a></div></nav>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-icon">&#128075;</div>
+    <h2>Welcome back</h2>
+    <p class="auth-sub">Sign in to your TrustNet account</p>
+    <div id="authError" class="error-box" style="display:none"></div>
+    <div class="form-field"><label>Email address</label><input class="form-input" type="email" id="email" placeholder="you@example.com"></div>
+    <div class="form-field"><label>Password</label><input class="form-input" type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-full" onclick="doLogin()" id="loginBtn">Sign in</button>
+    <p class="auth-footer">No account? <a href="/apply.html">Apply for verification &rarr;</a></p>
+  </div>
+</div>
+<script type="module">
+import { supabase } from '/src/lib/supabase.js';
+window.doLogin = async () => {
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('authError');
+  if (!email || !pass) { showErr('Please fill in all fields.'); return; }
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+  if (error) { showErr(error.message); btn.textContent = 'Sign in'; btn.disabled = false; return; }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id',(await supabase.auth.getUser()).data.user.id).single();
+  location.href = profile?.role === 'admin' ? '/admin.html' : '/dashboard.html';
+};
+function showErr(msg) { const e = document.getElementById('authError'); e.textContent = msg; e.style.display = 'block'; }
+</script>
+</body>
+</html>

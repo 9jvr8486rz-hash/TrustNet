@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Identity — TrustNet</title>
+<link rel="stylesheet" href="/styles/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a><div class="nav-actions"><button class="btn-nav-ghost" onclick="location.href='/login.html'">Sign in</button><button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button></div></div></nav>
+<div class="verify-wrap">
+  <div id="loadingState" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
+    <div style="font-size:2rem;margin-bottom:1rem">&#128269;</div>
+    <p>Looking up verification...</p>
+  </div>
+  <div id="verifyCard" class="verify-card" style="display:none"></div>
+  <div id="notFoundState" style="display:none;text-align:center;padding:4rem 2rem">
+    <div style="font-size:3rem;margin-bottom:1rem">&#10060;</div>
+    <h3 style="font-family:inherit;font-weight:700;margin-bottom:0.5rem">Not found</h3>
+    <p style="color:var(--muted)">This verification code doesn't exist or has been removed.</p>
+    <button class="btn-primary" style="margin-top:1.5rem" onclick="location.href='/'">Go back home</button>
+  </div>
+</div>
+<footer>
+  <div class="footer-logo">TrustNet</div>
+  <p>Verification confirms identity documents were reviewed by TrustNet. It does not guarantee behaviour, safety, or service quality.</p>
+</footer>
+<script type="module">
+import { supabase } from '/src/lib/supabase.js';
+const params = new URLSearchParams(location.search);
+const publicId = params.get('id');
+if (!publicId) { document.getElementById('loadingState').style.display='none'; document.getElementById('notFoundState').style.display='block'; }
+else {
+  const { data, error } = await supabase.from('profiles').select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id').eq('public_id',publicId).single();
+  document.getElementById('loadingState').style.display='none';
+  if (!data || error) { document.getElementById('notFoundState').style.display='block'; }
+  else {
+    const now = new Date();
+    const expiry = data.expiry_date ? new Date(data.expiry_date) : null;
+    const status = (expiry && now > expiry) ? 'expired' : data.verification_status;
+    const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '—';
+    const statusHtml = status==='verified'
+      ? '<div class="verify-status">&#10003;&nbsp; Verified</div>'
+      : status==='expired'
+      ? '<div class="verify-status expired">&#9888;&nbsp; Expired</div>'
+      : '<div class="verify-status pending">&#8987;&nbsp; Pending</div>';
+    const card = document.getElementById('verifyCard');
+    card.innerHTML = `
+      <div class="verify-avatar">${data.selfie_url?`<img src="${data.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
+      <div class="verify-name">${data.name||'Unknown'}</div>
+      <div class="verify-category">${data.service_category||''}</div>
+      ${statusHtml}
+      ${status==='verified'?'<div class="verify-checks"><div class="check-item"><span class="check-icon">&#10003;</span> ID document checked</div><div class="check-item"><span class="check-icon">&#10003;</span> Selfie checked</div></div>':''}
+      <div class="verify-dates">
+        <div class="verify-date-item"><div class="lbl">Verified on</div><div class="val">${fmt(data.verification_date)}</div></div>
+        <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(data.expiry_date)}</div></div>
+      </div>
+      <div class="verify-id">${data.public_id}</div>
+      <div class="disclaimer">Verification confirms identity documents were reviewed by TrustNet. It does not guarantee behaviour, safety, or service quality.</div>
+    `;
+    card.style.display='block';
+    document.title = `${data.name} — TrustNet Verified`;
+  }
+}
+</script>
+</body>
+</html>
