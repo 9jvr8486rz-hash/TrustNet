@@ -1,107 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Dashboard — TrustNet</title>
-<link rel="stylesheet" href="/styles/main.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-<nav><div class="nav-inner">
-  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
-  <div class="nav-actions">
-    <span id="navName" style="font-size:0.875rem;font-weight:600;color:var(--body)"></span>
-    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
-    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
-  </div>
-</div></nav>
-<div class="dashboard">
-  <div class="dash-top">
-    <div class="dash-greet">
-      <div class="time-tag" id="timeTag"></div>
-      <h2>Welcome back, <span id="greetName">...</span> &#128075;</h2>
-    </div>
-  </div>
-  <div class="dash-grid">
-    <div class="dash-card">
-      <div class="dc-head"><div class="dc-title">My verification</div><span class="dc-badge dcb-green" id="myStatusBadge">Loading...</span></div>
-      <div class="dc-body" id="myVerificationBody"><div style="color:var(--muted);font-size:0.875rem">Loading...</div></div>
-    </div>
-    <div class="dash-card">
-      <div class="dc-head"><div class="dc-title">Share your badge</div><span class="dc-badge dcb-blue">Share</span></div>
-      <div class="dc-body" id="shareBody">
-        <div style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem 0">
-          <div style="font-size:2rem;margin-bottom:0.5rem">&#128274;</div>
-          Your QR code will appear here once your identity is verified.
-        </div>
-      </div>
-    </div>
-    <div class="dash-card span2">
-      <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
-      <div class="dc-body">
-        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's TrustNet code to check their verification status.</p>
-        <div class="lookup-form">
-          <input class="lookup-input" id="lookupInput" type="text" placeholder="Enter code e.g. TN-B34XPQ72" maxlength="14" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')doLookup()">
-          <button class="lookup-btn" onclick="doLookup()">Check &rarr;</button>
-        </div>
-        <div class="lookup-result" id="lookupResult"></div>
-      </div>
-    </div>
-  </div>
-  <div style="margin-top:2rem;background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-lg);padding:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-    <div>
-      <div style="font-weight:700;margin-bottom:0.25rem">Need help?</div>
-      <div style="font-size:0.875rem;color:var(--muted)">Contact our support team for assistance.</div>
-    </div>
-    <a href="mailto:support@trustnet.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
-  </div>
-</div>
-<footer>
-  <div class="footer-logo">TrustNet</div>
-  <p>Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</p>
-</footer>
-<div class="toast" id="toast"></div>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
 
-// Sign out handler
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 
-// Wait for auth then load page
-supabase.auth.onAuthStateChange(async (event, session) => {
+async function renderDashboard(session) {
   if (!session) { window.location.replace('/login.html'); return; }
-  
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
   if (!profile) { window.location.replace('/login.html'); return; }
   if (profile.role === 'admin') { window.location.replace('/admin.html'); return; }
-
-  // Greeting
   const h = new Date().getHours();
   document.getElementById('timeTag').textContent = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   document.getElementById('greetName').textContent = profile.name?.split(' ')[0] || 'there';
   document.getElementById('navName').textContent = profile.name || session.user.email;
-
-  // Status
   const now = new Date();
   const expiry = profile.expiry_date ? new Date(profile.expiry_date) : null;
   const status = (!profile.verification_status||profile.verification_status==='pending') ? 'pending'
     : profile.verification_status==='rejected' ? 'rejected'
     : (expiry&&now>expiry) ? 'expired'
     : profile.verification_status;
-
   const badgeMap = {verified:'dcb-green',pending:'dcb-amber',expired:'dcb-red',rejected:'dcb-red'};
   const badgeLabel = {verified:'&#9679; Verified',pending:'&#9679; Pending review',expired:'&#9679; Expired',rejected:'&#9679; Rejected'};
   const badge = document.getElementById('myStatusBadge');
   badge.className = 'dc-badge '+(badgeMap[status]||'dcb-amber');
   badge.innerHTML = badgeLabel[status]||'Pending';
-
   const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
   const start = profile.verification_date ? new Date(profile.verification_date) : null;
   const pct = (expiry&&start) ? Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100))) : 0;
   const days = expiry ? Math.max(0,Math.round((expiry-now)/86400000)) : 0;
   const barClass = days>10?'ef-good':days>3?'ef-warn':'ef-bad';
-
   document.getElementById('myVerificationBody').innerHTML = `
     <div class="my-profile-row">
       ${profile.selfie_url?`<img src="${profile.selfie_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--blue-light);flex-shrink:0">`:'<div class="my-avatar">&#128100;</div>'}
@@ -121,9 +47,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
       </div>`
     :`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">&#9201; Your application is under review. We'll email you within 48 hours when approved.</div>`}
   `;
-
-  // QR share
-  if (profile.public_id && status==='verified') {
+  if (profile.public_id&&status==='verified') {
     const verifyUrl = `${location.origin}/verify.html?id=${profile.public_id}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
     document.getElementById('shareBody').innerHTML = `
@@ -138,9 +62,18 @@ supabase.auth.onAuthStateChange(async (event, session) => {
         </div>
       </div>`;
   }
+}
+
+// Load on page open
+const { data: { session } } = await supabase.auth.getSession();
+await renderDashboard(session);
+
+// Also handle sign in event
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN') await renderDashboard(session);
+  if (event === 'SIGNED_OUT') window.location.replace('/login.html');
 });
 
-// Lookup
 window.doLookup = async () => {
   const code = document.getElementById('lookupInput').value.trim().toUpperCase();
   if (!code) { showToast('Please enter a code'); return; }
@@ -158,5 +91,3 @@ window.doLookup = async () => {
 window.copyText = (text,msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
 </script>
-</body>
-</html>
