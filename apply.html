@@ -8,9 +8,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-<nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a><div class="nav-actions"><button class="btn-nav-ghost" onclick="location.href='/login.html'">Already have an account?</button></div></div></nav>
+<nav><div class="nav-inner">
+  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
+  <div class="nav-actions">
+    <button class="btn-nav-ghost" onclick="location.href='/'">&#8592; Back</button>
+    <button class="btn-nav-ghost" onclick="location.href='/login.html'">Sign in</button>
+  </div>
+</div></nav>
 <div class="form-page">
   <div class="form-header">
+    <a href="/" style="font-size:0.875rem;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:1rem">&#8592; Back to home</a>
     <h2>Apply for verification</h2>
     <p>Fill in your details and upload your documents. We'll review and respond within 48 hours.</p>
   </div>
@@ -32,16 +39,16 @@
       </div>
     </div>
     <div class="form-row">
-      <div class="form-field"><label>Password *</label><input class="form-input" type="password" id="password" placeholder="Create a password (min 8 chars)"></div>
-      <div class="form-field"><label>Confirm password *</label><input class="form-input" type="password" id="passwordConfirm" placeholder="Repeat your password"></div>
+      <div class="form-field"><label>Password *</label><input class="form-input" type="password" id="password" placeholder="Min 8 characters"></div>
+      <div class="form-field"><label>Confirm password *</label><input class="form-input" type="password" id="passwordConfirm" placeholder="Repeat password"></div>
     </div>
     <div class="form-field">
       <label>ID document *</label>
       <div class="upload-box" onclick="document.getElementById('idFile').click()" id="idUploadBox">
         <div class="upload-icon">&#128282;</div>
         <p><strong>Click to upload</strong> your South African ID or passport</p>
-        <p style="font-size:0.78rem;color:var(--subtle)">JPG, PNG or PDF &middot; max 5MB</p>
-        <input type="file" id="idFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none" onchange="handleFileSelect(this,'idUploadBox','idLabel')">
+        <p style="font-size:0.78rem;color:var(--subtle);margin-top:0.25rem">JPG, PNG or PDF &middot; max 5MB</p>
+        <input type="file" id="idFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none" onchange="handleFile(this,'idUploadBox','idLabel')">
       </div>
       <p id="idLabel" style="font-size:0.8rem;color:var(--green);margin-top:0.35rem;display:none"></p>
     </div>
@@ -50,28 +57,32 @@
       <div class="upload-box" onclick="document.getElementById('selfieFile').click()" id="selfieUploadBox">
         <div class="upload-icon">&#129315;</div>
         <p><strong>Click to upload</strong> a clear selfie of your face</p>
-        <p style="font-size:0.78rem;color:var(--subtle)">JPG or PNG &middot; max 5MB</p>
-        <input type="file" id="selfieFile" accept=".jpg,.jpeg,.png" style="display:none" onchange="handleFileSelect(this,'selfieUploadBox','selfieLabel')">
+        <p style="font-size:0.78rem;color:var(--subtle);margin-top:0.25rem">JPG or PNG &middot; max 5MB</p>
+        <input type="file" id="selfieFile" accept=".jpg,.jpeg,.png" style="display:none" onchange="handleFile(this,'selfieUploadBox','selfieLabel')">
       </div>
       <p id="selfieLabel" style="font-size:0.8rem;color:var(--green);margin-top:0.35rem;display:none"></p>
     </div>
     <button class="btn-full" onclick="submitApplication()" id="submitBtn">Submit application</button>
+    <p style="font-size:0.78rem;color:var(--subtle);text-align:center;margin-top:1rem">Already have an account? <a href="/login.html" style="color:var(--blue)">Sign in</a></p>
   </div>
   <div class="success-box" id="applySuccess">
     <div style="font-size:2.5rem;margin-bottom:0.75rem">&#127881;</div>
     <h3>Application submitted!</h3>
-    <p>Thanks — we've received your application and will review it within 48 hours. Check your email for updates.</p>
-    <button class="btn-full" style="margin-top:1.5rem" onclick="location.href='/'">Back to home</button>
+    <p>Thanks — we've received your application and will review it within 48 hours.</p>
+    <button class="btn-full" style="margin-top:1.5rem;background:var(--green)" onclick="location.href='/login.html'">Sign in to your account &rarr;</button>
   </div>
 </div>
 <script type="module">
-import { supabase } from '/src/lib/supabase.js';
-window.handleFileSelect = (input, boxId, labelId) => {
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.handleFile = (input, boxId, labelId) => {
   const file = input.files[0]; if (!file) return;
-  const box = document.getElementById(boxId);
-  box.style.borderColor = 'var(--green)'; box.style.background = 'var(--green-bg)';
-  const lbl = document.getElementById(labelId);
-  lbl.textContent = '&#10003; ' + file.name; lbl.style.display = 'block';
+  document.getElementById(boxId).style.borderColor = 'var(--green)';
+  document.getElementById(boxId).style.background = 'var(--green-bg)';
+  document.getElementById(labelId).textContent = '✓ ' + file.name;
+  document.getElementById(labelId).style.display = 'block';
 };
 window.submitApplication = async () => {
   const name = document.getElementById('name').value.trim();
@@ -94,12 +105,11 @@ window.submitApplication = async () => {
   const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
   if (authError) { showErr(authError.message); btn.textContent='Submit application'; btn.disabled=false; return; }
   const userId = authData.user.id;
-  let selfieUrl = null, idDocUrl = null;
-  const { data: selfieData } = await supabase.storage.from('selfies').upload(`${userId}/${selfieFile.name}`, selfieFile);
+  let selfieUrl = null;
+  const { data: selfieData } = await supabase.storage.from('selfies').upload(`${userId}/${selfieFile.name}`, selfieFile, {upsert:true});
   if (selfieData) { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
-  await supabase.storage.from('id-documents').upload(`${userId}/${idFile.name}`, idFile);
-  idDocUrl = `${userId}/${idFile.name}`;
-  await supabase.from('profiles').update({ name, phone, service_category: category, selfie_url: selfieUrl, id_document_url: idDocUrl, verification_status: 'pending' }).eq('id', userId);
+  await supabase.storage.from('id-documents').upload(`${userId}/${idFile.name}`, idFile, {upsert:true});
+  await supabase.from('profiles').upsert({ id: userId, name, phone, service_category: category, selfie_url: selfieUrl, id_document_url: `${userId}/${idFile.name}`, verification_status: 'pending', role: 'provider' });
   document.getElementById('applyForm').style.display = 'none';
   document.getElementById('applySuccess').style.display = 'block';
 };
