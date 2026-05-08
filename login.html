@@ -8,32 +8,46 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-<nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a></div></nav>
+<nav><div class="nav-inner">
+  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
+  <div class="nav-actions">
+    <button class="btn-nav-ghost" onclick="location.href='/'">&#8592; Back to home</button>
+  </div>
+</div></nav>
 <div class="auth-page">
   <div class="auth-card">
-    <div class="auth-icon">👋</div>
+    <div class="auth-icon">&#128075;</div>
     <h2>Welcome back</h2>
     <p class="auth-sub">Sign in to your TrustNet account</p>
     <div id="authError" class="error-box" style="display:none"></div>
-    <div class="form-field"><label>Email address</label><input class="form-input" type="email" id="email" placeholder="you@example.com"></div>
-    <div class="form-field"><label>Password</label><input class="form-input" type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-field"><label>Email address</label><input class="form-input" type="email" id="email" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="form-field">
+      <label>Password</label>
+      <input class="form-input" type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+      <p style="font-size:0.78rem;color:var(--blue);margin-top:0.4rem;cursor:pointer;text-align:right" onclick="resetPassword()">Forgot password?</p>
+    </div>
     <button class="btn-full" onclick="doLogin()" id="loginBtn">Sign in</button>
     <p class="auth-footer">No account? <a href="/apply.html">Apply for verification &rarr;</a></p>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
 const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const { data: { session } } = await supabase.auth.getSession();
+if (session) {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+  window.location.replace(profile?.role === 'admin' ? '/admin.html' : '/dashboard.html');
+}
 
 window.doLogin = async () => {
   const email = document.getElementById('email').value.trim();
   const pass = document.getElementById('password').value;
   const btn = document.getElementById('loginBtn');
-  const err = document.getElementById('authError');
-  err.style.display = 'none';
+  document.getElementById('authError').style.display = 'none';
   if (!email || !pass) { showErr('Please fill in all fields.'); return; }
   btn.textContent = 'Signing in...'; btn.disabled = true;
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
@@ -42,11 +56,16 @@ window.doLogin = async () => {
   window.location.replace(profile?.role === 'admin' ? '/admin.html' : '/dashboard.html');
 };
 
-function showErr(msg) {
-  const e = document.getElementById('authError');
-  e.textContent = msg;
-  e.style.display = 'block';
-}
+window.resetPassword = async () => {
+  const email = document.getElementById('email').value.trim();
+  if (!email) { showErr('Enter your email address first, then click Forgot password.'); return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset.html' });
+  if (error) { showErr(error.message); return; }
+  showToast('&#128231; Password reset email sent — check your inbox.');
+};
+
+function showErr(msg) { const e = document.getElementById('authError'); e.textContent = msg; e.style.display = 'block'; }
+function showToast(msg) { const t = document.getElementById('toast'); t.innerHTML = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }
 </script>
 </body>
 </html>
