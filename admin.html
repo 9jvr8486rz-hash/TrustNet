@@ -66,11 +66,22 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: true
   }
 });
-const { data: { session } } = await supabase.auth.getSession();
+let session = null;
+for (let i = 0; i < 5; i++) {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) { session = data.session; break; }
+  await new Promise(r => setTimeout(r, 500));
+}
 if (!session) { window.location.replace('/login.html'); }
 const user = session.user;
-const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-if (!me||me.role!=='admin') { window.location.replace('/dashboard.html'); }
+
+let me = null;
+for (let i = 0; i < 5; i++) {
+  const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  if (data) { me = data; break; }
+  await new Promise(r => setTimeout(r, 500));
+}
+if (!me || me.role !== 'admin') { window.location.replace('/dashboard.html'); }
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 window.loadProfiles = async () => {
   document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
