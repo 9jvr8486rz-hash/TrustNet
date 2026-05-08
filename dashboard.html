@@ -11,8 +11,9 @@
 <nav><div class="nav-inner">
   <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
   <div class="nav-actions">
-    <span id="navName" style="font-size:0.875rem;font-weight:600"></span>
-    <button class="btn-nav-ghost" onclick="doLogout()">Sign out</button>
+    <span id="navName" style="font-size:0.875rem;font-weight:600;color:var(--body)"></span>
+    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
+    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
 <div class="dashboard">
@@ -23,17 +24,19 @@
     </div>
   </div>
   <div class="dash-grid">
-    <!-- MY VERIFICATION -->
     <div class="dash-card">
       <div class="dc-head"><div class="dc-title">My verification</div><span class="dc-badge dcb-green" id="myStatusBadge">Loading...</span></div>
-      <div class="dc-body" id="myVerificationBody"><div style="color:var(--muted);font-size:0.875rem">Loading your verification status...</div></div>
+      <div class="dc-body" id="myVerificationBody"><div style="color:var(--muted);font-size:0.875rem">Loading...</div></div>
     </div>
-    <!-- SHARE QR -->
     <div class="dash-card">
       <div class="dc-head"><div class="dc-title">Share your badge</div><span class="dc-badge dcb-blue">Share</span></div>
-      <div class="dc-body" id="shareBody"><div style="color:var(--muted);font-size:0.875rem">Your QR code will appear once verified.</div></div>
+      <div class="dc-body" id="shareBody">
+        <div style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem 0">
+          <div style="font-size:2rem;margin-bottom:0.5rem">&#128274;</div>
+          Your QR code will appear here once your identity is verified.
+        </div>
+      </div>
     </div>
-    <!-- VERIFY SOMEONE -->
     <div class="dash-card span2">
       <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
       <div class="dc-body">
@@ -46,104 +49,100 @@
       </div>
     </div>
   </div>
+  <div style="margin-top:2rem;background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-lg);padding:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <div style="font-weight:700;margin-bottom:0.25rem">Need help?</div>
+      <div style="font-size:0.875rem;color:var(--muted)">Contact our support team for assistance.</div>
+    </div>
+    <a href="mailto:support@trustnet.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
+  </div>
 </div>
+<footer>
+  <div class="footer-logo">TrustNet</div>
+  <p>Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</p>
+</footer>
 <div class="toast" id="toast"></div>
 <script type="module">
-import { supabase } from '/src/lib/supabase.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const { data: { session } } = await supabase.auth.getSession();
-if (!session) { location.href = '/login.html'; }
+if (!session) { window.location.replace('/login.html'); }
 const user = session.user;
 const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-if (!profile) { location.href = '/login.html'; }
-if (profile.role === 'admin') { location.href = '/admin.html'; }
-
-// Greet
+if (!profile) { window.location.replace('/login.html'); }
+if (profile.role === 'admin') { window.location.replace('/admin.html'); }
 const h = new Date().getHours();
 document.getElementById('timeTag').textContent = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
 document.getElementById('greetName').textContent = profile.name?.split(' ')[0] || 'there';
 document.getElementById('navName').textContent = profile.name || user.email;
-
-// Status
-const status = (() => {
-  if (!profile.verification_status || profile.verification_status === 'pending') return 'pending';
-  if (profile.verification_status === 'rejected') return 'rejected';
-  if (profile.expiry_date && new Date() > new Date(profile.expiry_date)) return 'expired';
-  return profile.verification_status;
-})();
-const badgeEl = document.getElementById('myStatusBadge');
+const now = new Date();
+const expiry = profile.expiry_date ? new Date(profile.expiry_date) : null;
+const status = (!profile.verification_status||profile.verification_status==='pending') ? 'pending'
+  : profile.verification_status==='rejected' ? 'rejected'
+  : (expiry&&now>expiry) ? 'expired'
+  : profile.verification_status;
 const badgeMap = {verified:'dcb-green',pending:'dcb-amber',expired:'dcb-red',rejected:'dcb-red'};
 const badgeLabel = {verified:'&#9679; Verified',pending:'&#9679; Pending review',expired:'&#9679; Expired',rejected:'&#9679; Rejected'};
-badgeEl.className = 'dc-badge ' + (badgeMap[status]||'dcb-amber');
-badgeEl.innerHTML = badgeLabel[status]||'Pending';
+const badge = document.getElementById('myStatusBadge');
+badge.className = 'dc-badge '+(badgeMap[status]||'dcb-amber');
+badge.innerHTML = badgeLabel[status]||'Pending';
 const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
-const expiry = profile.expiry_date ? new Date(profile.expiry_date) : null;
 const start = profile.verification_date ? new Date(profile.verification_date) : null;
-const pct = (expiry && start) ? Math.max(0,Math.min(100,100-((new Date()-start)/(expiry-start)*100))) : 0;
-const days = expiry ? Math.max(0,Math.round((expiry-new Date())/86400000)) : 0;
-const barClass = days > 10 ? 'ef-good' : days > 3 ? 'ef-warn' : 'ef-bad';
+const pct = (expiry&&start) ? Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100))) : 0;
+const days = expiry ? Math.max(0,Math.round((expiry-now)/86400000)) : 0;
+const barClass = days>10?'ef-good':days>3?'ef-warn':'ef-bad';
 document.getElementById('myVerificationBody').innerHTML = `
   <div class="my-profile-row">
-    ${profile.selfie_url ? `<img src="${profile.selfie_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--blue-light)">` : '<div class="my-avatar">&#128100;</div>'}
+    ${profile.selfie_url?`<img src="${profile.selfie_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--blue-light);flex-shrink:0">`:'<div class="my-avatar">&#128100;</div>'}
     <div><div class="my-name">${profile.name||'Your name'}</div><div class="my-cat">${profile.service_category||'Service provider'}</div></div>
-    <div class="my-status"><span class="status-pill ${status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending'}">${status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':'&#8987; '+status.charAt(0).toUpperCase()+status.slice(1)}</span></div>
+    <div class="my-status"><span class="status-pill ${status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending'}">${status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':status==='rejected'?'&#10007; Rejected':'&#8987; '+status.charAt(0).toUpperCase()+status.slice(1)}</span></div>
   </div>
   <div class="two-col">
     <div class="info-box"><div class="ib-label">Verified on</div><div class="ib-val">${fmt(profile.verification_date)}</div></div>
     <div class="info-box"><div class="ib-label">Expires on</div><div class="ib-val">${fmt(profile.expiry_date)}</div></div>
   </div>
-  ${profile.public_id ? `
-  <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem">Your verification ID</div>
-  <div class="id-row"><span>${profile.public_id}</span><button class="copy-btn" onclick="copyText('${profile.public_id}','Code copied!')">Copy</button></div>
-  <div class="expiry-wrap">
-    <div class="expiry-labels"><span>Validity</span><span>${days > 0 ? days+' days remaining' : 'Expired'}</span></div>
-    <div class="expiry-track"><div class="expiry-fill ${barClass}" style="width:${pct}%"></div></div>
-  </div>` : `<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem">&#9201; Your application is under review. You'll receive an email when it's approved.</div>`}
+  ${profile.public_id?`
+    <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem">Your verification ID</div>
+    <div class="id-row"><span>${profile.public_id}</span><button class="copy-btn" onclick="copyText('${profile.public_id}','Code copied!')">Copy</button></div>
+    <div class="expiry-wrap">
+      <div class="expiry-labels"><span>Validity</span><span>${days>0?days+' days remaining':'Expired'}</span></div>
+      <div class="expiry-track"><div class="expiry-fill ${barClass}" style="width:${pct}%"></div></div>
+    </div>`
+  :`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">&#9201; Your application is under review. We'll email you within 48 hours when approved.</div>`}
 `;
-
-// QR share
-if (profile.public_id && status === 'verified') {
+if (profile.public_id&&status==='verified') {
   const verifyUrl = `${location.origin}/verify.html?id=${profile.public_id}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
   document.getElementById('shareBody').innerHTML = `
     <div class="qr-center">
-      <div class="qr-box"><img src="${qrUrl}" width="130" height="130" alt="QR Code"></div>
+      <div class="qr-box"><img src="${qrUrl}" width="130" height="130" alt="Your QR Code"></div>
       <div class="qr-link">${verifyUrl}</div>
       <div class="share-grid">
-        <button class="share-btn sb-wa" onclick="window.open('https://api.whatsapp.com/send?text=Verify%20my%20TrustNet%20identity%3A%20${encodeURIComponent(verifyUrl)}','_blank')">&#128242; WhatsApp</button>
+        <button class="share-btn sb-wa" onclick="window.open('https://api.whatsapp.com/send?text=Verify my TrustNet identity: ${encodeURIComponent(verifyUrl)}','_blank')">&#128242; WhatsApp</button>
         <button class="share-btn sb-link" onclick="copyText('${verifyUrl}','Link copied!')">&#128279; Copy link</button>
         <button class="share-btn sb-code" onclick="copyText('${profile.public_id}','Code copied!')">&#128203; Copy code</button>
         <button class="share-btn sb-dl" onclick="window.open('${qrUrl}','_blank')">&#11015;&#65039; Save QR</button>
       </div>
     </div>`;
 }
-
-// Lookup
 window.doLookup = async () => {
   const code = document.getElementById('lookupInput').value.trim().toUpperCase();
   if (!code) { showToast('Please enter a code'); return; }
   const { data, error } = await supabase.from('profiles').select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id').eq('public_id',code).single();
   const el = document.getElementById('lookupResult');
-  if (!data || error) { el.innerHTML='<div style="color:var(--muted);font-size:0.875rem;padding:0.75rem 0">No provider found with that code.</div>'; el.classList.add('show'); return; }
-  const s = (data.expiry_date && new Date()>new Date(data.expiry_date)) ? 'expired' : data.verification_status;
+  if (!data||error) { el.innerHTML=`<div style="padding:0.75rem;color:var(--muted);font-size:0.875rem">&#10060; No provider found with code <strong style="font-family:monospace;color:var(--ink)">${code}</strong>.</div>`; el.classList.add('show'); return; }
+  const s = (data.expiry_date&&new Date()>new Date(data.expiry_date))?'expired':data.verification_status;
   const pc = s==='verified'?'sp-verified':s==='expired'?'sp-expired':'sp-pending';
   const pl = s==='verified'?'&#10003; Verified':s==='expired'?'&#9888; Expired':'&#8987; Pending';
-  const fmt2 = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
-  el.innerHTML = `<div class="vr-inner"><div class="vr-row">
-    ${data.selfie_url?`<img src="${data.selfie_url}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0">`:'<div class="vr-avatar">&#128100;</div>'}
-    <div class="vr-info"><div class="vr-name">${data.name}</div><div class="vr-cat">${data.service_category||''}</div></div>
-    <span class="status-pill ${pc}">${pl}</span>
-  </div>
-  <div class="vr-dates-row">
-    <div class="vr-date-chip"><div class="vdl">Verified</div><div class="vdv">${fmt2(data.verification_date)}</div></div>
-    <div class="vr-date-chip"><div class="vdl">Expires</div><div class="vdv">${fmt2(data.expiry_date)}</div></div>
-    ${s==='verified'?'<div class="vr-date-chip" style="color:var(--green)">&#10003; ID checked</div><div class="vr-date-chip" style="color:var(--green)">&#10003; Selfie checked</div>':''}
-  </div></div>`;
+  const fmt2 = d => d?new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}):'—';
+  el.innerHTML = `<div class="vr-inner"><div class="vr-row">${data.selfie_url?`<img src="${data.selfie_url}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0">`:'<div class="vr-avatar">&#128100;</div>'}<div class="vr-info"><div class="vr-name">${data.name}</div><div class="vr-cat">${data.service_category||''}</div></div><span class="status-pill ${pc}">${pl}</span></div><div class="vr-dates-row"><div class="vr-date-chip"><div class="vdl">Verified</div><div class="vdv">${fmt2(data.verification_date)}</div></div><div class="vr-date-chip"><div class="vdl">Expires</div><div class="vdv">${fmt2(data.expiry_date)}</div></div>${s==='verified'?'<div class="vr-date-chip" style="color:var(--green)">&#10003; ID checked</div><div class="vr-date-chip" style="color:var(--green)">&#10003; Selfie checked</div>':''}</div></div>`;
   el.classList.add('show');
 };
-
-window.copyText = (text, msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
+window.copyText = (text,msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
-window.doLogout = async () => { await supabase.auth.signOut(); location.href='/'; };
+window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 </script>
 </body>
 </html>
