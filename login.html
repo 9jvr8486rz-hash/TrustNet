@@ -30,10 +30,12 @@ window.doLogin = async () => {
   const err = document.getElementById('authError');
   if (!email || !pass) { showErr('Please fill in all fields.'); return; }
   btn.textContent = 'Signing in...'; btn.disabled = true;
-  const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-  if (error) { showErr(error.message); btn.textContent = 'Sign in'; btn.disabled = false; return; }
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id',(await supabase.auth.getUser()).data.user.id).single();
-  location.href = profile?.role === 'admin' ? '/admin.html' : '/dashboard.html';
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+if (error) { showErr(error.message); btn.textContent = 'Sign in'; btn.disabled = false; return; }
+const userId = data.user.id;
+const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single();
+const destination = profile?.role === 'admin' ? '/admin.html' : '/dashboard.html';
+setTimeout(() => { location.href = destination; }, 500);
 };
 function showErr(msg) { const e = document.getElementById('authError'); e.textContent = msg; e.style.display = 'block'; }
 </script>
