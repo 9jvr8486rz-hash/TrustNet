@@ -75,10 +75,23 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: true
   }
 });
-const { data: { session } } = await supabase.auth.getSession();
+// Wait for session with retry
+let session = null;
+for (let i = 0; i < 5; i++) {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) { session = data.session; break; }
+  await new Promise(r => setTimeout(r, 500));
+}
 if (!session) { window.location.replace('/login.html'); }
 const user = session.user;
-const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+
+// Wait for profile with retry
+let profile = null;
+for (let i = 0; i < 5; i++) {
+  const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  if (data) { profile = data; break; }
+  await new Promise(r => setTimeout(r, 500));
+}
 if (!profile) { window.location.replace('/login.html'); }
 if (profile.role === 'admin') { window.location.replace('/admin.html'); }
 const h = new Date().getHours();
