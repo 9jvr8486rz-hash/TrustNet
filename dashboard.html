@@ -50,8 +50,9 @@
 <div class="toast" id="toast"></div>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
-const { data: { user } } = await supabase.auth.getUser();
-if (!user) { location.href = '/login.html'; }
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) { location.href = '/login.html'; }
+const user = session.user;
 const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
 if (!profile) { location.href = '/login.html'; }
 if (profile.role === 'admin') { location.href = '/admin.html'; }
