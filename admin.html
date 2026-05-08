@@ -1,68 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard — TrustNet</title>
-<link rel="stylesheet" href="/styles/main.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-<nav><div class="nav-inner">
-  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
-  <div class="nav-actions">
-    <span style="font-size:0.82rem;font-weight:600;color:var(--blue);background:var(--blue-light);padding:0.3rem 0.75rem;border-radius:6px">&#128272; Admin</span>
-    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
-    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
-  </div>
-</div></nav>
-<div class="admin-wrap">
-  <div class="admin-header">
-    <div>
-      <h2>Admin dashboard</h2>
-      <p style="font-size:0.875rem;color:var(--muted);margin-top:0.25rem">Review and manage verification applications</p>
-    </div>
-    <span class="status-pill sp-verified">&#9679; Admin access</span>
-  </div>
-  <div class="admin-stats">
-    <div class="stat-card gold"><div class="num" id="statPending">—</div><div class="lbl">Pending review</div></div>
-    <div class="stat-card teal"><div class="num" id="statVerified">—</div><div class="lbl">Verified</div></div>
-    <div class="stat-card red"><div class="num" id="statRejected">—</div><div class="lbl">Rejected / Expired</div></div>
-  </div>
-  <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-    <div style="font-weight:700;font-size:1rem">All applications</div>
-    <button class="btn-nav-ghost" onclick="loadProfiles()" style="font-size:0.82rem">&#8635; Refresh</button>
-  </div>
-  <div class="applications-table">
-    <div class="table-header">
-      <div>Provider</div><div>Category</div><div>Status</div><div>Applied</div><div>Actions</div>
-    </div>
-    <div id="adminRows"><div style="padding:2rem;text-align:center;color:var(--muted)">Loading applications...</div></div>
-  </div>
-</div>
-<div id="docModal" class="modal-bg">
-  <div class="modal">
-    <h3>&#128272; Documents</h3>
-    <p id="docModalName" style="font-weight:600;margin-bottom:1rem;color:var(--blue)"></p>
-    <div id="docModalContent"></div>
-    <button class="btn-full" style="margin-top:1rem;background:var(--bg-soft);color:var(--body);border:1px solid var(--border)" onclick="document.getElementById('docModal').classList.remove('open')">&#10005; Close</button>
-  </div>
-</div>
-<footer>
-  <div class="footer-logo">TrustNet</div>
-  <p>© 2026 TrustNet · Admin Portal</p>
-</footer>
-<div class="toast" id="toast"></div>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
 
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 
-supabase.auth.onAuthStateChange(async (event, session) => {
+async function init(session) {
   if (!session) { window.location.replace('/login.html'); return; }
   const { data: me } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
   if (!me || me.role !== 'admin') { window.location.replace('/dashboard.html'); return; }
   loadProfiles();
+}
+
+const { data: { session } } = await supabase.auth.getSession();
+await init(session);
+
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN') await init(session);
+  if (event === 'SIGNED_OUT') window.location.replace('/login.html');
 });
 
 window.loadProfiles = async () => {
@@ -124,5 +77,3 @@ window.viewDocs = (name, idDocPath, selfieUrl) => {
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); };
 document.getElementById('docModal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
 </script>
-</body>
-</html>
