@@ -11,19 +11,27 @@
 <nav><div class="nav-inner">
   <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
   <div class="nav-actions">
-    <span style="font-size:0.82rem;font-weight:600;color:var(--blue);background:var(--blue-light);padding:0.3rem 0.75rem;border-radius:6px">Admin</span>
-    <button class="btn-nav-ghost" onclick="doLogout()">Sign out</button>
+    <span style="font-size:0.82rem;font-weight:600;color:var(--blue);background:var(--blue-light);padding:0.3rem 0.75rem;border-radius:6px">&#128272; Admin</span>
+    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
+    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
 <div class="admin-wrap">
   <div class="admin-header">
-    <h2>Admin dashboard</h2>
-    <span id="adminBadge" class="status-pill sp-verified">&#9679; Admin access</span>
+    <div>
+      <h2>Admin dashboard</h2>
+      <p style="font-size:0.875rem;color:var(--muted);margin-top:0.25rem">Review and manage verification applications</p>
+    </div>
+    <span class="status-pill sp-verified">&#9679; Admin access</span>
   </div>
   <div class="admin-stats">
     <div class="stat-card gold"><div class="num" id="statPending">—</div><div class="lbl">Pending review</div></div>
     <div class="stat-card teal"><div class="num" id="statVerified">—</div><div class="lbl">Verified</div></div>
     <div class="stat-card red"><div class="num" id="statRejected">—</div><div class="lbl">Rejected / Expired</div></div>
+  </div>
+  <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+    <div style="font-weight:700;font-size:1rem">All applications</div>
+    <button class="btn-nav-ghost" onclick="loadProfiles()" style="font-size:0.82rem">&#8635; Refresh</button>
   </div>
   <div class="applications-table">
     <div class="table-header">
@@ -34,50 +42,84 @@
 </div>
 <div id="docModal" class="modal-bg">
   <div class="modal">
-    <h3>Documents</h3>
-    <p id="docModalName" style="font-weight:600;margin-bottom:1rem"></p>
+    <h3>&#128272; Documents</h3>
+    <p id="docModalName" style="font-weight:600;margin-bottom:1rem;color:var(--blue)"></p>
     <div id="docModalContent"></div>
-    <button class="btn-full" style="margin-top:1rem" onclick="document.getElementById('docModal').classList.remove('open')">Close</button>
+    <button class="btn-full" style="margin-top:1rem;background:var(--bg-soft);color:var(--body);border:1px solid var(--border)" onclick="document.getElementById('docModal').classList.remove('open')">&#10005; Close</button>
   </div>
 </div>
+<footer>
+  <div class="footer-logo">TrustNet</div>
+  <p>© 2026 TrustNet · Admin Portal</p>
+</footer>
 <div class="toast" id="toast"></div>
 <script type="module">
-import { supabase } from '/src/lib/supabase.js';
-
-// Auth check
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const { data: { session } } = await supabase.auth.getSession();
 if (!session) { window.location.replace('/login.html'); }
 const user = session.user;
-
-// Admin check
 const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-if (!me || me.role !== 'admin') { window.location.replace('/dashboard.html'); }
-
-// Sign out
-window.doLogout = async () => {
-  await supabase.auth.signOut();
-  window.location.replace('/login.html');
-};
-
-// Load all provider profiles
-async function loadProfiles() {
+if (!me||me.role!=='admin') { window.location.replace('/dashboard.html'); }
+window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
+window.loadProfiles = async () => {
+  document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
   const { data } = await supabase.from('profiles').select('*').neq('role','admin').order('created_at',{ascending:false});
-  if (!data) return;
-  document.getElementById('statPending').textContent = data.filter(p=>p.verification_status==='pending'||!p.verification_status).length;
+  if (!data) { document.getElementById('adminRows').innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Could not load applications.</div>'; return; }
+  document.getElementById('statPending').textContent = data.filter(p=>!p.verification_status||p.verification_status==='pending').length;
   document.getElementById('statVerified').textContent = data.filter(p=>p.verification_status==='verified').length;
   document.getElementById('statRejected').textContent = data.filter(p=>p.verification_status==='rejected'||(p.expiry_date&&new Date()>new Date(p.expiry_date))).length;
   const rows = document.getElementById('adminRows');
   if (!data.length) { rows.innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">No applications yet.</div>'; return; }
   rows.innerHTML = data.map(p => {
     const now = new Date();
-    const status = (!p.verification_status||p.verification_status==='pending') ? 'pending' : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired' : p.verification_status;
+    const status = (!p.verification_status||p.verification_status==='pending')?'pending':(p.expiry_date&&now>new Date(p.expiry_date))?'expired':p.verification_status;
     const pill = status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending';
     const label = status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':status==='rejected'?'&#10007; Rejected':'&#8987; Pending';
     const date = new Date(p.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-    const avatar = p.selfie_url ? `<img src="${p.selfie_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0">` : '<div class="provider-avatar">&#128100;</div>';
+    const avatar = p.selfie_url?`<img src="${p.selfie_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)">`:'<div class="provider-avatar">&#128100;</div>';
     const actions = status==='pending'
-      ? `<button class="action-btn approve" onclick="approveProvider('${p.id}')">Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">Reject</button>`
-      : `<button class="action-btn view" onclick="viewDocs('${p.id}','${p.name||'Provider'}','${p.id_document_url||''}')">View docs</button>`;
-    return `<div class="table-row">
-      <div class="provider-info">${avatar}<div><div class="provider-name">${p.name||'—'}</div><div class="provider-email">${p.phone||''}</div></div></div>
-      <div style="font-size:0.875rem
+      ?`<button class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
+      :`<button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}')">&#128065; Docs</button>`;
+    return `<div class="table-row"><div class="provider-info">${avatar}<div><div class="provider-name">${p.name||'—'}</div><div class="provider-email">${p.phone||''}</div></div></div><div style="font-size:0.875rem">${p.service_category||'—'}</div><div><span class="status-pill ${pill}">${label}</span></div><div style="font-size:0.82rem;color:var(--muted)">${date}</div><div class="action-btns">${actions}</div></div>`;
+  }).join('');
+};
+window.approveProvider = async (id) => {
+  if (!confirm('Approve this provider?')) return;
+  const now = new Date();
+  const expiry = new Date(now); expiry.setDate(expiry.getDate()+30);
+  let publicId;
+  do {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    publicId = 'TN-'+Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+    const { data } = await supabase.from('profiles').select('id').eq('public_id',publicId);
+    if (!data?.length) break;
+  } while(true);
+  const { error } = await supabase.from('profiles').update({verification_status:'verified',verification_date:now.toISOString(),expiry_date:expiry.toISOString(),public_id:publicId}).eq('id',id);
+  if (error) { showToast('&#10060; Error: '+error.message); return; }
+  showToast('&#10003; Approved! Badge ID: '+publicId);
+  loadProfiles();
+};
+window.rejectProvider = async (id) => {
+  if (!confirm('Reject this application?')) return;
+  await supabase.from('profiles').update({verification_status:'rejected'}).eq('id',id);
+  showToast('Application rejected.');
+  loadProfiles();
+};
+window.viewDocs = (name, idDocPath, selfieUrl) => {
+  document.getElementById('docModalName').textContent = name;
+  let html = '';
+  if (selfieUrl) html+=`<div style="margin-bottom:1rem"><div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.5rem">Selfie</div><img src="${selfieUrl}" style="width:100%;max-width:200px;border-radius:var(--radius);border:1px solid var(--border)"></div>`;
+  if (idDocPath) { const { data } = supabase.storage.from('id-documents').getPublicUrl(idDocPath); html+=`<a href="${data.publicUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem">&#128065; View ID document &rarr;</a>`; }
+  if (!html) html='<p style="color:var(--muted);font-size:0.875rem">No documents uploaded yet.</p>';
+  document.getElementById('docModalContent').innerHTML = html;
+  document.getElementById('docModal').classList.add('open');
+};
+window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); };
+document.getElementById('docModal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
+loadProfiles();
+</script>
+</body>
+</html>
