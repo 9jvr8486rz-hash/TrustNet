@@ -85,6 +85,13 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: true
   }
 });
+    persistSession: true,
+    storageKey: 'trustnet-auth',
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 window.handleFile = (input, boxId, labelId) => {
   const file = input.files[0]; if (!file) return;
   document.getElementById(boxId).style.borderColor = 'var(--green)';
