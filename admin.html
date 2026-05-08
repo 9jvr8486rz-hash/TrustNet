@@ -58,29 +58,15 @@ import { supabase } from '/src/lib/supabase.js';
 
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 
-async function init(session) {
-  if (!session) { window.location.replace('/login.html'); return; }
-  const { data: me } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-  if (!me || me.role !== 'admin') { window.location.replace('/dashboard.html'); return; }
-  loadProfiles();
-}
-
-const { data: { session } } = await supabase.auth.getSession();
-await init(session);
-
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_OUT') window.location.replace('/login.html');
-});
-
 window.loadProfiles = async () => {
   document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
-  const { data } = await supabase.from('profiles').select('*').neq('role','admin').order('created_at',{ascending:false});
-  if (!data) { document.getElementById('adminRows').innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Could not load applications.</div>'; return; }
+  const { data, error } = await supabase.from('profiles').select('*').neq('role','admin').order('created_at',{ascending:false});
+  if (error || !data) { document.getElementById('adminRows').innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Could not load applications.</div>'; return; }
   document.getElementById('statPending').textContent = data.filter(p=>!p.verification_status||p.verification_status==='pending').length;
   document.getElementById('statVerified').textContent = data.filter(p=>p.verification_status==='verified').length;
   document.getElementById('statRejected').textContent = data.filter(p=>p.verification_status==='rejected'||(p.expiry_date&&new Date()>new Date(p.expiry_date))).length;
   const rows = document.getElementById('adminRows');
-  if (!data.length) { rows.innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">No applications yet.</div>'; return; }
+  if (!data.length) { rows.innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">No applications yet. Share the site so providers can apply.</div>'; return; }
   rows.innerHTML = data.map(p => {
     const now = new Date();
     const status = (!p.verification_status||p.verification_status==='pending')?'pending':(p.expiry_date&&now>new Date(p.expiry_date))?'expired':p.verification_status;
@@ -130,6 +116,23 @@ window.viewDocs = (name, idDocPath, selfieUrl) => {
 
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); };
 document.getElementById('docModal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
+
+// Auth check then load
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+  window.location.replace('/login.html');
+} else {
+  const { data: me } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+  if (!me || me.role !== 'admin') {
+    window.location.replace('/dashboard.html');
+  } else {
+    await loadProfiles();
+  }
+}
+
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_OUT') window.location.replace('/login.html');
+});
 </script>
 </body>
 </html>
