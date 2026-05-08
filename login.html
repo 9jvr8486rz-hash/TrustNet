@@ -11,7 +11,7 @@
 <nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a></div></nav>
 <div class="auth-page">
   <div class="auth-card">
-    <div class="auth-icon">&#128075;</div>
+    <div class="auth-icon">👋</div>
     <h2>Welcome back</h2>
     <p class="auth-sub">Sign in to your TrustNet account</p>
     <div id="authError" class="error-box" style="display:none"></div>
@@ -22,22 +22,31 @@
   </div>
 </div>
 <script type="module">
-import { supabase } from '/src/lib/supabase.js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 window.doLogin = async () => {
   const email = document.getElementById('email').value.trim();
   const pass = document.getElementById('password').value;
   const btn = document.getElementById('loginBtn');
   const err = document.getElementById('authError');
+  err.style.display = 'none';
   if (!email || !pass) { showErr('Please fill in all fields.'); return; }
   btn.textContent = 'Signing in...'; btn.disabled = true;
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-if (error) { showErr(error.message); btn.textContent = 'Sign in'; btn.disabled = false; return; }
-const userId = data.user.id;
-const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single();
-const destination = profile?.role === 'admin' ? '/admin.html' : '/dashboard.html';
-setTimeout(() => { location.href = destination; }, 500);
+  if (error) { showErr(error.message); btn.textContent = 'Sign in'; btn.disabled = false; return; }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+  window.location.replace(profile?.role === 'admin' ? '/admin.html' : '/dashboard.html');
 };
-function showErr(msg) { const e = document.getElementById('authError'); e.textContent = msg; e.style.display = 'block'; }
+
+function showErr(msg) {
+  const e = document.getElementById('authError');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
 </script>
 </body>
 </html>
