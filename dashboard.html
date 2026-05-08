@@ -1,3 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard — TrustNet</title>
+<link rel="stylesheet" href="/styles/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav><div class="nav-inner">
+  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
+  <div class="nav-actions">
+    <span id="navName" style="font-size:0.875rem;font-weight:600;color:var(--body)"></span>
+    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
+    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
+  </div>
+</div></nav>
+<div class="dashboard">
+  <div class="dash-top">
+    <div class="dash-greet">
+      <div class="time-tag" id="timeTag"></div>
+      <h2>Welcome back, <span id="greetName">...</span> &#128075;</h2>
+    </div>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card">
+      <div class="dc-head"><div class="dc-title">My verification</div><span class="dc-badge dcb-green" id="myStatusBadge">Loading...</span></div>
+      <div class="dc-body" id="myVerificationBody"><div style="color:var(--muted);font-size:0.875rem">Loading...</div></div>
+    </div>
+    <div class="dash-card">
+      <div class="dc-head"><div class="dc-title">Share your badge</div><span class="dc-badge dcb-blue">Share</span></div>
+      <div class="dc-body" id="shareBody">
+        <div style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem 0">
+          <div style="font-size:2rem;margin-bottom:0.5rem">&#128274;</div>
+          Your QR code will appear here once your identity is verified.
+        </div>
+      </div>
+    </div>
+    <div class="dash-card span2">
+      <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
+      <div class="dc-body">
+        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's TrustNet code to check their verification status.</p>
+        <div class="lookup-form">
+          <input class="lookup-input" id="lookupInput" type="text" placeholder="Enter code e.g. TN-B34XPQ72" maxlength="14" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')doLookup()">
+          <button class="lookup-btn" onclick="doLookup()">Check &rarr;</button>
+        </div>
+        <div class="lookup-result" id="lookupResult"></div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:2rem;background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-lg);padding:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <div style="font-weight:700;margin-bottom:0.25rem">Need help?</div>
+      <div style="font-size:0.875rem;color:var(--muted)">Contact our support team for assistance.</div>
+    </div>
+    <a href="mailto:support@trustnet.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
+  </div>
+</div>
+<footer>
+  <div class="footer-logo">TrustNet</div>
+  <p>Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</p>
+</footer>
+<div class="toast" id="toast"></div>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
 
@@ -64,13 +128,10 @@ async function renderDashboard(session) {
   }
 }
 
-// Load on page open
 const { data: { session } } = await supabase.auth.getSession();
 await renderDashboard(session);
 
-// Also handle sign in event
 supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN') await renderDashboard(session);
   if (event === 'SIGNED_OUT') window.location.replace('/login.html');
 });
 
@@ -91,3 +152,5 @@ window.doLookup = async () => {
 window.copyText = (text,msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
 </script>
+</body>
+</html>
