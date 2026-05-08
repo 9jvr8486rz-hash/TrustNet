@@ -55,23 +55,16 @@
 <div class="toast" id="toast"></div>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
-let session = null;
-for (let i = 0; i < 5; i++) {
-  const { data } = await supabase.auth.getSession();
-  if (data.session) { session = data.session; break; }
-  await new Promise(r => setTimeout(r, 500));
-}
-if (!session) { window.location.replace('/login.html'); }
-const user = session.user;
 
-let me = null;
-for (let i = 0; i < 5; i++) {
-  const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (data) { me = data; break; }
-  await new Promise(r => setTimeout(r, 500));
-}
-if (!me || me.role !== 'admin') { window.location.replace('/dashboard.html'); }
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
+
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (!session) { window.location.replace('/login.html'); return; }
+  const { data: me } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+  if (!me || me.role !== 'admin') { window.location.replace('/dashboard.html'); return; }
+  loadProfiles();
+});
+
 window.loadProfiles = async () => {
   document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
   const { data } = await supabase.from('profiles').select('*').neq('role','admin').order('created_at',{ascending:false});
@@ -94,10 +87,10 @@ window.loadProfiles = async () => {
     return `<div class="table-row"><div class="provider-info">${avatar}<div><div class="provider-name">${p.name||'—'}</div><div class="provider-email">${p.phone||''}</div></div></div><div style="font-size:0.875rem">${p.service_category||'—'}</div><div><span class="status-pill ${pill}">${label}</span></div><div style="font-size:0.82rem;color:var(--muted)">${date}</div><div class="action-btns">${actions}</div></div>`;
   }).join('');
 };
+
 window.approveProvider = async (id) => {
   if (!confirm('Approve this provider?')) return;
-  const now = new Date();
-  const expiry = new Date(now); expiry.setDate(expiry.getDate()+30);
+  const now = new Date(); const expiry = new Date(now); expiry.setDate(expiry.getDate()+30);
   let publicId;
   do {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -110,12 +103,14 @@ window.approveProvider = async (id) => {
   showToast('&#10003; Approved! Badge ID: '+publicId);
   loadProfiles();
 };
+
 window.rejectProvider = async (id) => {
   if (!confirm('Reject this application?')) return;
   await supabase.from('profiles').update({verification_status:'rejected'}).eq('id',id);
   showToast('Application rejected.');
   loadProfiles();
 };
+
 window.viewDocs = (name, idDocPath, selfieUrl) => {
   document.getElementById('docModalName').textContent = name;
   let html = '';
@@ -125,9 +120,9 @@ window.viewDocs = (name, idDocPath, selfieUrl) => {
   document.getElementById('docModalContent').innerHTML = html;
   document.getElementById('docModal').classList.add('open');
 };
+
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); };
 document.getElementById('docModal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
-loadProfiles();
 </script>
 </body>
 </html>
