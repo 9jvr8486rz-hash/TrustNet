@@ -3,37 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reset Password — Digital Trust Network</title>
+<title>Verify Identity — Digital Trust Network</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.ratings-section{margin-top:2rem;border-top:1px solid var(--border);padding-top:1.75rem}
+.ratings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem}
+.ratings-title{font-weight:800;font-size:1.05rem}
+.trust-score-wrap{display:flex;align-items:center;gap:0.75rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1.25rem}
+.trust-score-num{font-weight:800;font-size:2.5rem;line-height:1;color:var(--blue)}
+.trust-score-stars{font-size:1.4rem;letter-spacing:2px}
+.trust-score-info{flex:1}
+.trust-score-label{font-weight:700;font-size:0.875rem}
+.trust-score-sub{font-size:0.78rem;color:var(--muted);margin-top:0.1rem}
+.trust-score-badge{font-size:0.72rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;white-space:nowrap}
+.tsb-excellent{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.tsb-good{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.tsb-average{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.tsb-poor{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.tsb-none{background:var(--bg-soft);color:var(--muted);border:1px solid var(--border)}
+.rating-breakdown{margin-bottom:1.25rem}
+.rb-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;font-size:0.8rem}
+.rb-label{width:40px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap}
+.rb-bar-track{flex:1;height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+.rb-bar-fill{height:100%;border-radius:999px;transition:width .6s ease}
+.rb-fill-5{background:#16a34a}.rb-fill-4{background:#4ade80}.rb-fill-3{background:#fbbf24}.rb-fill-2{background:#fb923c}.rb-fill-1{background:#ef4444}
+.rb-count{width:24px;color:var(--muted);font-size:0.75rem;text-align:left}
+.rating-item{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem}
+.rating-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;flex-wrap:wrap;gap:0.5rem}
+.rating-item-name{font-weight:700;font-size:0.875rem}
+.rating-item-stars{font-size:1rem;letter-spacing:1px}
+.rating-item-meta{font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
+.verified-rater-badge{display:inline-flex;align-items:center;gap:0.25rem;background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe}
+.unverified-rater-badge{display:inline-flex;align-items:center;gap:0.25rem;background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)}
+.rating-item-comment{font-size:0.82rem;color:var(--body);line-height:1.6}
+.rate-form-wrap{background:var(--blue-pale);border:1.5px solid var(--blue-light);border-radius:var(--radius-lg);padding:1.5rem;margin-top:1.5rem}
+.rate-form-title{font-weight:800;font-size:1rem;margin-bottom:0.35rem}
+.rate-form-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem}
+.star-picker{display:flex;gap:0.35rem;margin-bottom:0.5rem}
+.star-btn{font-size:2rem;cursor:pointer;background:none;border:none;padding:0.1rem;transition:transform .15s;filter:grayscale(1) opacity(.35);line-height:1}
+.star-btn:hover,.star-btn.active{filter:none;transform:scale(1.15)}
+.star-label{font-size:0.82rem;font-weight:600;color:var(--blue);margin-bottom:0.75rem;min-height:1.2rem}
+.form-field-sm{margin-bottom:0.85rem}
+.form-field-sm label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.35rem;color:var(--ink)}
+.form-input-sm{width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;color:var(--ink);background:#fff;transition:all .2s}
+.form-input-sm:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
+textarea.form-input-sm{resize:vertical;min-height:80px}
+.comment-required-note{font-size:0.75rem;color:var(--red);font-weight:600;margin-bottom:0.5rem;display:none}
+.comment-required-note.show{display:block}
+.submit-rating-btn{width:100%;padding:0.85rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:0.95rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
+.submit-rating-btn:hover{background:var(--blue-mid);transform:translateY(-1px)}
+.submit-rating-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.rating-success{text-align:center;padding:1rem;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);display:none}
+.rating-success.show{display:block}
+.show-more-btn{width:100%;padding:0.6rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;font-family:inherit;color:var(--muted);cursor:pointer;margin-top:0.5rem;transition:all .15s}
+.show-more-btn:hover{background:var(--border);color:var(--ink)}
+</style>
 </head>
 <body>
-<nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a></div></nav>
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-icon">&#128274;</div>
-    <h2>Set new password</h2>
-    <p class="auth-sub">Choose a new password for your Digital Trust Network account</p>
-    <div id="resetError" class="error-box" style="display:none"></div>
-    <div class="form-field"><label>New password</label><input class="form-input" type="password" id="newPass" placeholder="Min 8 characters"></div>
-    <div class="form-field"><label>Confirm new password</label><input class="form-input" type="password" id="confirmPass" placeholder="Repeat password"></div>
-    <button class="btn-full" onclick="doReset()" id="resetBtn">Update password</button>
+<nav><div class="nav-inner">
+  <a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a>
+  <div class="nav-actions">
+    <button class="btn-nav-ghost" onclick="history.back()">&#8592; Back</button>
+    <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
+  </div>
+</div></nav>
+
+<div class="verify-wrap">
+  <div id="loadingState" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
+    <div style="font-size:2.5rem;margin-bottom:1rem">&#128269;</div>
+    <p style="font-weight:600">Looking up verification...</p>
+  </div>
+  <div id="verifyCard" class="verify-card" style="display:none"></div>
+  <div id="notFoundState" style="display:none;text-align:center;padding:4rem 2rem">
+    <div style="font-size:3rem;margin-bottom:1rem">&#10060;</div>
+    <h3 style="font-weight:700;margin-bottom:0.5rem">Not found</h3>
+    <p style="color:var(--muted);margin-bottom:1.5rem">This verification code doesn't exist or has been removed.</p>
+    <button class="btn-primary" onclick="location.href='/'">Go back home</button>
   </div>
 </div>
+
+<footer>
+  <div class="footer-logo">Digital Trust Network</div>
+  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
+</footer>
+<div class="toast" id="toast"></div>
+
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
-window.doReset = async () => {
-  const newPass = document.getElementById('newPass').value;
-  const confirmPass = document.getElementById('confirmPass').value;
-  if (newPass.length<8) { showErr('Password must be at least 8 characters.'); return; }
-  if (newPass!==confirmPass) { showErr('Passwords do not match.'); return; }
-  const btn = document.getElementById('resetBtn');
-  btn.textContent='Updating...'; btn.disabled=true;
-  const { error } = await supabase.auth.updateUser({ password: newPass });
-  if (error) { showErr(error.message); btn.textContent='Update password'; btn.disabled=false; return; }
-  location.href='/login.html';
+
+const params = new URLSearchParams(location.search);
+const publicId = params.get('id');
+let providerId = null;
+let currentUser = null;
+let selectedStars = 0;
+
+const { data: { session } } = await supabase.auth.getSession();
+if (session) {
+  const { data: up } = await supabase.from('profiles').select('id,name,verification_status').eq('id', session.user.id).single();
+  if (up) currentUser = up;
+}
+
+if (!publicId) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('notFoundState').style.display = 'block';
+} else {
+  const { data, error } = await supabase.from('profiles')
+    .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
+    .eq('public_id', publicId).single();
+
+  document.getElementById('loadingState').style.display = 'none';
+
+  if (!data || error) {
+    document.getElementById('notFoundState').style.display = 'block';
+  } else {
+    providerId = data.id;
+    const now = new Date();
+    const expiry = data.expiry_date ? new Date(data.expiry_date) : null;
+    const status = (expiry && now > expiry) ? 'expired' : data.verification_status;
+    const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '—';
+    const statusHtml = status==='verified'
+      ? '<div class="verify-status">&#10003;&nbsp; Identity Verified</div>'
+      : status==='expired'
+      ? '<div class="verify-status expired">&#9888;&nbsp; Verification Expired</div>'
+      : '<div class="verify-status pending">&#8987;&nbsp; Pending Review</div>';
+    const firstName = data.name?.split(' ')[0] || 'this person';
+
+    const card = document.getElementById('verifyCard');
+    card.innerHTML = `
+      <div class="verify-avatar">${data.selfie_url?`<img src="${data.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
+      <div class="verify-name">${data.name||'Unknown'}</div>
+      <div class="verify-category">${data.service_category||''}</div>
+      ${statusHtml}
+      ${status==='verified'?'<div class="verify-checks"><div class="check-item"><span class="check-icon">&#10003;</span> ID document checked</div><div class="check-item"><span class="check-icon">&#10003;</span> Selfie checked</div></div>':''}
+      <div class="verify-dates">
+        <div class="verify-date-item"><div class="lbl">Verified on</div><div class="val">${fmt(data.verification_date)}</div></div>
+        <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(data.expiry_date)}</div></div>
+      </div>
+      <div class="verify-id">ID: ${data.public_id}</div>
+
+      <div class="ratings-section">
+        <div class="ratings-header">
+          <div class="ratings-title">&#11088; Trust ratings</div>
+          <div id="ratingCount" style="font-size:0.82rem;color:var(--muted)">Loading...</div>
+        </div>
+        <div id="trustScoreWrap"></div>
+        <div id="ratingBreakdown"></div>
+        <div id="ratingsList"></div>
+        <div id="showMoreWrap"></div>
+      </div>
+
+      <div class="rate-form-wrap" id="rateFormWrap">
+        <div class="rate-form-title">&#128221; Rate ${firstName}</div>
+        <div class="rate-form-sub">Had an interaction with ${firstName}? Share your experience to help others in the community.</div>
+        <div class="star-picker" id="starPicker">
+          <button class="star-btn" onclick="selectStar(1)">&#11088;</button>
+          <button class="star-btn" onclick="selectStar(2)">&#11088;</button>
+          <button class="star-btn" onclick="selectStar(3)">&#11088;</button>
+          <button class="star-btn" onclick="selectStar(4)">&#11088;</button>
+          <button class="star-btn" onclick="selectStar(5)">&#11088;</button>
+        </div>
+        <div class="star-label" id="starLabel">Tap a star to rate</div>
+        <div class="form-field-sm">
+          <label>Your name *</label>
+          <input class="form-input-sm" type="text" id="raterName" placeholder="e.g. Thandi M." value="${currentUser?.name||''}">
+        </div>
+        <div class="form-field-sm">
+          <label>Comment <span id="commentRequired" style="color:var(--red);font-size:0.75rem"></span></label>
+          <div class="comment-required-note" id="commentRequiredNote">&#9888; A comment is required for ratings of 1 or 2 stars. Please explain your experience.</div>
+          <textarea class="form-input-sm" id="raterComment" placeholder="Share your experience..." rows="3"></textarea>
+        </div>
+        <button class="submit-rating-btn" id="submitRatingBtn" onclick="submitRating()">Submit rating</button>
+        <div class="rating-success" id="ratingSuccess">
+          <div style="font-size:1.75rem;margin-bottom:0.4rem">&#127881;</div>
+          <div style="font-weight:700;color:var(--green)">Thank you for your rating!</div>
+          <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">Your feedback helps build trust in the community.</div>
+        </div>
+      </div>
+
+      <div class="disclaimer" style="margin-top:1.25rem">Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</div>
+      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center">
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own Digital Trust Network verification?</p>
+        <button class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.4rem" onclick="location.href='/apply.html'">Get verified &rarr;</button>
+      </div>`;
+    card.style.display = 'block';
+    document.title = `${data.name} — Digital Trust Network`;
+    await loadRatings();
+  }
+}
+
+const starLabels = {
+  1:'&#11088; 1 star — Poor experience',
+  2:'&#11088;&#11088; 2 stars — Below average',
+  3:'&#11088;&#11088;&#11088; 3 stars — Average',
+  4:'&#11088;&#11088;&#11088;&#11088; 4 stars — Good experience',
+  5:'&#11088;&#11088;&#11088;&#11088;&#11088; 5 stars — Excellent experience'
 };
-function showErr(msg) { const e=document.getElementById('resetError'); e.textContent=msg; e.style.display='block'; }
-</script>
-</body>
-</html>
+
+window.selectStar = (n) => {
+  selectedStars = n;
+  document.querySelectorAll('.star-btn').forEach((btn,i) => btn.classList.toggle('active', i < n));
+  document.getElementById('starLabel').innerHTML = starLabels[n];
+  const note = document.getElementById('commentRequiredNote');
+  const req = document.getElementById('commentRequired');
+  if (n <= 2) { note.classList.add('show'); req.textContent = '* Required'; }
+  else { note.classList.remove('show'); req.textContent = '(optional)'; }
+};
+
+async function loadRatings(showAll=false) {
+  if (!providerId) return;
+  const { data: summary } = await supabase.from('ratings_summary').select('*').eq('provider_id', providerId).single();
+  const total = summary?.total_ratings || 0;
+  document.getElementById('ratingCount').textContent = total > 0 ? `${total} rating${total!==1?'s':''}` : 'No ratings yet';
+
+  const scoreWrap = document.getElementById('trustScoreWrap');
+  if (summary && total > 0) {
+    const score = parseFloat(summary.trust_score || summary.a
