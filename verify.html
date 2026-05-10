@@ -3,78 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Identity — Digital Trust Network</title>
+<title>Reset Password — Digital Trust Network</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-<nav><div class="nav-inner">
-  <a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a>
-  <div class="nav-actions">
-    <button class="btn-nav-ghost" onclick="history.back()">&#8592; Back</button>
-    <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
-  </div>
-</div></nav>
-<div class="verify-wrap">
-  <div id="loadingState" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
-    <div style="font-size:2.5rem;margin-bottom:1rem">&#128269;</div>
-    <p style="font-weight:600">Looking up verification...</p>
-  </div>
-  <div id="verifyCard" class="verify-card" style="display:none"></div>
-  <div id="notFoundState" style="display:none;text-align:center;padding:4rem 2rem">
-    <div style="font-size:3rem;margin-bottom:1rem">&#10060;</div>
-    <h3 style="font-weight:700;margin-bottom:0.5rem">Not found</h3>
-    <p style="color:var(--muted);margin-bottom:1.5rem">This verification code doesn't exist or has been removed.</p>
-    <button class="btn-primary" onclick="location.href='/'">Go back home</button>
+<nav><div class="nav-inner"><a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a></div></nav>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-icon">&#128274;</div>
+    <h2>Set new password</h2>
+    <p class="auth-sub">Choose a new password for your Digital Trust Network account</p>
+    <div id="resetError" class="error-box" style="display:none"></div>
+    <div class="form-field"><label>New password</label><input class="form-input" type="password" id="newPass" placeholder="Min 8 characters"></div>
+    <div class="form-field"><label>Confirm new password</label><input class="form-input" type="password" id="confirmPass" placeholder="Repeat password"></div>
+    <button class="btn-full" onclick="doReset()" id="resetBtn">Update password</button>
   </div>
 </div>
-<footer>
-  <div class="footer-logo">Digital Trust Network</div>
-  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
-</footer>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
-const params = new URLSearchParams(location.search);
-const publicId = params.get('id');
-if (!publicId) {
-  document.getElementById('loadingState').style.display='none';
-  document.getElementById('notFoundState').style.display='block';
-} else {
-  const { data, error } = await supabase.from('profiles').select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id').eq('public_id',publicId).single();
-  document.getElementById('loadingState').style.display='none';
-  if (!data||error) {
-    document.getElementById('notFoundState').style.display='block';
-  } else {
-    const now = new Date();
-    const expiry = data.expiry_date ? new Date(data.expiry_date) : null;
-    const status = (expiry&&now>expiry)?'expired':data.verification_status;
-    const fmt = d => d?new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}):'—';
-    const statusHtml = status==='verified'
-      ?'<div class="verify-status">&#10003;&nbsp; Identity Verified</div>'
-      :status==='expired'
-      ?'<div class="verify-status expired">&#9888;&nbsp; Verification Expired</div>'
-      :'<div class="verify-status pending">&#8987;&nbsp; Pending Review</div>';
-    const card = document.getElementById('verifyCard');
-    card.innerHTML = `
-      <div class="verify-avatar">${data.selfie_url?`<img src="${data.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
-      <div class="verify-name">${data.name||'Unknown'}</div>
-      <div class="verify-category">${data.service_category||''}</div>
-      ${statusHtml}
-      ${status==='verified'?'<div class="verify-checks"><div class="check-item"><span class="check-icon">&#10003;</span> ID document checked</div><div class="check-item"><span class="check-icon">&#10003;</span> Selfie checked</div></div>':''}
-      <div class="verify-dates">
-        <div class="verify-date-item"><div class="lbl">Verified on</div><div class="val">${fmt(data.verification_date)}</div></div>
-        <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(data.expiry_date)}</div></div>
-      </div>
-      <div class="verify-id">ID: ${data.public_id}</div>
-      <div class="disclaimer">Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</div>
-      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center">
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own Digital Trust Network verification?</p>
-        <button class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.4rem" onclick="location.href='/apply.html'">Get verified &rarr;</button>
-      </div>`;
-    card.style.display='block';
-    document.title = `${data.name} — Digital Trust Network Verified`;
-  }
-}
+window.doReset = async () => {
+  const newPass = document.getElementById('newPass').value;
+  const confirmPass = document.getElementById('confirmPass').value;
+  if (newPass.length<8) { showErr('Password must be at least 8 characters.'); return; }
+  if (newPass!==confirmPass) { showErr('Passwords do not match.'); return; }
+  const btn = document.getElementById('resetBtn');
+  btn.textContent='Updating...'; btn.disabled=true;
+  const { error } = await supabase.auth.updateUser({ password: newPass });
+  if (error) { showErr(error.message); btn.textContent='Update password'; btn.disabled=false; return; }
+  location.href='/login.html';
+};
+function showErr(msg) { const e=document.getElementById('resetError'); e.textContent=msg; e.style.display='block'; }
 </script>
 </body>
 </html>
