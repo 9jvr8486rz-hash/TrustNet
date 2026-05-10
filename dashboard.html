@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Dashboard — TrustNet</title>
+<title>My Dashboard — Digital Trust Network</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 <nav><div class="nav-inner">
-  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
+  <a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a>
   <div class="nav-actions">
     <span id="navName" style="font-size:0.875rem;font-weight:600;color:var(--body)"></span>
     <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
@@ -40,7 +40,7 @@
     <div class="dash-card span2">
       <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
       <div class="dc-body">
-        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's TrustNet code to check their verification status.</p>
+        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's Digital Trust Network code to check their verification status.</p>
         <div class="lookup-form">
           <input class="lookup-input" id="lookupInput" type="text" placeholder="Enter code e.g. TN-B34XPQ72" maxlength="14" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')doLookup()">
           <button class="lookup-btn" onclick="doLookup()">Check &rarr;</button>
@@ -54,11 +54,11 @@
       <div style="font-weight:700;margin-bottom:0.25rem">Need help?</div>
       <div style="font-size:0.875rem;color:var(--muted)">Contact our support team for assistance.</div>
     </div>
-    <a href="mailto:support@trustnet.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
+    <a href="mailto:support@digitaltrustnetwork.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
   </div>
 </div>
 <footer>
-  <div class="footer-logo">TrustNet</div>
+  <div class="footer-logo">Digital Trust Network</div>
   <p>Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</p>
 </footer>
 <div class="toast" id="toast"></div>
@@ -119,7 +119,7 @@ async function renderDashboard(session) {
         <div class="qr-box"><img src="${qrUrl}" width="130" height="130" alt="Your QR Code"></div>
         <div class="qr-link">${verifyUrl}</div>
         <div class="share-grid">
-          <button class="share-btn sb-wa" onclick="window.open('https://api.whatsapp.com/send?text=Verify my TrustNet identity: ${encodeURIComponent(verifyUrl)}','_blank')">&#128242; WhatsApp</button>
+          <button class="share-btn sb-wa" onclick="window.open('https://api.whatsapp.com/send?text=Verify my Digital Trust Network identity: ${encodeURIComponent(verifyUrl)}','_blank')">&#128242; WhatsApp</button>
           <button class="share-btn sb-link" onclick="copyText('${verifyUrl}','Link copied!')">&#128279; Copy link</button>
           <button class="share-btn sb-code" onclick="copyText('${profile.public_id}','Code copied!')">&#128203; Copy code</button>
           <button class="share-btn sb-dl" onclick="window.open('${qrUrl}','_blank')">&#11015;&#65039; Save QR</button>
