@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Identity — TrustNet</title>
+<title>Verify Identity — Digital Trust Network</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 <nav><div class="nav-inner">
-  <a class="logo" href="/"><div class="logo-mark">T</div>TrustNet</a>
+  <a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a>
   <div class="nav-actions">
     <button class="btn-nav-ghost" onclick="history.back()">&#8592; Back</button>
     <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
@@ -29,8 +29,8 @@
   </div>
 </div>
 <footer>
-  <div class="footer-logo">TrustNet</div>
-  <p>Verification confirms identity documents were reviewed by TrustNet. It does not guarantee behaviour, safety, or service quality.</p>
+  <div class="footer-logo">Digital Trust Network</div>
+  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
 </footer>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
@@ -66,13 +66,13 @@ if (!publicId) {
         <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(data.expiry_date)}</div></div>
       </div>
       <div class="verify-id">ID: ${data.public_id}</div>
-      <div class="disclaimer">Verification confirms identity documents were reviewed by TrustNet. It does not guarantee behaviour, safety, or service quality.</div>
+      <div class="disclaimer">Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</div>
       <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center">
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own TrustNet verification?</p>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own Digital Trust Network verification?</p>
         <button class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.4rem" onclick="location.href='/apply.html'">Get verified &rarr;</button>
       </div>`;
     card.style.display='block';
-    document.title = `${data.name} — TrustNet Verified`;
+    document.title = `${data.name} — Digital Trust Network Verified`;
   }
 }
 </script>
