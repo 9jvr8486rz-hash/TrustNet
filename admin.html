@@ -104,12 +104,32 @@ window.rejectProvider = async (id) => {
   loadProfiles();
 };
 
-window.viewDocs = (name, idDocPath, selfieUrl) => {
+window.viewDocs = async (name, idDocPath, selfieUrl) => {
   document.getElementById('docModalName').textContent = name;
   let html = '';
-  if (selfieUrl) html+=`<div style="margin-bottom:1rem"><div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.5rem">Selfie</div><img src="${selfieUrl}" style="width:100%;max-width:200px;border-radius:var(--radius);border:1px solid var(--border)"></div>`;
-  if (idDocPath) { const { data } = supabase.storage.from('id-documents').getPublicUrl(idDocPath); html+=`<a href="${data.publicUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem">&#128065; View ID document &rarr;</a>`; }
-  if (!html) html='<p style="color:var(--muted);font-size:0.875rem">No documents uploaded yet.</p>';
+  if (selfieUrl) {
+    html += `<div style="margin-bottom:1rem">
+      <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.5rem">Selfie photo</div>
+      <img src="${selfieUrl}" style="width:100%;max-width:220px;border-radius:var(--radius);border:1px solid var(--border);display:block">
+    </div>`;
+  }
+  if (idDocPath) {
+    const { data, error } = await supabase.storage.from('id-documents').createSignedUrl(idDocPath, 60);
+    if (data?.signedUrl) {
+      const isPdf = idDocPath.toLowerCase().endsWith('.pdf');
+      html += `<div>
+        <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:0.5rem">ID document</div>
+        ${isPdf
+          ? `<a href="${data.signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem">&#128065; Open ID document (PDF) &rarr;</a>`
+          : `<img src="${data.signedUrl}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block;margin-bottom:0.75rem">
+             <a href="${data.signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem">&#128065; Open full size &rarr;</a>`
+        }
+      </div>`;
+    } else {
+      html += `<p style="color:var(--red);font-size:0.875rem">&#10060; Could not load document. ${error?.message||''}</p>`;
+    }
+  }
+  if (!html) html = '<p style="color:var(--muted);font-size:0.875rem">No documents uploaded yet.</p>';
   document.getElementById('docModalContent').innerHTML = html;
   document.getElementById('docModal').classList.add('open');
 };
