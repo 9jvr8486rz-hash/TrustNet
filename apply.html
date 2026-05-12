@@ -105,8 +105,26 @@ window.submitApplication = async () => {
   let selfieUrl = null;
   const { data: selfieData } = await supabase.storage.from('selfies').upload(`${userId}/${selfieFile.name}`, selfieFile, {upsert:true});
   if (selfieData) { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
-  await supabase.storage.from('id-documents').upload(`${userId}/${idFile.name}`, idFile, {upsert:true});
-  await supabase.from('profiles').upsert({ id: userId, name, phone, service_category: category, selfie_url: selfieUrl, id_document_url: `${userId}/${idFile.name}`, verification_status: 'pending', role: 'provider' });
+  const { data: idData, error: idError } = await supabase.storage
+  .from('id-documents')
+  .upload(`${userId}/${idFile.name}`, idFile, {upsert:true});
+
+if (idError) {
+  console.error('ID upload error:', idError.message);
+}
+
+const idDocUrl = idData ? `${userId}/${idFile.name}` : null;
+
+await supabase.from('profiles').upsert({
+  id: userId,
+  name,
+  phone,
+  service_category: category,
+  selfie_url: selfieUrl,
+  id_document_url: idDocUrl,
+  verification_status: 'pending',
+  role: 'provider'
+});
   document.getElementById('applyForm').style.display = 'none';
   document.getElementById('applySuccess').style.display = 'block';
 };
