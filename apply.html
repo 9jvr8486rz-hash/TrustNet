@@ -110,9 +110,10 @@ window.submitApplication = async () => {
   .upload(`${userId}/${idFile.name}`, idFile, {upsert:true});
 
 if (idError) {
-  console.error('ID upload error:', idError.message);
+  showErr('ID document upload failed: ' + idError.message);
+  btn.textContent='Submit application'; btn.disabled=false;
+  return;
 }
-
 const idDocUrl = idData ? `${userId}/${idFile.name}` : null;
 
 await supabase.from('profiles').upsert({
