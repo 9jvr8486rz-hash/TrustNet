@@ -6,6 +6,24 @@
 <title>My Dashboard — Digital Trust Network</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.doc-upload-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.doc-status-row{display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--bg-soft);border-radius:var(--radius-sm);margin-bottom:0.75rem}
+.doc-status-icon{font-size:1.4rem;flex-shrink:0}
+.doc-status-info{flex:1}
+.doc-status-name{font-weight:600;font-size:0.875rem}
+.doc-status-sub{font-size:0.75rem;color:var(--muted);margin-top:0.1rem}
+.doc-upload-box{border:2px dashed var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg-soft);position:relative}
+.doc-upload-box:hover{border-color:var(--blue);background:var(--blue-pale)}
+.doc-upload-box.uploaded{border-color:var(--green);background:var(--green-bg)}
+.doc-upload-box input{display:none}
+.doc-upload-icon{font-size:1.5rem;margin-bottom:0.35rem}
+.doc-upload-box p{font-size:0.8rem;color:var(--muted)}
+.doc-upload-box p strong{color:var(--ink)}
+.doc-submit-btn{width:100%;padding:0.8rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.2s;margin-top:0.75rem}
+.doc-submit-btn:hover{background:var(--blue-mid);transform:translateY(-1px)}
+.doc-submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+</style>
 </head>
 <body>
 <nav><div class="nav-inner">
@@ -16,6 +34,7 @@
     <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
+
 <div class="dashboard">
   <div class="dash-top">
     <div class="dash-greet">
@@ -23,11 +42,16 @@
       <h2>Welcome back, <span id="greetName">...</span> &#128075;</h2>
     </div>
   </div>
+
   <div class="dash-grid">
+
+    <!-- MY VERIFICATION -->
     <div class="dash-card">
       <div class="dc-head"><div class="dc-title">My verification</div><span class="dc-badge dcb-green" id="myStatusBadge">Loading...</span></div>
       <div class="dc-body" id="myVerificationBody"><div style="color:var(--muted);font-size:0.875rem">Loading...</div></div>
     </div>
+
+    <!-- SHARE QR -->
     <div class="dash-card">
       <div class="dc-head"><div class="dc-title">Share your badge</div><span class="dc-badge dcb-blue">Share</span></div>
       <div class="dc-body" id="shareBody">
@@ -37,7 +61,43 @@
         </div>
       </div>
     </div>
-    <div class="dash-card span2">
+
+    <!-- MY DOCUMENTS -->
+    <div class="dash-card doc-upload-card">
+      <div class="dc-head">
+        <div class="dc-title">My documents</div>
+        <span class="dc-badge dcb-blue" id="docStatusBadge">Loading...</span>
+      </div>
+      <div class="dc-body">
+        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1.1rem">Upload or update your identity documents. Our team will review them within 48 hours.</p>
+        <div id="currentDocStatus"></div>
+        <div style="margin-bottom:0.85rem">
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.4rem">Selfie photo</div>
+          <div class="doc-upload-box" id="selfieUploadBox" onclick="document.getElementById('newSelfieFile').click()">
+            <div class="doc-upload-icon">&#129315;</div>
+            <p><strong>Click to upload</strong> a clear selfie of your face</p>
+            <p>JPG or PNG &middot; max 5MB</p>
+            <input type="file" id="newSelfieFile" accept=".jpg,.jpeg,.png" onchange="handleDocFile(this,'selfieUploadBox','selfieFileLabel')">
+          </div>
+          <p id="selfieFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
+        </div>
+        <div style="margin-bottom:0.85rem">
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.4rem">ID document</div>
+          <div class="doc-upload-box" id="idUploadBox" onclick="document.getElementById('newIdFile').click()">
+            <div class="doc-upload-icon">&#128282;</div>
+            <p><strong>Click to upload</strong> your South African ID or passport</p>
+            <p>JPG, PNG or PDF &middot; max 5MB</p>
+            <input type="file" id="newIdFile" accept=".jpg,.jpeg,.png,.pdf" onchange="handleDocFile(this,'idUploadBox','idFileLabel')">
+          </div>
+          <p id="idFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
+        </div>
+        <button class="doc-submit-btn" id="docSubmitBtn" onclick="uploadDocuments()">&#128228; Submit documents for review</button>
+        <div id="docUploadResult"></div>
+      </div>
+    </div>
+
+    <!-- VERIFY SOMEONE -->
+    <div class="dash-card">
       <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
       <div class="dc-body">
         <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's Digital Trust Network code to check their verification status.</p>
@@ -48,7 +108,9 @@
         <div class="lookup-result" id="lookupResult"></div>
       </div>
     </div>
+
   </div>
+
   <div style="margin-top:2rem;background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-lg);padding:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
     <div>
       <div style="font-weight:700;margin-bottom:0.25rem">Need help?</div>
@@ -57,41 +119,53 @@
     <a href="mailto:support@digitaltrustnetwork.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
   </div>
 </div>
+
 <footer>
   <div class="footer-logo">Digital Trust Network</div>
   <p>Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</p>
 </footer>
 <div class="toast" id="toast"></div>
+
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
 
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 
+let currentProfile = null;
+let currentSession = null;
+
 async function renderDashboard(session) {
   if (!session) { window.location.replace('/login.html'); return; }
+  currentSession = session;
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
   if (!profile) { window.location.replace('/login.html'); return; }
   if (profile.role === 'admin') { window.location.replace('/admin.html'); return; }
+  currentProfile = profile;
+
   const h = new Date().getHours();
   document.getElementById('timeTag').textContent = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   document.getElementById('greetName').textContent = profile.name?.split(' ')[0] || 'there';
   document.getElementById('navName').textContent = profile.name || session.user.email;
+
   const now = new Date();
   const expiry = profile.expiry_date ? new Date(profile.expiry_date) : null;
   const status = (!profile.verification_status||profile.verification_status==='pending') ? 'pending'
     : profile.verification_status==='rejected' ? 'rejected'
     : (expiry&&now>expiry) ? 'expired'
     : profile.verification_status;
+
   const badgeMap = {verified:'dcb-green',pending:'dcb-amber',expired:'dcb-red',rejected:'dcb-red'};
   const badgeLabel = {verified:'&#9679; Verified',pending:'&#9679; Pending review',expired:'&#9679; Expired',rejected:'&#9679; Rejected'};
   const badge = document.getElementById('myStatusBadge');
   badge.className = 'dc-badge '+(badgeMap[status]||'dcb-amber');
   badge.innerHTML = badgeLabel[status]||'Pending';
+
   const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
   const start = profile.verification_date ? new Date(profile.verification_date) : null;
   const pct = (expiry&&start) ? Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100))) : 0;
   const days = expiry ? Math.max(0,Math.round((expiry-now)/86400000)) : 0;
   const barClass = days>10?'ef-good':days>3?'ef-warn':'ef-bad';
+
   document.getElementById('myVerificationBody').innerHTML = `
     <div class="my-profile-row">
       ${profile.selfie_url?`<img src="${profile.selfie_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--blue-light);flex-shrink:0">`:'<div class="my-avatar">&#128100;</div>'}
@@ -111,6 +185,7 @@ async function renderDashboard(session) {
       </div>`
     :`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">&#9201; Your application is under review. We'll email you within 48 hours when approved.</div>`}
   `;
+
   if (profile.public_id&&status==='verified') {
     const verifyUrl = `${location.origin}/verify.html?id=${profile.public_id}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
@@ -126,14 +201,114 @@ async function renderDashboard(session) {
         </div>
       </div>`;
   }
+
+  renderDocStatus(profile);
 }
 
-const { data: { session } } = await supabase.auth.getSession();
-await renderDashboard(session);
+function renderDocStatus(profile) {
+  const hasSelfie = !!profile.selfie_url;
+  const hasId = !!profile.id_document_url;
+  const docBadge = document.getElementById('docStatusBadge');
+  if (hasSelfie && hasId) {
+    docBadge.className = 'dc-badge dcb-green';
+    docBadge.innerHTML = '&#10003; Documents uploaded';
+  } else {
+    docBadge.className = 'dc-badge dcb-amber';
+    docBadge.innerHTML = '&#9888; Documents missing';
+  }
+  let statusHtml = '';
+  if (hasSelfie || hasId) {
+    statusHtml = '<div style="margin-bottom:1rem">';
+    statusHtml += `<div class="doc-status-row">
+      <div class="doc-status-icon">&#129315;</div>
+      <div class="doc-status-info">
+        <div class="doc-status-name">Selfie photo</div>
+        <div class="doc-status-sub" style="color:${hasSelfie?'var(--green)':'var(--red)'}">${hasSelfie?'&#10003; Uploaded':'&#10060; Not uploaded'}</div>
+      </div>
+      ${hasSelfie?`<img src="${profile.selfie_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--green-border)">`:''}
+    </div>`;
+    statusHtml += `<div class="doc-status-row">
+      <div class="doc-status-icon">&#128282;</div>
+      <div class="doc-status-info">
+        <div class="doc-status-name">ID document</div>
+        <div class="doc-status-sub" style="color:${hasId?'var(--green)':'var(--red)'}">${hasId?'&#10003; Uploaded':'&#10060; Not uploaded'}</div>
+      </div>
+    </div>`;
+    statusHtml += '</div>';
+  }
+  document.getElementById('currentDocStatus').innerHTML = statusHtml;
+}
 
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_OUT') window.location.replace('/login.html');
-});
+window.handleDocFile = (input, boxId, labelId) => {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById(boxId).classList.add('uploaded');
+  const label = document.getElementById(labelId);
+  label.textContent = '✓ ' + file.name;
+  label.style.display = 'block';
+};
+
+window.uploadDocuments = async () => {
+  const selfieFile = document.getElementById('newSelfieFile').files[0];
+  const idFile = document.getElementById('newIdFile').files[0];
+  const btn = document.getElementById('docSubmitBtn');
+  const result = document.getElementById('docUploadResult');
+  if (!selfieFile && !idFile) { showToast('Please select at least one document to upload.'); return; }
+  btn.textContent = 'Uploading...'; btn.disabled = true;
+  result.innerHTML = '';
+  const userId = currentSession.user.id;
+  let selfieUrl = currentProfile.selfie_url;
+  let idDocUrl = currentProfile.id_document_url;
+  let errors = [];
+
+  if (selfieFile) {
+    const safeName = selfieFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const { data: selfieData, error: selfieError } = await supabase.storage
+      .from('selfies').upload(`${userId}/${safeName}`, selfieFile, {upsert:true, cacheControl:'3600'});
+    if (selfieError) { errors.push('Selfie upload failed: ' + selfieError.message); }
+    else { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
+  }
+
+  if (idFile) {
+    const safeName = idFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const { data: idData, error: idError } = await supabase.storage
+      .from('id-documents').upload(`${userId}/${safeName}`, idFile, {upsert:true, cacheControl:'3600'});
+    if (idError) { errors.push('ID document upload failed: ' + idError.message); }
+    else { idDocUrl = `${userId}/${safeName}`; }
+  }
+
+  if (errors.length > 0) {
+    result.innerHTML = `<div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:0.75rem;font-size:0.82rem;color:var(--red);margin-top:0.75rem">${errors.join('<br>')}</div>`;
+    btn.textContent = 'Submit documents for review'; btn.disabled = false;
+    return;
+  }
+
+  const { error: updateError } = await supabase.from('profiles').update({
+    selfie_url: selfieUrl,
+    id_document_url: idDocUrl,
+    verification_status: 'pending'
+  }).eq('id', userId);
+
+  if (updateError) {
+    result.innerHTML = `<div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:0.75rem;font-size:0.82rem;color:var(--red);margin-top:0.75rem">Update failed: ${updateError.message}</div>`;
+    btn.textContent = 'Submit documents for review'; btn.disabled = false;
+    return;
+  }
+
+  result.innerHTML = `<div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--green);margin-top:0.75rem;line-height:1.6">
+    &#127881; <strong>Documents submitted!</strong> Our team will review them within 48 hours and update your verification status.
+  </div>`;
+  btn.textContent = 'Submit documents for review'; btn.disabled = false;
+
+  const { data: updated } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  if (updated) { currentProfile = updated; renderDocStatus(updated); }
+
+  document.getElementById('newSelfieFile').value = '';
+  document.getElementById('newIdFile').value = '';
+  document.getElementById('selfieUploadBox').classList.remove('uploaded');
+  document.getElementById('idUploadBox').classList.remove('uploaded');
+  document.getElementById('selfieFileLabel').style.display = 'none';
+  document.getElementById('idFileLabel').style.display = 'none';
+};
 
 window.doLookup = async () => {
   const code = document.getElementById('lookupInput').value.trim().toUpperCase();
@@ -151,6 +326,13 @@ window.doLookup = async () => {
 
 window.copyText = (text,msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
 window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
+
+const { data: { session } } = await supabase.auth.getSession();
+await renderDashboard(session);
+
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_OUT') window.location.replace('/login.html');
+});
 </script>
 </body>
 </html>
