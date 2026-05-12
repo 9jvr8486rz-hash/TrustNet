@@ -74,9 +74,10 @@ window.loadProfiles = async () => {
     const label = status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':status==='rejected'?'&#10007; Rejected':'&#8987; Pending';
     const date = new Date(p.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
     const avatar = p.selfie_url?`<img src="${p.selfie_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)">`:'<div class="provider-avatar">&#128100;</div>';
-    const actions = status==='pending'
-      ?`<button class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
-      :`<button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}')">&#128065; Docs</button>`;
+   const actions = `
+  ${status==='pending'?`<button class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`:''}
+  <button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}')">&#128065; Docs</button>
+`;
     return `<div class="table-row"><div class="provider-info">${avatar}<div><div class="provider-name">${p.name||'—'}</div><div class="provider-email">${p.phone||''}</div></div></div><div style="font-size:0.875rem">${p.service_category||'—'}</div><div><span class="status-pill ${pill}">${label}</span></div><div style="font-size:0.82rem;color:var(--muted)">${date}</div><div class="action-btns">${actions}</div></div>`;
   }).join('');
 };
