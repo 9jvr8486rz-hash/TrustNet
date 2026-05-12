@@ -41,11 +41,15 @@
   </div>
 </div>
 <div id="docModal" class="modal-bg">
-  <div class="modal">
-    <h3>&#128272; Documents</h3>
-    <p id="docModalName" style="font-weight:600;margin-bottom:1rem;color:var(--blue)"></p>
+  <div class="modal" style="max-width:580px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div>
+        <h3 style="margin-bottom:0.15rem">&#128272; Documents</h3>
+        <p id="docModalName" style="font-weight:600;color:var(--blue);font-size:0.95rem;margin:0"></p>
+      </div>
+      <button onclick="document.getElementById('docModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
+    </div>
     <div id="docModalContent"></div>
-    <button class="btn-full" style="margin-top:1rem;background:var(--bg-soft);color:var(--body);border:1px solid var(--border)" onclick="document.getElementById('docModal').classList.remove('open')">&#10005; Close</button>
   </div>
 </div>
 <footer>
