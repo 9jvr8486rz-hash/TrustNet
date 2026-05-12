@@ -16,6 +16,7 @@
     <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
+
 <div class="admin-wrap">
   <div class="admin-header">
     <div>
@@ -40,6 +41,7 @@
     <div id="adminRows"><div style="padding:2rem;text-align:center;color:var(--muted)">Loading applications...</div></div>
   </div>
 </div>
+
 <div id="docModal" class="modal-bg">
   <div class="modal" style="max-width:580px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
@@ -52,11 +54,13 @@
     <div id="docModalContent"></div>
   </div>
 </div>
+
 <footer>
   <div class="footer-logo">Digital Trust Network</div>
   <p>© 2026 Digital Trust Network · Admin Portal</p>
 </footer>
 <div class="toast" id="toast"></div>
+
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
 
@@ -78,7 +82,7 @@ window.loadProfiles = async () => {
   document.getElementById('statRejected').textContent = data.filter(p=>p.verification_status==='rejected'||(p.expiry_date&&new Date()>new Date(p.expiry_date))).length;
   const rows = document.getElementById('adminRows');
   if (!data.length) {
-    rows.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">No applications yet. Share the site so providers can apply.</div>';
+    rows.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">No applications yet.</div>';
     return;
   }
   rows.innerHTML = data.map(p => {
@@ -137,49 +141,65 @@ window.rejectProvider = async (id) => {
 
 window.viewDocs = async (name, idDocPath, selfieUrl) => {
   document.getElementById('docModalName').textContent = name;
-  document.getElementById('docModalContent').innerHTML = '<p style="color:var(--muted);font-size:0.875rem">Loading documents...</p>';
+  document.getElementById('docModalContent').innerHTML = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">Loading documents...</p>';
   document.getElementById('docModal').classList.add('open');
+
   let html = '';
+  const isPdf = idDocPath ? idDocPath.toLowerCase().endsWith('.pdf') : false;
+  const isImage = idDocPath ? /\.(jpg|jpeg|png|webp|gif)$/i.test(idDocPath) : false;
+
+  // Get signed URL for ID document
+  let signedUrl = null;
+  if (idDocPath) {
+    const { data: signedData } = await supabase.storage.from('id-documents').createSignedUrl(idDocPath, 300);
+    signedUrl = signedData?.signedUrl || null;
+    if (!signedUrl) {
+      const { data: pubData } = supabase.storage.from('id-documents').getPublicUrl(idDocPath);
+      signedUrl = pubData?.publicUrl || null;
+    }
+  }
+
+  // Side by side grid
+  html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
 
   if (selfieUrl) {
-    html += `<div style="margin-bottom:1.25rem">
-      <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Selfie photo</div>
-      <img src="${selfieUrl}" style="width:100%;max-width:200px;border-radius:var(--radius);border:1px solid var(--border);display:block">
+    html += `<div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Selfie photo</div>
+      <img src="${selfieUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">
     </div>`;
   }
 
   if (idDocPath) {
-    html += `<div style="margin-bottom:0.75rem">
-      <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document</div>`;
-    const isPdf = idDocPath.toLowerCase().endsWith('.pdf');
-    const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(idDocPath);
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from('id-documents')
-      .createSignedUrl(idDocPath, 300);
-    if (signedData?.signedUrl) {
-      if (isImage) {
-        html += `<img src="${signedData.signedUrl}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block;margin-bottom:0.75rem">`;
-      }
-      html += `<a href="${signedData.signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem">
-        &#128065; ${isPdf?'Open PDF document':'Open full size'} &rarr;
-      </a>`;
+    html += `<div>
+      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document</div>`;
+    if (signedUrl && isImage) {
+      html += `<img src="${signedUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">`;
+    } else if (signedUrl && isPdf) {
+      html += `<div style="aspect-ratio:1;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem">
+        <div style="font-size:2.5rem">&#128196;</div>
+        <div style="font-size:0.8rem;color:var(--muted);font-weight:600">PDF document</div>
+      </div>`;
     } else {
-      const { data: pubData } = supabase.storage.from('id-documents').getPublicUrl(idDocPath);
-      if (pubData?.publicUrl) {
-        if (isImage) {
-          html += `<img src="${pubData.publicUrl}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block;margin-bottom:0.75rem" onerror="this.style.display='none'">`;
-        }
-        html += `<a href="${pubData.publicUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem">
-          &#128065; Open document &rarr;
-        </a>`;
-      } else {
-        html += `<p style="color:var(--red);font-size:0.875rem">&#10060; Could not load document. ${signedError?.message||'File not found'}</p>`;
-      }
+      html += `<div style="aspect-ratio:1;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center">
+        <div style="font-size:0.8rem;color:var(--red);text-align:center;padding:1rem">&#10060; Could not load document</div>
+      </div>`;
     }
     html += '</div>';
   }
 
-  if (!html) html = '<p style="color:var(--muted);font-size:0.875rem">No documents uploaded yet.</p>';
+  html += '</div>';
+
+  // Open full size button
+  if (signedUrl) {
+    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-top:0.25rem">
+      &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;
+    </a>`;
+  }
+
+  if (!selfieUrl && !idDocPath) {
+    html = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">No documents uploaded yet.</p>';
+  }
+
   document.getElementById('docModalContent').innerHTML = html;
 };
 
