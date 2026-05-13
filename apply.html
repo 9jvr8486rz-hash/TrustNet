@@ -45,7 +45,7 @@
     <div class="form-field">
       <label>ID document *</label>
       <div class="upload-box" onclick="document.getElementById('idFile').click()" id="idUploadBox">
-        <div class="upload-icon">&#128282;</div>
+        <div class="upload-icon">&#128196;</div>
         <p><strong>Click to upload</strong> your South African ID or passport</p>
         <p style="font-size:0.78rem;color:var(--subtle);margin-top:0.25rem">JPG, PNG or PDF &middot; max 5MB</p>
         <input type="file" id="idFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none" onchange="handleFile(this,'idUploadBox','idLabel')">
@@ -65,7 +65,7 @@
     <button class="btn-full" onclick="submitApplication()" id="submitBtn">Submit application</button>
     <p style="font-size:0.78rem;color:var(--subtle);text-align:center;margin-top:1rem">Already have an account? <a href="/login.html" style="color:var(--blue)">Sign in</a></p>
   </div>
-  <div class="success-box" id="applySuccess">
+  <div class="success-box" id="applySuccess" style="display:none">
     <div style="font-size:2.5rem;margin-bottom:0.75rem">&#127881;</div>
     <h3>Application submitted!</h3>
     <p>Thanks — we've received your application and will review it within 48 hours.</p>
@@ -74,6 +74,7 @@
 </div>
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
+
 window.handleFile = (input, boxId, labelId) => {
   const file = input.files[0]; if (!file) return;
   document.getElementById(boxId).style.borderColor = 'var(--green)';
@@ -81,6 +82,7 @@ window.handleFile = (input, boxId, labelId) => {
   document.getElementById(labelId).textContent = '✓ ' + file.name;
   document.getElementById(labelId).style.display = 'block';
 };
+
 window.submitApplication = async () => {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -99,36 +101,39 @@ window.submitApplication = async () => {
   if (!selfieFile) { showErr('Please upload a selfie photo.'); return; }
   const btn = document.getElementById('submitBtn');
   btn.textContent = 'Submitting...'; btn.disabled = true;
+
   const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
   if (authError) { showErr(authError.message); btn.textContent='Submit application'; btn.disabled=false; return; }
   const userId = authData.user.id;
+
+  // Selfie — timestamped filename
   let selfieUrl = null;
-  const { data: selfieData } = await supabase.storage.from('selfies').upload(`${userId}/${selfieFile.name}`, selfieFile, {upsert:true});
-  if (selfieData) { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
-  const { data: idData, error: idError } = await supabase.storage
-  .from('id-documents')
-  .upload(`${userId}/${idFile.name}`, idFile, {upsert:true});
+  const selfieExt = selfieFile.name.split('.').pop().toLowerCase();
+  const selfieName = `selfie_${Date.now()}.${selfieExt}`;
+  const { data: selfieData } = await supabase.storage.from('selfies').upload(`${userId}/${selfieName}`, selfieFile, {cacheControl:'3600'});
+  if (selfieData) {
+    const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path);
+    selfieUrl = url.publicUrl;
+  }
 
-if (idError) {
-  showErr('ID document upload failed: ' + idError.message);
-  btn.textContent='Submit application'; btn.disabled=false;
-  return;
-}
-const idDocUrl = idData ? `${userId}/${idFile.name}` : null;
+  // ID document — timestamped filename
+  const idExt = idFile.name.split('.').pop().toLowerCase();
+  const idName = `id_${Date.now()}.${idExt}`;
+  await supabase.storage.from('id-documents').upload(`${userId}/${idName}`, idFile, {cacheControl:'3600'});
 
-await supabase.from('profiles').upsert({
-  id: userId,
-  name,
-  phone,
-  service_category: category,
-  selfie_url: selfieUrl,
-  id_document_url: idDocUrl,
-  verification_status: 'pending',
-  role: 'provider'
-});
+  await supabase.from('profiles').upsert({
+    id: userId, name, phone,
+    service_category: category,
+    selfie_url: selfieUrl,
+    id_document_url: `${userId}/${idName}`,
+    verification_status: 'pending',
+    role: 'provider'
+  });
+
   document.getElementById('applyForm').style.display = 'none';
   document.getElementById('applySuccess').style.display = 'block';
 };
+
 function showErr(msg) { const e = document.getElementById('applyError'); e.textContent = msg; e.style.display = 'block'; }
 </script>
 </body>
