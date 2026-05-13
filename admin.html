@@ -43,7 +43,7 @@
 </div>
 
 <div id="docModal" class="modal-bg">
-  <div class="modal" style="max-width:580px">
+  <div class="modal" style="max-width:620px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
       <div>
         <h3 style="margin-bottom:0.15rem">&#128272; Documents</h3>
@@ -99,7 +99,7 @@ window.loadProfiles = async () => {
     const approveReject = status==='pending'
       ? `<button class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
       : '';
-    const docsBtn = `<button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}')">&#128065; Docs</button>`;
+    const docsBtn = `<button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}','${p.id}')">&#128065; Docs</button>`;
     return `<div class="table-row">
       <div class="provider-info">${avatar}<div><div class="provider-name">${p.name||'—'}</div><div class="provider-email">${p.phone||''}</div></div></div>
       <div style="font-size:0.875rem">${p.service_category||'—'}</div>
@@ -144,7 +144,7 @@ window.rejectProvider = async (id) => {
   loadProfiles();
 };
 
-window.viewDocs = async (name, idDocPath, selfieUrl) => {
+window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
   document.getElementById('docModalName').textContent = name;
   document.getElementById('docModalContent').innerHTML = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">Loading documents...</p>';
   document.getElementById('docModal').classList.add('open');
@@ -163,6 +163,7 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
     }
   }
 
+  // Side by side latest docs
   html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
 
   if (selfieUrl) {
@@ -174,7 +175,7 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
 
   if (idDocPath) {
     html += `<div>
-      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document</div>`;
+      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document (latest)</div>`;
     if (signedUrl && isImage) {
       html += `<img src="${signedUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">`;
     } else if (signedUrl && isPdf) {
@@ -184,7 +185,7 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
       </div>`;
     } else {
       html += `<div style="aspect-ratio:1;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center">
-        <div style="font-size:0.8rem;color:var(--red);text-align:center;padding:1rem">&#10060; Could not load document</div>
+        <div style="font-size:0.8rem;color:var(--red);text-align:center;padding:1rem">&#10060; Could not load</div>
       </div>`;
     }
     html += '</div>';
@@ -193,9 +194,36 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
   html += '</div>';
 
   if (signedUrl) {
-    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-top:0.25rem">
+    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-bottom:1rem">
       &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;
     </a>`;
+  }
+
+  // Document history
+  if (userId) {
+    const { data: allFiles } = await supabase.storage.from('id-documents').list(userId, {sortBy:{column:'created_at',order:'desc'}});
+    if (allFiles && allFiles.length > 0) {
+      html += `<div style="border-top:1px solid var(--border);padding-top:1rem">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">&#128196; Document history (${allFiles.length} file${allFiles.length!==1?'s':''})</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">`;
+      for (let i = 0; i < allFiles.length; i++) {
+        const f = allFiles[i];
+        const { data: sd } = await supabase.storage.from('id-documents').createSignedUrl(`${userId}/${f.name}`, 300);
+        const isLatest = i === 0;
+        const uploadDate = f.created_at ? new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid ${isLatest?'var(--green-border)':'var(--border)'}">
+          <div>
+            <div style="font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem">
+              ${f.name}
+              ${isLatest?'<span style="background:var(--green-bg);color:var(--green);font-size:0.65rem;padding:0.1rem 0.5rem;border-radius:999px;font-weight:700">Latest</span>':''}
+            </div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:0.1rem">${uploadDate}</div>
+          </div>
+          ${sd?.signedUrl?`<a href="${sd.signedUrl}" target="_blank" style="font-size:0.78rem;color:var(--blue);font-weight:600;text-decoration:none;white-space:nowrap">View &rarr;</a>`:'<span style="font-size:0.75rem;color:var(--muted)">Unavailable</span>'}
+        </div>`;
+      }
+      html += '</div></div>';
+    }
   }
 
   if (!selfieUrl && !idDocPath) {
@@ -219,11 +247,7 @@ const { data: { session } } = await supabase.auth.getSession();
 if (!session) {
   window.location.replace('/login.html');
 } else {
-  const { data: me } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', session.user.id)
-    .single();
+  const { data: me } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
   if (!me || me.role !== 'admin') {
     window.location.replace('/dashboard.html');
   } else {
