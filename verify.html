@@ -106,8 +106,7 @@ if (session) {
 }
 
 if (!publicId) {
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('notFoundState').style.display = 'block';
+  window.location.replace('/#verify-section');
 } else {
   const { data, error } = await supabase.from('profiles')
     .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
