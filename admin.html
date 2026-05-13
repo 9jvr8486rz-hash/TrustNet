@@ -122,7 +122,6 @@ window.approveProvider = async (id) => {
     if (!data?.length) break;
   } while(true);
 
-  // Approve the provider
   const { error } = await supabase.from('profiles').update({
     verification_status:'verified',
     verification_date:now.toISOString(),
@@ -154,7 +153,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
   const isPdf = idDocPath ? idDocPath.toLowerCase().endsWith('.pdf') : false;
   const isImage = idDocPath ? /\.(jpg|jpeg|png|webp|gif)$/i.test(idDocPath) : false;
 
-  // Get signed URL for ID document
   let signedUrl = null;
   if (idDocPath) {
     const { data: signedData } = await supabase.storage.from('id-documents').createSignedUrl(idDocPath, 300);
@@ -165,7 +163,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
     }
   }
 
-  // Side by side grid
   html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
 
   if (selfieUrl) {
@@ -195,7 +192,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl) => {
 
   html += '</div>';
 
-  // Open full size button
   if (signedUrl) {
     html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-top:0.25rem">
       &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;
@@ -219,7 +215,6 @@ document.getElementById('docModal').addEventListener('click', e => {
   if(e.target===e.currentTarget) e.currentTarget.classList.remove('open');
 });
 
-// Auth check
 const { data: { session } } = await supabase.auth.getSession();
 if (!session) {
   window.location.replace('/login.html');
