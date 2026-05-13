@@ -6,6 +6,11 @@
 <title>Admin Dashboard — Digital Trust Network</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+.filter-btn{padding:0.35rem 0.9rem;border-radius:999px;border:1.5px solid var(--border);background:var(--bg-soft);font-size:0.8rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.15s;color:var(--muted)}
+.filter-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale)}
+.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+</style>
 </head>
 <body>
 <nav><div class="nav-inner">
@@ -31,7 +36,13 @@
     <div class="stat-card red"><div class="num" id="statRejected">—</div><div class="lbl">Rejected / Expired</div></div>
   </div>
   <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-    <div style="font-weight:700;font-size:1rem">All applications</div>
+    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+      <div style="font-weight:700;font-size:1rem;margin-right:0.5rem">All applications</div>
+      <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" id="filter-pending" onclick="setFilter('pending')">&#8987; Pending</button>
+      <button class="filter-btn" id="filter-verified" onclick="setFilter('verified')">&#10003; Verified</button>
+      <button class="filter-btn" id="filter-rejected" onclick="setFilter('rejected')">&#10007; Rejected</button>
+    </div>
     <button class="btn-nav-ghost" onclick="loadProfiles()" style="font-size:0.82rem">&#8635; Refresh</button>
   </div>
   <div class="applications-table">
@@ -66,26 +77,31 @@ import { supabase } from '/src/lib/supabase.js';
 
 window.doLogout = async () => { await supabase.auth.signOut(); window.location.replace('/login.html'); };
 
-window.loadProfiles = async () => {
-  document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at')
-    .neq('role','admin')
-    .order('created_at',{ascending:false});
-  if (error || !data) {
-    document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Could not load applications.</div>';
-    return;
-  }
-  document.getElementById('statPending').textContent = data.filter(p=>!p.verification_status||p.verification_status==='pending').length;
-  document.getElementById('statVerified').textContent = data.filter(p=>p.verification_status==='verified').length;
-  document.getElementById('statRejected').textContent = data.filter(p=>p.verification_status==='rejected'||(p.expiry_date&&new Date()>new Date(p.expiry_date))).length;
+let currentFilter = 'all';
+let allProfiles = [];
+
+window.setFilter = (filter) => {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-'+filter).classList.add('active');
+  renderRows(allProfiles);
+};
+
+function renderRows(data) {
   const rows = document.getElementById('adminRows');
-  if (!data.length) {
-    rows.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">No applications yet.</div>';
+  const filtered = currentFilter === 'all' ? data : data.filter(p => {
+    const now = new Date();
+    const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
+      : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
+      : p.verification_status;
+    if (currentFilter === 'rejected') return status === 'rejected' || status === 'expired';
+    return status === currentFilter;
+  });
+  if (!filtered.length) {
+    rows.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted)">No ${currentFilter==='all'?'':currentFilter+' '}applications found.</div>`;
     return;
   }
-  rows.innerHTML = data.map(p => {
+  rows.innerHTML = filtered.map(p => {
     const now = new Date();
     const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
       : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
@@ -108,6 +124,24 @@ window.loadProfiles = async () => {
       <div class="action-btns">${approveReject}${docsBtn}</div>
     </div>`;
   }).join('');
+}
+
+window.loadProfiles = async () => {
+  document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at')
+    .neq('role','admin')
+    .order('created_at',{ascending:false});
+  if (error || !data) {
+    document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Could not load applications.</div>';
+    return;
+  }
+  document.getElementById('statPending').textContent = data.filter(p=>!p.verification_status||p.verification_status==='pending').length;
+  document.getElementById('statVerified').textContent = data.filter(p=>p.verification_status==='verified').length;
+  document.getElementById('statRejected').textContent = data.filter(p=>p.verification_status==='rejected'||(p.expiry_date&&new Date()>new Date(p.expiry_date))).length;
+  allProfiles = data;
+  renderRows(data);
 };
 
 window.approveProvider = async (id) => {
@@ -121,7 +155,6 @@ window.approveProvider = async (id) => {
     const { data } = await supabase.from('profiles').select('id').eq('public_id',publicId);
     if (!data?.length) break;
   } while(true);
-
   const { error } = await supabase.from('profiles').update({
     verification_status:'verified',
     verification_date:now.toISOString(),
@@ -129,10 +162,7 @@ window.approveProvider = async (id) => {
     public_id:publicId
   }).eq('id',id);
   if (error) { showToast('&#10060; Error: '+error.message); return; }
-
-  // Update all past ratings this person submitted to verified
   await supabase.from('ratings').update({ rater_verified: true }).eq('rater_user_id', id);
-
   showToast('&#10003; Approved! Badge ID: '+publicId);
   loadProfiles();
 };
@@ -163,7 +193,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     }
   }
 
-  // Side by side latest docs
   html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
 
   if (selfieUrl) {
@@ -199,7 +228,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     </a>`;
   }
 
-  // Document history
   if (userId) {
     const { data: allFiles } = await supabase.storage.from('id-documents').list(userId, {sortBy:{column:'created_at',order:'desc'}});
     if (allFiles && allFiles.length > 0) {
