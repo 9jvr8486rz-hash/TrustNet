@@ -63,7 +63,7 @@
     </div>
 
     <!-- MY DOCUMENTS -->
-    <div class="dash-card doc-upload-card">
+    <div class="dash-card span2 doc-upload-card">
       <div class="dc-head">
         <div class="dc-title">My documents</div>
         <span class="dc-badge dcb-blue" id="docStatusBadge">Loading...</span>
@@ -71,25 +71,27 @@
       <div class="dc-body">
         <p style="font-size:0.875rem;color:var(--body);margin-bottom:1.1rem">Upload or update your identity documents. Our team will review them within 48 hours.</p>
         <div id="currentDocStatus"></div>
-        <div style="margin-bottom:0.85rem">
-          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.4rem">Selfie photo</div>
-          <div class="doc-upload-box" id="selfieUploadBox" onclick="document.getElementById('newSelfieFile').click()">
-            <div class="doc-upload-icon">&#129315;</div>
-            <p><strong>Click to upload</strong> a clear selfie of your face</p>
-            <p>JPG or PNG &middot; max 5MB</p>
-            <input type="file" id="newSelfieFile" accept=".jpg,.jpeg,.png" onchange="handleDocFile(this,'selfieUploadBox','selfieFileLabel')">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0.85rem">
+          <div>
+            <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.4rem">Selfie photo</div>
+            <div class="doc-upload-box" id="selfieUploadBox" onclick="document.getElementById('newSelfieFile').click()">
+              <div class="doc-upload-icon">&#129315;</div>
+              <p><strong>Click to upload</strong> a clear selfie of your face</p>
+              <p>JPG or PNG &middot; max 5MB</p>
+              <input type="file" id="newSelfieFile" accept=".jpg,.jpeg,.png" onchange="handleDocFile(this,'selfieUploadBox','selfieFileLabel')">
+            </div>
+            <p id="selfieFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
           </div>
-          <p id="selfieFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
-        </div>
-        <div style="margin-bottom:0.85rem">
-          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.4rem">ID document</div>
-          <div class="doc-upload-box" id="idUploadBox" onclick="document.getElementById('newIdFile').click()">
-            <div class="doc-upload-icon">&#128282;</div>
-            <p><strong>Click to upload</strong> your South African ID or passport</p>
-            <p>JPG, PNG or PDF &middot; max 5MB</p>
-            <input type="file" id="newIdFile" accept=".jpg,.jpeg,.png,.pdf" onchange="handleDocFile(this,'idUploadBox','idFileLabel')">
+          <div>
+            <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.4rem">ID document</div>
+            <div class="doc-upload-box" id="idUploadBox" onclick="document.getElementById('newIdFile').click()">
+              <div class="doc-upload-icon">&#128196;</div>
+              <p><strong>Click to upload</strong> your South African ID or passport</p>
+              <p>JPG, PNG or PDF &middot; max 5MB</p>
+              <input type="file" id="newIdFile" accept=".jpg,.jpeg,.png,.pdf" onchange="handleDocFile(this,'idUploadBox','idFileLabel')">
+            </div>
+            <p id="idFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
           </div>
-          <p id="idFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
         </div>
         <button class="doc-submit-btn" id="docSubmitBtn" onclick="uploadDocuments()">&#128228; Submit documents for review</button>
         <div id="docUploadResult"></div>
@@ -218,7 +220,7 @@ function renderDocStatus(profile) {
   }
   let statusHtml = '';
   if (hasSelfie || hasId) {
-    statusHtml = '<div style="margin-bottom:1rem">';
+    statusHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem">';
     statusHtml += `<div class="doc-status-row">
       <div class="doc-status-icon">&#129315;</div>
       <div class="doc-status-info">
@@ -228,7 +230,7 @@ function renderDocStatus(profile) {
       ${hasSelfie?`<img src="${profile.selfie_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--green-border)">`:''}
     </div>`;
     statusHtml += `<div class="doc-status-row">
-      <div class="doc-status-icon">&#128282;</div>
+      <div class="doc-status-icon">&#128196;</div>
       <div class="doc-status-info">
         <div class="doc-status-name">ID document</div>
         <div class="doc-status-sub" style="color:${hasId?'var(--green)':'var(--red)'}">${hasId?'&#10003; Uploaded':'&#10060; Not uploaded'}</div>
