@@ -46,7 +46,7 @@
 .star-label{font-size:0.82rem;font-weight:600;color:var(--blue);margin-bottom:0.75rem;min-height:1.2rem}
 .form-field-sm{margin-bottom:0.85rem}
 .form-field-sm label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.35rem;color:var(--ink)}
-.form-input-sm{width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;color:var(--ink);background:#fff;transition:all .2s}
+.form-input-sm{width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;color:var(--ink);background:#fff;transition:all .2s;box-sizing:border-box}
 .form-input-sm:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
 textarea.form-input-sm{resize:vertical;min-height:80px}
 .comment-required-note{font-size:0.75rem;color:var(--red);font-weight:600;margin-bottom:0.5rem;display:none}
@@ -98,9 +98,10 @@ let providerId = null;
 let currentUser = null;
 let selectedStars = 0;
 
+// Check if viewer is a signed in verified user
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
-  const { data: up } = await supabase.from('profiles').select('id,name,verification_status').eq('id', session.user.id).single();
+  const { data: up } = await supabase.from('profiles').select('id,name,verification_status').eq('id', session.user.id).maybeSingle();
   if (up) currentUser = up;
 }
 
@@ -110,7 +111,8 @@ if (!publicId) {
 } else {
   const { data, error } = await supabase.from('profiles')
     .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
-    .eq('public_id', publicId).single();
+    .eq('public_id', publicId)
+    .maybeSingle();
 
   document.getElementById('loadingState').style.display = 'none';
 
@@ -122,12 +124,13 @@ if (!publicId) {
     const expiry = data.expiry_date ? new Date(data.expiry_date) : null;
     const status = (expiry && now > expiry) ? 'expired' : data.verification_status;
     const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '—';
+    const firstName = data.name?.split(' ')[0] || 'this person';
+
     const statusHtml = status==='verified'
       ? '<div class="verify-status">&#10003;&nbsp; Identity Verified</div>'
       : status==='expired'
       ? '<div class="verify-status expired">&#9888;&nbsp; Verification Expired</div>'
       : '<div class="verify-status pending">&#8987;&nbsp; Pending Review</div>';
-    const firstName = data.name?.split(' ')[0] || 'this person';
 
     const card = document.getElementById('verifyCard');
     card.innerHTML = `
@@ -153,9 +156,9 @@ if (!publicId) {
         <div id="showMoreWrap"></div>
       </div>
 
-      <div class="rate-form-wrap" id="rateFormWrap">
+      <div class="rate-form-wrap">
         <div class="rate-form-title">&#128221; Rate ${firstName}</div>
-        <div class="rate-form-sub">Had an interaction with ${firstName}? Share your experience to help others in the community.</div>
+        <div class="rate-form-sub">Had an interaction with ${firstName}? Share your experience to help others in the community.${currentUser?.verification_status==='verified'?' Your rating carries extra weight as a verified user.':''}</div>
         <div class="star-picker" id="starPicker">
           <button class="star-btn" onclick="selectStar(1)">&#11088;</button>
           <button class="star-btn" onclick="selectStar(2)">&#11088;</button>
@@ -171,7 +174,7 @@ if (!publicId) {
         <div class="form-field-sm">
           <label>Comment <span id="commentRequired" style="color:var(--red);font-size:0.75rem"></span></label>
           <div class="comment-required-note" id="commentRequiredNote">&#9888; A comment is required for ratings of 1 or 2 stars. Please explain your experience.</div>
-          <textarea class="form-input-sm" id="raterComment" placeholder="Share your experience..." rows="3"></textarea>
+          <textarea class="form-input-sm" id="raterComment" placeholder="Share your experience with ${firstName}..." rows="3"></textarea>
         </div>
         <button class="submit-rating-btn" id="submitRatingBtn" onclick="submitRating()">Submit rating</button>
         <div class="rating-success" id="ratingSuccess">
@@ -212,10 +215,98 @@ window.selectStar = (n) => {
 
 async function loadRatings(showAll=false) {
   if (!providerId) return;
-  const { data: summary } = await supabase.from('ratings_summary').select('*').eq('provider_id', providerId).single();
+  const { data: summary } = await supabase.from('ratings_summary').select('*').eq('provider_id', providerId).maybeSingle();
   const total = summary?.total_ratings || 0;
-  document.getElementById('ratingCount').textContent = total > 0 ? `${total} rating${total!==1?'s':''}` : 'No ratings yet';
+  const countEl = document.getElementById('ratingCount');
+  if (countEl) countEl.textContent = total > 0 ? `${total} rating${total!==1?'s':''}` : 'No ratings yet';
 
   const scoreWrap = document.getElementById('trustScoreWrap');
   if (summary && total > 0) {
-    const score = parseFloat(summary.trust_score || summary.a
+    const score = parseFloat(summary.trust_score || summary.average_stars || 0);
+    const {label, cls} = getTrustBadge(score, total);
+    if (scoreWrap) scoreWrap.innerHTML = `<div class="trust-score-wrap">
+      <div class="trust-score-num">${score.toFixed(1)}</div>
+      <div class="trust-score-info">
+        <div class="trust-score-stars">${renderStars(score)}</div>
+        <div class="trust-score-label">Trust Score</div>
+        <div class="trust-score-sub">${summary.verified_ratings||0} verified &middot; ${summary.unverified_ratings||0} unverified raters</div>
+      </div>
+      <div class="trust-score-badge ${cls}">${label}</div>
+    </div>`;
+    const breakdown = document.getElementById('ratingBreakdown');
+    if (breakdown) breakdown.innerHTML = `<div class="rating-breakdown">${[5,4,3,2,1].map(n=>{
+      const count = summary[['','one','two','three','four','five'][n]+'_star']||0;
+      const pct = total>0?Math.round((count/total)*100):0;
+      return `<div class="rb-row"><div class="rb-label">${n} &#11088;</div><div class="rb-bar-track"><div class="rb-bar-fill rb-fill-${n}" style="width:${pct}%"></div></div><div class="rb-count">${count}</div></div>`;
+    }).join('')}</div>`;
+  } else {
+    if (scoreWrap) scoreWrap.innerHTML = `<div style="text-align:center;padding:1rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1rem">
+      <div style="font-size:1.5rem;margin-bottom:0.4rem">&#11088;</div>
+      <div style="font-weight:600;font-size:0.875rem">No ratings yet</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">Be the first to rate this person</div>
+    </div>`;
+    const breakdown = document.getElementById('ratingBreakdown');
+    if (breakdown) breakdown.innerHTML = '';
+  }
+
+  const { data: ratings } = await supabase.from('ratings').select('*').eq('provider_id', providerId).order('created_at',{ascending:false}).limit(showAll?100:3);
+  const list = document.getElementById('ratingsList');
+  if (list) list.innerHTML = (ratings||[]).map(r => {
+    const stars = '&#11088;'.repeat(r.stars)+'&#10025;'.repeat(5-r.stars);
+    const date = new Date(r.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+    const badge = r.rater_verified
+      ? `<span class="verified-rater-badge">&#10003; Verified user</span>`
+      : `<span class="unverified-rater-badge">Unverified user</span>`;
+    return `<div class="rating-item">
+      <div class="rating-item-header"><div class="rating-item-name">${r.rater_name}</div><div class="rating-item-stars">${stars}</div></div>
+      <div class="rating-item-meta">${badge} <span>${date}</span></div>
+      ${r.comment?`<div class="rating-item-comment">"${r.comment}"</div>`:''}
+    </div>`;
+  }).join('');
+
+  const showMoreWrap = document.getElementById('showMoreWrap');
+  if (showMoreWrap) showMoreWrap.innerHTML = total>3&&!showAll
+    ? `<button class="show-more-btn" onclick="loadRatings(true)">Show all ${total} ratings &#8595;</button>`
+    : '';
+}
+window.loadRatings = loadRatings;
+
+window.submitRating = async () => {
+  const name = document.getElementById('raterName').value.trim();
+  const comment = document.getElementById('raterComment').value.trim();
+  const btn = document.getElementById('submitRatingBtn');
+  if (!name) { showToast('Please enter your name.'); return; }
+  if (selectedStars===0) { showToast('Please select a star rating.'); return; }
+  if (selectedStars<=2 && !comment) { showToast('A comment is required for 1 or 2 star ratings.'); document.getElementById('raterComment').focus(); return; }
+  btn.textContent='Submitting...'; btn.disabled=true;
+  const isVerified = currentUser?.verification_status==='verified';
+  const { error } = await supabase.from('ratings').insert({
+    provider_id: providerId,
+    rater_name: name,
+    rater_verified: isVerified,
+    rater_user_id: currentUser?.id||null,
+    stars: selectedStars,
+    comment: comment||null
+  });
+  if (error) { showToast('Error: '+error.message); btn.textContent='Submit rating'; btn.disabled=false; return; }
+  document.getElementById('submitRatingBtn').style.display='none';
+  document.getElementById('ratingSuccess').classList.add('show');
+  document.getElementById('starPicker').style.pointerEvents='none';
+  await loadRatings();
+};
+
+function renderStars(score) {
+  const full=Math.floor(score), half=score-full>=0.5?1:0, empty=5-full-half;
+  return '&#11088;'.repeat(full)+(half?'&#10027;':'')+'&#10025;'.repeat(empty);
+}
+function getTrustBadge(score, total) {
+  if (total===0) return {label:'No ratings',cls:'tsb-none'};
+  if (score>=4.5) return {label:'&#129351; Excellent',cls:'tsb-excellent'};
+  if (score>=3.5) return {label:'&#128077; Good',cls:'tsb-good'};
+  if (score>=2.5) return {label:'&#128522; Average',cls:'tsb-average'};
+  return {label:'&#9888; Poor',cls:'tsb-poor'};
+}
+window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); };
+</script>
+</body>
+</html>
