@@ -117,7 +117,11 @@ function renderRows(data) {
       : '';
     const docsBtn = `<button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}','${p.id}')">&#128065; Docs</button>`;
     return `<div class="table-row">
-      <div class="provider-info">${avatar}<div><div class="provider-name">${p.name||'—'}</div><div class="provider-email">${p.phone||''}</div></div></div>
+      <div class="provider-info">${avatar}<div>
+        <div class="provider-name">${p.name||'—'}</div>
+        <div class="provider-email">${p.phone||''}</div>
+        ${p.id_number?`<div class="provider-email" style="font-size:0.75rem;color:var(--muted)">&#128282; ${p.doc_type||'ID'}: ${p.id_number}</div>`:''}
+      </div></div>
       <div style="font-size:0.875rem">${p.service_category||'—'}</div>
       <div><span class="status-pill ${pill}">${label}</span></div>
       <div style="font-size:0.82rem;color:var(--muted)">${date}</div>
@@ -130,7 +134,7 @@ window.loadProfiles = async () => {
   document.getElementById('adminRows').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted)">Loading...</div>';
   const { data, error } = await supabase
     .from('profiles')
-    .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at')
+    .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at,id_number,doc_type')
     .neq('role','admin')
     .order('created_at',{ascending:false});
   if (error || !data) {
@@ -191,6 +195,14 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
       const { data: pubData } = supabase.storage.from('id-documents').getPublicUrl(idDocPath);
       signedUrl = pubData?.publicUrl || null;
     }
+  }
+
+  // Get profile details for ID number display
+  const { data: profileData } = await supabase.from('profiles').select('id_number,doc_type').eq('id', userId).maybeSingle();
+  if (profileData?.id_number) {
+    html += `<div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem">
+      <strong>&#128282; ${profileData.doc_type||'ID'} Number:</strong> ${profileData.id_number}
+    </div>`;
   }
 
   html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
