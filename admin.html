@@ -121,6 +121,8 @@ window.approveProvider = async (id) => {
     const { data } = await supabase.from('profiles').select('id').eq('public_id',publicId);
     if (!data?.length) break;
   } while(true);
+
+  // Approve the provider
   const { error } = await supabase.from('profiles').update({
     verification_status:'verified',
     verification_date:now.toISOString(),
@@ -128,6 +130,10 @@ window.approveProvider = async (id) => {
     public_id:publicId
   }).eq('id',id);
   if (error) { showToast('&#10060; Error: '+error.message); return; }
+
+  // Update all past ratings this person submitted to verified
+  await supabase.from('ratings').update({ rater_verified: true }).eq('rater_user_id', id);
+
   showToast('&#10003; Approved! Badge ID: '+publicId);
   loadProfiles();
 };
