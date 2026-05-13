@@ -98,6 +98,17 @@
       </div>
     </div>
 
+    <!-- MY RATINGS -->
+    <div class="dash-card span2">
+      <div class="dc-head">
+        <div class="dc-title">&#11088; My trust ratings</div>
+        <span class="dc-badge dcb-green" id="myRatingsBadge">Loading...</span>
+      </div>
+      <div class="dc-body" id="myRatingsBody">
+        <div style="color:var(--muted);font-size:0.875rem">Loading ratings...</div>
+      </div>
+    </div>
+    
     <!-- VERIFY SOMEONE -->
     <div class="dash-card span2">
       <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
@@ -331,6 +342,7 @@ window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTM
 
 const { data: { session } } = await supabase.auth.getSession();
 await renderDashboard(session);
+if (session) await loadMyRatings(session.user.id);
 
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_OUT') window.location.replace('/login.html');
