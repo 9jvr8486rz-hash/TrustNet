@@ -40,11 +40,11 @@
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label>ID / Passport number *</label>
+        <label>ID / Passport number <span style="color:var(--muted);font-weight:400;font-size:0.8rem">(optional)</span></label>
         <input class="form-input" type="text" id="idNumber" placeholder="e.g. 9001015009087 or A12345678" maxlength="20">
       </div>
       <div class="form-field">
-        <label>Document type *</label>
+        <label>Document type <span style="color:var(--muted);font-weight:400;font-size:0.8rem">(optional)</span></label>
         <select class="form-input" id="docType">
           <option value="">Select type...</option>
           <option value="SA ID">South African ID</option>
@@ -111,7 +111,7 @@ window.submitApplication = async () => {
   const selfieFile = document.getElementById('selfieFile').files[0];
   const err = document.getElementById('applyError');
   err.style.display = 'none';
-  if (!name||!email||!phone||!category||!idNumber||!docType||!password) { showErr('Please fill in all required fields.'); return; }
+  if (!name||!email||!phone||!category||!password) { showErr('Please fill in all required fields.'); return; }
   if (password.length < 8) { showErr('Password must be at least 8 characters.'); return; }
   if (password !== passwordConfirm) { showErr('Passwords do not match.'); return; }
   if (!idFile) { showErr('Please upload your ID document.'); return; }
@@ -137,10 +137,12 @@ window.submitApplication = async () => {
   await supabase.storage.from('id-documents').upload(`${userId}/${idName}`, idFile, {cacheControl:'3600'});
 
   await supabase.from('profiles').upsert({
-    id: userId, name, phone,
+    id: userId,
+    name,
+    phone,
     service_category: category,
-    id_number: idNumber,
-    doc_type: docType,
+    id_number: idNumber || null,
+    doc_type: docType || null,
     selfie_url: selfieUrl,
     id_document_url: `${userId}/${idName}`,
     verification_status: 'pending',
