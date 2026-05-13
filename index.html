@@ -154,7 +154,7 @@ import { supabase } from '/src/lib/supabase.js';
 
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
-  const { data: profile } = await supabase.from('profiles').select('name,role').eq('id', session.user.id).single();
+  const { data: profile } = await supabase.from('profiles').select('name,role').eq('id', session.user.id).maybeSingle();
   document.getElementById('navActions').innerHTML = `
     <span style="font-size:0.875rem;font-weight:600">${profile?.name || session.user.email}</span>
     <button class="btn-nav-solid" onclick="location.href='${profile?.role==='admin'?'/admin.html':'/dashboard.html'}'">Dashboard</button>
@@ -170,7 +170,10 @@ window.switchTab = (name, btn) => {
 
 async function lookupCode(code, resultId) {
   if (!code) { showToast('Please enter a verification code'); return; }
-  const { data, error } = await supabase.from('profiles').select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id').eq('public_id',code).single();
+  const { data, error } = await supabase.from('profiles')
+    .select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
+    .eq('public_id',code)
+    .maybeSingle();
   document.getElementById(resultId).innerHTML = buildCard(data, error);
   document.getElementById(resultId).classList.add('show');
 }
@@ -187,6 +190,8 @@ function buildCard(p, error) {
   const [pc,pl] = pills[status]||pills.pending;
   const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
   const avatar = p.selfie_url ? `<img src="${p.selfie_url}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:var(--shadow-sm)">` : `<div class="r-avatar">&#128100;</div>`;
+  const firstName = p.name?.split(' ')[0] || 'this person';
+  const rid = 'r'+Math.random().toString(36).slice(2);
   return `<div class="result-card ${status==='verified'?'verified':status==='expired'?'expired':'pending'}">
     <div class="result-top">${avatar}<div><div class="r-name">${p.name||'Unknown'}</div><div class="r-cat">${p.service_category||''}</div></div><span class="status-pill ${pc}">${pl}</span></div>
     <div class="result-body">
@@ -195,10 +200,75 @@ function buildCard(p, error) {
         <div class="date-box"><div class="dl">Verified on</div><div class="dv">${fmt(p.verification_date)}</div></div>
         <div class="date-box"><div class="dl">Expires on</div><div class="dv">${fmt(p.expiry_date)}</div></div>
       </div>
+      <div style="border-top:1px solid var(--border);margin-top:1rem;padding-top:1rem">
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem">&#11088; Rate your experience with ${firstName}</div>
+        <div style="display:flex;gap:0.35rem;margin-bottom:0.5rem" id="stars-${rid}">
+          ${[1,2,3,4,5].map(n=>`<button onclick="selectHomeStar('${rid}',${n},'${p.public_id}','${firstName}')" style="font-size:1.75rem;cursor:pointer;background:none;border:none;padding:0.1rem;filter:grayscale(1) opacity(.35);transition:transform .15s;line-height:1" id="star-${rid}-${n}">&#11088;</button>`).join('')}
+        </div>
+        <div style="font-size:0.78rem;color:var(--blue);font-weight:600;min-height:1.1rem;margin-bottom:0.75rem" id="starlabel-${rid}">Tap a star to rate</div>
+        <div id="rateform-${rid}" style="display:none">
+          <input type="text" placeholder="Your name (optional — leave blank to rate anonymously)" id="ratername-${rid}" style="width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;margin-bottom:0.6rem;box-sizing:border-box">
+          <div id="commentnote-${rid}" style="font-size:0.75rem;color:var(--red);font-weight:600;margin-bottom:0.35rem;display:none">&#9888; A comment is required for 1 or 2 star ratings.</div>
+          <textarea placeholder="Share your experience... (optional for 3-5 stars)" id="ratercomment-${rid}" rows="2" style="width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:0.6rem"></textarea>
+          <button onclick="submitHomeRating('${rid}','${p.public_id}')" id="submitbtn-${rid}" style="width:100%;padding:0.75rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer">Submit rating</button>
+        </div>
+        <div id="ratesuccess-${rid}" style="display:none;text-align:center;padding:0.75rem;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm)">
+          <div style="font-size:1.25rem">&#127881;</div>
+          <div style="font-weight:700;color:var(--green);font-size:0.875rem">Thank you for your rating!</div>
+        </div>
+      </div>
       <div class="disclaimer">Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</div>
     </div>
   </div>`;
 }
+
+window.selectHomeStar = (rid, n, publicId, firstName) => {
+  window['homeStars_'+rid] = n;
+  for(let i=1;i<=5;i++){
+    const s = document.getElementById(`star-${rid}-${i}`);
+    if(s){ s.style.filter=i<=n?'none':'grayscale(1) opacity(.35)'; s.style.transform=i===n?'scale(1.2)':'scale(1)'; }
+  }
+  const labels = {1:'1 star — Poor experience',2:'2 stars — Below average',3:'3 stars — Average',4:'4 stars — Good experience',5:'5 stars — Excellent experience'};
+  const lbl = document.getElementById('starlabel-'+rid);
+  if(lbl) lbl.textContent = labels[n];
+  const form = document.getElementById('rateform-'+rid);
+  if(form) form.style.display='block';
+  const note = document.getElementById('commentnote-'+rid);
+  if(note) note.style.display = n<=2?'block':'none';
+};
+
+window.submitHomeRating = async (rid, publicId) => {
+  const stars = window['homeStars_'+rid];
+  const nameVal = document.getElementById('ratername-'+rid)?.value.trim();
+  const name = nameVal || 'Anonymous';
+  const comment = document.getElementById('ratercomment-'+rid)?.value.trim();
+  const btn = document.getElementById('submitbtn-'+rid);
+  if (!stars) { showToast('Please select a star rating.'); return; }
+  if (stars<=2 && !comment) { showToast('Please add a comment explaining your low rating.'); return; }
+  if(btn){ btn.textContent='Submitting...'; btn.disabled=true; }
+  const { data: profile } = await supabase.from('profiles').select('id').eq('public_id', publicId).maybeSingle();
+  if (!profile) { showToast('Provider not found.'); if(btn){btn.textContent='Submit rating';btn.disabled=false;} return; }
+  const { data: { session } } = await supabase.auth.getSession();
+  let isVerified = false;
+  let raterId = null;
+  if (session) {
+    const { data: up } = await supabase.from('profiles').select('id,verification_status').eq('id', session.user.id).maybeSingle();
+    isVerified = up?.verification_status === 'verified';
+    raterId = up?.id || null;
+  }
+  const { error } = await supabase.from('ratings').insert({
+    provider_id: profile.id,
+    rater_name: name,
+    rater_verified: isVerified,
+    rater_user_id: raterId,
+    stars,
+    comment: comment||null
+  });
+  if(error){ showToast('Error: '+error.message); if(btn){btn.textContent='Submit rating';btn.disabled=false;} return; }
+  document.getElementById('rateform-'+rid).style.display='none';
+  document.getElementById('ratesuccess-'+rid).style.display='block';
+  document.getElementById('starlabel-'+rid).textContent='&#10003; Rating submitted!';
+};
 
 window.showToast = msg => { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
 </script>
