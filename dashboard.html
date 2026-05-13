@@ -278,17 +278,19 @@ window.uploadDocuments = async () => {
   let errors = [];
 
   if (selfieFile) {
-    const safeName = selfieFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ext = selfieFile.name.split('.').pop().toLowerCase();
+    const safeName = `selfie_${Date.now()}.${ext}`;
     const { data: selfieData, error: selfieError } = await supabase.storage
-      .from('selfies').upload(`${userId}/${safeName}`, selfieFile, {upsert:true, cacheControl:'3600'});
+      .from('selfies').upload(`${userId}/${safeName}`, selfieFile, {cacheControl:'3600'});
     if (selfieError) { errors.push('Selfie upload failed: ' + selfieError.message); }
     else { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
   }
 
   if (idFile) {
-    const safeName = idFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ext = idFile.name.split('.').pop().toLowerCase();
+    const safeName = `id_${Date.now()}.${ext}`;
     const { data: idData, error: idError } = await supabase.storage
-      .from('id-documents').upload(`${userId}/${safeName}`, idFile, {upsert:true, cacheControl:'3600'});
+      .from('id-documents').upload(`${userId}/${safeName}`, idFile, {cacheControl:'3600'});
     if (idError) { errors.push('ID document upload failed: ' + idError.message); }
     else { idDocUrl = `${userId}/${safeName}`; }
   }
@@ -341,10 +343,6 @@ async function loadMyRatings(userId) {
   const weightedTotal = ratings.reduce((s,r)=>s+(r.rater_verified?1.5:1),0);
   const score = weightedTotal>0 ? weightedSum/weightedTotal : 0;
   const summary = {
-    total_ratings: total,
-    verified_ratings: verifiedCount,
-    unverified_ratings: unverifiedCount,
-    trust_score: score,
     five_star: ratings.filter(r=>r.stars===5).length,
     four_star: ratings.filter(r=>r.stars===4).length,
     three_star: ratings.filter(r=>r.stars===3).length,
