@@ -10,6 +10,15 @@
 .filter-btn{padding:0.35rem 0.9rem;border-radius:999px;border:1.5px solid var(--border);background:var(--bg-soft);font-size:0.8rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.15s;color:var(--muted)}
 .filter-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale)}
 .filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.log-table{width:100%;border-collapse:collapse;font-size:0.82rem}
+.log-table th{text-align:left;padding:0.6rem 0.85rem;font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid var(--border);background:var(--bg-soft)}
+.log-table td{padding:0.7rem 0.85rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.log-table tr:hover td{background:var(--bg-soft)}
+.log-table tr:last-child td{border-bottom:none}
+.vlog-section{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:2rem}
+.vlog-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
+.vlog-title{font-weight:800;font-size:1rem}
+.vlog-sub{font-size:0.78rem;color:var(--muted);margin-top:0.15rem}
 </style>
 </head>
 <body>
@@ -51,6 +60,21 @@
     </div>
     <div id="adminRows"><div style="padding:2rem;text-align:center;color:var(--muted)">Loading applications...</div></div>
   </div>
+
+  <!-- VERIFICATION LOGS -->
+  <div class="vlog-section">
+    <div class="vlog-header">
+      <div>
+        <div class="vlog-title">&#128065; Verification activity</div>
+        <div class="vlog-sub">Record of all identity verifications performed on the platform</div>
+      </div>
+      <button class="btn-nav-ghost" onclick="loadLogs()" style="font-size:0.82rem">&#8635; Refresh</button>
+    </div>
+    <div id="logsWrap" style="padding:1rem">
+      <div style="text-align:center;padding:2rem;color:var(--muted)">Loading verification activity...</div>
+    </div>
+  </div>
+
 </div>
 
 <div id="docModal" class="modal-bg">
@@ -148,6 +172,60 @@ window.loadProfiles = async () => {
   renderRows(data);
 };
 
+window.loadLogs = async () => {
+  const wrap = document.getElementById('logsWrap');
+  wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
+  const { data: logs, error } = await supabase
+    .from('verification_logs')
+    .select('*')
+    .order('viewed_at', {ascending: false})
+    .limit(100);
+  if (error || !logs) {
+    wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Could not load logs.</div>';
+    return;
+  }
+  if (!logs.length) {
+    wrap.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted)">
+      <div style="font-size:1.5rem;margin-bottom:0.5rem">&#128065;</div>
+      <div style="font-weight:600">No verification activity yet</div>
+      <div style="font-size:0.82rem;margin-top:0.25rem">Activity will appear here when users verify someone's identity.</div>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = `<table class="log-table">
+    <thead>
+      <tr>
+        <th>Person verified</th>
+        <th>Verified by</th>
+        <th>Verifier status</th>
+        <th>Date &amp; time</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${logs.map(l => {
+        const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+        const time = new Date(l.viewed_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+        const verifierBadge = l.viewer_verified
+          ? `<span class="status-pill sp-verified" style="font-size:0.7rem;padding:0.2rem 0.6rem">&#10003; Verified</span>`
+          : `<span class="status-pill sp-pending" style="font-size:0.7rem;padding:0.2rem 0.6rem">Unverified</span>`;
+        return `<tr>
+          <td>
+            <div style="font-weight:700;font-size:0.875rem">${l.provider_name||'—'}</div>
+          </td>
+          <td>
+            <div style="font-weight:600;font-size:0.875rem">${l.viewer_name||'Anonymous'}</div>
+          </td>
+          <td>${verifierBadge}</td>
+          <td>
+            <div style="font-size:0.82rem;font-weight:600">${date}</div>
+            <div style="font-size:0.75rem;color:var(--muted)">${time}</div>
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+};
+
 window.approveProvider = async (id) => {
   if (!confirm('Approve this provider?')) return;
   const now = new Date();
@@ -187,7 +265,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
   const isPdf = idDocPath ? idDocPath.toLowerCase().endsWith('.pdf') : false;
   const isImage = idDocPath ? /\.(jpg|jpeg|png|webp|gif)$/i.test(idDocPath) : false;
 
-  // ID number
   const { data: profileData } = await supabase.from('profiles').select('id_number,doc_type').eq('id', userId).maybeSingle();
   if (profileData?.id_number) {
     html += `<div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem">
@@ -195,7 +272,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     </div>`;
   }
 
-  // Signed URL
   let signedUrl = null;
   if (idDocPath) {
     const { data: signedData } = await supabase.storage.from('id-documents').createSignedUrl(idDocPath, 300);
@@ -206,7 +282,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     }
   }
 
-  // Side by side images
   html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
   if (selfieUrl) {
     html += `<div>
@@ -239,7 +314,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     </a>`;
   }
 
-  // Document history
   if (userId) {
     const { data: allFiles } = await supabase.storage.from('id-documents').list(userId, {sortBy:{column:'created_at',order:'desc'}});
     if (allFiles && allFiles.length > 0) {
@@ -266,7 +340,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     }
   }
 
-  // Verification history
   if (userId) {
     const { data: logs } = await supabase
       .from('verification_logs')
@@ -323,6 +396,7 @@ if (!session) {
     window.location.replace('/dashboard.html');
   } else {
     loadProfiles();
+    loadLogs();
   }
 }
 
