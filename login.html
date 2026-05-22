@@ -11,58 +11,89 @@
 <nav><div class="nav-inner">
   <a class="logo" href="/"><div class="logo-mark">D</div>Digital Trust Network</a>
   <div class="nav-actions">
-    <button class="btn-nav-ghost" onclick="location.href='/'">&#8592; Back to home</button>
+    <button class="btn-nav-ghost" onclick="location.href='/'">&#8592; Back</button>
+    <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
   </div>
 </div></nav>
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-icon">&#128075;</div>
+
+<div class="form-page">
+  <div class="form-header">
+    <a href="/" style="font-size:0.875rem;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:1rem">&#8592; Back to home</a>
     <h2>Welcome back</h2>
-    <p class="auth-sub">Sign in to your Digital Trust Network account</p>
-    <div id="authError" class="error-box" style="display:none"></div>
-    <div class="form-field"><label>Email address</label><input class="form-input" type="email" id="email" placeholder="you@example.com" autocomplete="email"></div>
+    <p>Sign in to your Digital Trust Network account.</p>
+  </div>
+
+  <div id="loginForm">
+    <div id="loginError" class="error-box" style="display:none"></div>
+    <div id="loginSuccess" class="success-box" style="display:none;margin-bottom:1rem"></div>
+
+    <div class="form-field">
+      <label>Email address</label>
+      <input class="form-input" type="email" id="loginEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
     <div class="form-field">
       <label>Password</label>
-      <input class="form-input" type="password" id="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
-      <p style="font-size:0.78rem;color:var(--blue);margin-top:0.4rem;cursor:pointer;text-align:right" onclick="resetPassword()">Forgot password?</p>
+      <input class="form-input" type="password" id="loginPassword" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="text-align:right;margin-top:0.4rem">
+        <a href="#" onclick="doForgotPassword()" style="font-size:0.78rem;color:var(--blue);text-decoration:none">Forgot password?</a>
+      </div>
     </div>
+
     <button class="btn-full" onclick="doLogin()" id="loginBtn">Sign in</button>
-    <p class="auth-footer">No account? <a href="/apply.html">Apply for verification &rarr;</a></p>
+    <p style="font-size:0.78rem;color:var(--subtle);text-align:center;margin-top:1rem">Don't have an account? <a href="/apply.html" style="color:var(--blue)">Apply for verification</a></p>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<!-- LEGAL NOTICE -->
+<div style="max-width:480px;margin:0 auto;padding:0 1.5rem 2rem">
+  <div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center">
+    <p style="font-size:0.75rem;color:var(--muted);line-height:1.7">By signing in, you acknowledge that Digital Trust Network verifies identity documents only and does not guarantee the conduct of any user. You accept full responsibility for your own interactions on this platform.</p>
+    <a href="/terms.html" style="font-size:0.75rem;color:var(--blue)">Read our Terms of Use &amp; Disclaimer &rarr;</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Digital Trust Network</div>
+  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
+  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
+  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
+</footer>
+
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
 
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-  window.location.replace(profile?.role === 'admin' ? '/admin.html' : '/dashboard.html');
-}
-
 window.doLogin = async () => {
-  const email = document.getElementById('email').value.trim();
-  const pass = document.getElementById('password').value;
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
   const btn = document.getElementById('loginBtn');
-  document.getElementById('authError').style.display = 'none';
-  if (!email || !pass) { showErr('Please fill in all fields.'); return; }
+  err.style.display = 'none';
+  if (!email||!password) { err.textContent='Please enter your email and password.'; err.style.display='block'; return; }
   btn.textContent = 'Signing in...'; btn.disabled = true;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-  if (error) { showErr(error.message); btn.textContent = 'Sign in'; btn.disabled = false; return; }
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
-  window.location.replace(profile?.role === 'admin' ? '/admin.html' : '/dashboard.html');
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { err.textContent=error.message; err.style.display='block'; btn.textContent='Sign in'; btn.disabled=false; return; }
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
+  if (profile?.role === 'admin') {
+    window.location.replace('/admin.html');
+  } else {
+    window.location.replace('/dashboard.html');
+  }
 };
 
-window.resetPassword = async () => {
-  const email = document.getElementById('email').value.trim();
-  if (!email) { showErr('Enter your email address first, then click Forgot password.'); return; }
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset.html' });
-  if (error) { showErr(error.message); return; }
-  showToast('&#128231; Password reset email sent — check your inbox.');
+window.doForgotPassword = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const err = document.getElementById('loginError');
+  const succ = document.getElementById('loginSuccess');
+  err.style.display = 'none';
+  succ.style.display = 'none';
+  if (!email) { err.textContent='Please enter your email address first.'; err.style.display='block'; return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://trust-net-kappa.vercel.app/reset.html'
+  });
+  if (error) { err.textContent='Error sending reset email: '+error.message; err.style.display='block'; return; }
+  succ.textContent='✓ Password reset email sent — check your inbox.';
+  succ.style.display = 'block';
 };
-
-function showErr(msg) { const e = document.getElementById('authError'); e.textContent = msg; e.style.display = 'block'; }
-function showToast(msg) { const t = document.getElementById('toast'); t.innerHTML = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }
 </script>
 </body>
 </html>
