@@ -98,7 +98,6 @@ let providerId = null;
 let currentUser = null;
 let selectedStars = 0;
 
-// Check if viewer is a signed in verified user
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
   const { data: up } = await supabase.from('profiles').select('id,name,verification_status').eq('id', session.user.id).maybeSingle();
@@ -191,7 +190,27 @@ if (!publicId) {
     card.style.display = 'block';
     document.title = `${data.name} — Digital Trust Network`;
     await loadRatings();
+    await logVerification(data.id, data.name);
   }
+}
+
+async function logVerification(providerId, providerName) {
+  let viewerName = 'Anonymous';
+  let viewerId = null;
+  let viewerVerified = false;
+  if (currentUser) {
+    viewerId = currentUser.id;
+    viewerName = currentUser.name || 'Unknown';
+    viewerVerified = currentUser.verification_status === 'verified';
+  }
+  await supabase.from('verification_logs').insert({
+    provider_id: providerId,
+    provider_name: providerName,
+    viewer_id: viewerId,
+    viewer_name: viewerName,
+    viewer_verified: viewerVerified,
+    source: 'verify_page'
+  });
 }
 
 const starLabels = {
@@ -214,29 +233,37 @@ window.selectStar = (n) => {
 
 async function loadRatings(showAll=false) {
   if (!providerId) return;
-  const { data: summary } = await supabase.from('ratings_summary').select('*').eq('provider_id', providerId).maybeSingle();
-  const total = summary?.total_ratings || 0;
+  const { data: ratingsData } = await supabase.from('ratings').select('*').eq('provider_id', providerId).order('created_at',{ascending:false});
+  const ratings = ratingsData || [];
+  const total = ratings.length;
+  const verifiedCount = ratings.filter(r=>r.rater_verified).length;
+  const unverifiedCount = ratings.filter(r=>!r.rater_verified).length;
+  const weightedSum = ratings.reduce((s,r)=>s+(r.stars*(r.rater_verified?1.5:1)),0);
+  const weightedTotal = ratings.reduce((s,r)=>s+(r.rater_verified?1.5:1),0);
+  const score = weightedTotal>0 ? weightedSum/weightedTotal : 0;
+
   const countEl = document.getElementById('ratingCount');
   if (countEl) countEl.textContent = total > 0 ? `${total} rating${total!==1?'s':''}` : 'No ratings yet';
 
   const scoreWrap = document.getElementById('trustScoreWrap');
-  if (summary && total > 0) {
-    const score = parseFloat(summary.trust_score || summary.average_stars || 0);
+  if (total > 0) {
     const {label, cls} = getTrustBadge(score, total);
+    const stars = renderStars(score);
     if (scoreWrap) scoreWrap.innerHTML = `<div class="trust-score-wrap">
       <div class="trust-score-num">${score.toFixed(1)}</div>
       <div class="trust-score-info">
-        <div class="trust-score-stars">${renderStars(score)}</div>
+        <div class="trust-score-stars">${stars}</div>
         <div class="trust-score-label">Trust Score</div>
-        <div class="trust-score-sub">${summary.verified_ratings||0} verified &middot; ${summary.unverified_ratings||0} unverified raters</div>
+        <div class="trust-score-sub">${verifiedCount} verified &middot; ${unverifiedCount} unverified raters</div>
       </div>
       <div class="trust-score-badge ${cls}">${label}</div>
     </div>`;
     const breakdown = document.getElementById('ratingBreakdown');
+    const counts = {5:0,4:0,3:0,2:0,1:0};
+    ratings.forEach(r => counts[r.stars]++);
     if (breakdown) breakdown.innerHTML = `<div class="rating-breakdown">${[5,4,3,2,1].map(n=>{
-      const count = summary[['','one','two','three','four','five'][n]+'_star']||0;
-      const pct = total>0?Math.round((count/total)*100):0;
-      return `<div class="rb-row"><div class="rb-label">${n} &#11088;</div><div class="rb-bar-track"><div class="rb-bar-fill rb-fill-${n}" style="width:${pct}%"></div></div><div class="rb-count">${count}</div></div>`;
+      const pct = total>0?Math.round((counts[n]/total)*100):0;
+      return `<div class="rb-row"><div class="rb-label">${n} &#11088;</div><div class="rb-bar-track"><div class="rb-bar-fill rb-fill-${n}" style="width:${pct}%"></div></div><div class="rb-count">${counts[n]}</div></div>`;
     }).join('')}</div>`;
   } else {
     if (scoreWrap) scoreWrap.innerHTML = `<div style="text-align:center;padding:1rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1rem">
@@ -248,16 +275,16 @@ async function loadRatings(showAll=false) {
     if (breakdown) breakdown.innerHTML = '';
   }
 
-  const { data: ratings } = await supabase.from('ratings').select('*').eq('provider_id', providerId).order('created_at',{ascending:false}).limit(showAll?100:3);
+  const displayRatings = showAll ? ratings : ratings.slice(0, 3);
   const list = document.getElementById('ratingsList');
-  if (list) list.innerHTML = (ratings||[]).map(r => {
-    const stars = '&#11088;'.repeat(r.stars)+'&#10025;'.repeat(5-r.stars);
+  if (list) list.innerHTML = displayRatings.map(r => {
+    const ratingStars = '&#11088;'.repeat(r.stars)+'&#10025;'.repeat(5-r.stars);
     const date = new Date(r.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
     const badge = r.rater_verified
       ? `<span class="verified-rater-badge">&#10003; Verified user</span>`
       : `<span class="unverified-rater-badge">Unverified user</span>`;
     return `<div class="rating-item">
-      <div class="rating-item-header"><div class="rating-item-name">${r.rater_name}</div><div class="rating-item-stars">${stars}</div></div>
+      <div class="rating-item-header"><div class="rating-item-name">${r.rater_name}</div><div class="rating-item-stars">${ratingStars}</div></div>
       <div class="rating-item-meta">${badge} <span>${date}</span></div>
       ${r.comment?`<div class="rating-item-comment">"${r.comment}"</div>`:''}
     </div>`;
