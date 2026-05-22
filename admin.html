@@ -10,15 +10,17 @@
 .filter-btn{padding:0.35rem 0.9rem;border-radius:999px;border:1.5px solid var(--border);background:var(--bg-soft);font-size:0.8rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.15s;color:var(--muted)}
 .filter-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-pale)}
 .filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.log-table{width:100%;border-collapse:collapse;font-size:0.82rem}
-.log-table th{text-align:left;padding:0.6rem 0.85rem;font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid var(--border);background:var(--bg-soft)}
-.log-table td{padding:0.7rem 0.85rem;border-bottom:1px solid var(--border);vertical-align:middle}
-.log-table tr:hover td{background:var(--bg-soft)}
-.log-table tr:last-child td{border-bottom:none}
-.vlog-section{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:2rem}
-.vlog-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
-.vlog-title{font-weight:800;font-size:1rem}
-.vlog-sub{font-size:0.78rem;color:var(--muted);margin-top:0.15rem}
+.profile-modal-tabs{display:flex;gap:0;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin-bottom:1.25rem}
+.pmt{flex:1;padding:0.5rem;border-radius:5px;font-size:0.8rem;font-weight:600;text-align:center;cursor:pointer;color:var(--muted);border:none;background:none;font-family:inherit;transition:all 0.15s}
+.pmt.active{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.profile-section{display:none}
+.profile-section.active{display:block}
+.stat-pill{display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.75rem;border-radius:999px;font-size:0.78rem;font-weight:700}
+.rating-bar-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;font-size:0.8rem}
+.rating-bar-label{width:40px;text-align:right;color:var(--muted);font-weight:600}
+.rating-bar-track{flex:1;height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
+.rating-bar-fill{height:100%;border-radius:999px}
+.log-row{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:0.5rem}
 </style>
 </head>
 <body>
@@ -60,23 +62,56 @@
     </div>
     <div id="adminRows"><div style="padding:2rem;text-align:center;color:var(--muted)">Loading applications...</div></div>
   </div>
-
-  <!-- VERIFICATION LOGS -->
-  <div class="vlog-section">
-    <div class="vlog-header">
-      <div>
-        <div class="vlog-title">&#128065; Verification activity</div>
-        <div class="vlog-sub">Record of all identity verifications performed on the platform</div>
-      </div>
-      <button class="btn-nav-ghost" onclick="loadLogs()" style="font-size:0.82rem">&#8635; Refresh</button>
-    </div>
-    <div id="logsWrap" style="padding:1rem">
-      <div style="text-align:center;padding:2rem;color:var(--muted)">Loading verification activity...</div>
-    </div>
-  </div>
-
 </div>
 
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="modal-bg">
+  <div class="modal" style="max-width:660px;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;position:sticky;top:0;background:#fff;padding-bottom:0.75rem;border-bottom:1px solid var(--border);z-index:10">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <div id="pmAvatar" style="width:44px;height:44px;border-radius:50%;background:var(--bg-soft);border:2px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem"></div>
+        <div>
+          <div id="pmName" style="font-weight:800;font-size:1rem"></div>
+          <div id="pmSub" style="font-size:0.78rem;color:var(--muted)"></div>
+        </div>
+      </div>
+      <button onclick="document.getElementById('profileModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div id="pmActions" style="display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap"></div>
+
+    <!-- TABS -->
+    <div class="profile-modal-tabs">
+      <button class="pmt active" onclick="switchTab('overview')">&#128100; Overview</button>
+      <button class="pmt" onclick="switchTab('documents')">&#128196; Documents</button>
+      <button class="pmt" onclick="switchTab('ratings')">&#11088; Ratings</button>
+      <button class="pmt" onclick="switchTab('activity')">&#128065; Activity</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div class="profile-section active" id="tab-overview">
+      <div id="pmOverviewContent"></div>
+    </div>
+
+    <!-- DOCUMENTS TAB -->
+    <div class="profile-section" id="tab-documents">
+      <div id="pmDocsContent"></div>
+    </div>
+
+    <!-- RATINGS TAB -->
+    <div class="profile-section" id="tab-ratings">
+      <div id="pmRatingsContent"></div>
+    </div>
+
+    <!-- ACTIVITY TAB -->
+    <div class="profile-section" id="tab-activity">
+      <div id="pmActivityContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DOCS MODAL (kept for backwards compat) -->
 <div id="docModal" class="modal-bg">
   <div class="modal" style="max-width:620px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;position:sticky;top:0;background:#fff;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
@@ -84,7 +119,7 @@
         <h3 style="margin-bottom:0.15rem">&#128272; Documents</h3>
         <p id="docModalName" style="font-weight:600;color:var(--blue);font-size:0.95rem;margin:0"></p>
       </div>
-      <button onclick="document.getElementById('docModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
+      <button onclick="document.getElementById('docModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
     </div>
     <div id="docModalContent"></div>
   </div>
@@ -103,7 +138,19 @@ window.doLogout = async () => { await supabase.auth.signOut(); window.location.r
 
 let currentFilter = 'all';
 let allProfiles = [];
+let currentProfileData = null;
 
+// ── TABS ──
+window.switchTab = (tab) => {
+  document.querySelectorAll('.pmt').forEach((b,i) => {
+    const tabs = ['overview','documents','ratings','activity'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.profile-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+};
+
+// ── FILTER ──
 window.setFilter = (filter) => {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -139,7 +186,6 @@ function renderRows(data) {
     const approveReject = status==='pending'
       ? `<button class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
       : '';
-    const docsBtn = `<button class="action-btn view" onclick="viewDocs('${p.name||'Provider'}','${p.id_document_url||''}','${p.selfie_url||''}','${p.id}')">&#128065; Docs</button>`;
     return `<div class="table-row">
       <div class="provider-info">${avatar}<div>
         <div class="provider-name">${p.name||'—'}</div>
@@ -149,7 +195,10 @@ function renderRows(data) {
       <div style="font-size:0.875rem">${p.service_category||'—'}</div>
       <div><span class="status-pill ${pill}">${label}</span></div>
       <div style="font-size:0.82rem;color:var(--muted)">${date}</div>
-      <div class="action-btns">${approveReject}${docsBtn}</div>
+      <div class="action-btns">
+        ${approveReject}
+        <button class="action-btn view" onclick="openProfile('${p.id}')">&#128100; Profile</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -172,59 +221,252 @@ window.loadProfiles = async () => {
   renderRows(data);
 };
 
-window.loadLogs = async () => {
-  const wrap = document.getElementById('logsWrap');
-  wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
-  const { data: logs, error } = await supabase
-    .from('verification_logs')
-    .select('*')
-    .order('viewed_at', {ascending: false})
-    .limit(100);
-  if (error || !logs) {
-    wrap.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Could not load logs.</div>';
-    return;
+// ── OPEN PROFILE MODAL ──
+window.openProfile = async (id) => {
+  const p = allProfiles.find(x => x.id === id);
+  if (!p) return;
+  currentProfileData = p;
+
+  // Reset tabs
+  switchTab('overview');
+
+  // Header
+  const avatarEl = document.getElementById('pmAvatar');
+  avatarEl.innerHTML = p.selfie_url
+    ? `<img src="${p.selfie_url}" style="width:100%;height:100%;object-fit:cover">`
+    : '&#128100;';
+  document.getElementById('pmName').textContent = p.name || '—';
+  document.getElementById('pmSub').textContent = `${p.service_category||'Provider'} · ${p.phone||''}`;
+
+  // Status
+  const now = new Date();
+  const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
+    : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
+    : p.verification_status;
+
+  // Action buttons
+  const actions = document.getElementById('pmActions');
+  actions.innerHTML = status==='pending'
+    ? `<button class="action-btn approve" onclick="approveProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10003; Approve</button>
+       <button class="action-btn reject" onclick="rejectProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10007; Reject</button>`
+    : `<span class="status-pill ${status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending'}" style="font-size:0.78rem">${status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':'&#10007; Rejected'}</span>`;
+
+  // Open modal
+  document.getElementById('profileModal').classList.add('open');
+
+  // Load all tabs in parallel
+  renderOverview(p, status);
+  renderDocuments(p);
+  renderRatings(p.id);
+  renderActivity(p.id);
+};
+
+function fmt(d) { return d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
+
+function renderOverview(p, status) {
+  const pct = (() => {
+    const now = new Date();
+    const expiry = p.expiry_date ? new Date(p.expiry_date) : null;
+    const start = p.verification_date ? new Date(p.verification_date) : null;
+    if (!expiry||!start) return 0;
+    return Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100)));
+  })();
+  const days = p.expiry_date ? Math.max(0,Math.round((new Date(p.expiry_date)-new Date())/86400000)) : 0;
+
+  document.getElementById('pmOverviewContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem">
+      <div class="info-box"><div class="ib-label">Full name</div><div class="ib-val">${p.name||'—'}</div></div>
+      <div class="info-box"><div class="ib-label">Phone</div><div class="ib-val">${p.phone||'—'}</div></div>
+      <div class="info-box"><div class="ib-label">Category</div><div class="ib-val">${p.service_category||'—'}</div></div>
+      <div class="info-box"><div class="ib-label">Applied on</div><div class="ib-val">${fmt(p.created_at)}</div></div>
+      ${p.id_number?`<div class="info-box"><div class="ib-label">ID type</div><div class="ib-val">${p.doc_type||'ID'}</div></div>
+      <div class="info-box"><div class="ib-label">ID number</div><div class="ib-val">${p.id_number}</div></div>`:''}
+    </div>
+    ${p.public_id ? `
+    <div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Verification details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
+        <div class="info-box"><div class="ib-label">Verified on</div><div class="ib-val">${fmt(p.verification_date)}</div></div>
+        <div class="info-box"><div class="ib-label">Expires on</div><div class="ib-val">${fmt(p.expiry_date)}</div></div>
+      </div>
+      <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.4rem">Badge ID: <span style="font-family:monospace;color:var(--ink)">${p.public_id}</span></div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.35rem">Validity: ${days} days remaining</div>
+      <div style="height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)">
+        <div style="height:100%;border-radius:999px;width:${pct}%;background:${days>10?'#16a34a':days>3?'#fbbf24':'#ef4444'}"></div>
+      </div>
+    </div>
+    <a href="/verify.html?id=${p.public_id}" target="_blank" style="display:block;text-align:center;padding:0.6rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;color:var(--blue);text-decoration:none">
+      &#128279; View public profile &rarr;
+    </a>` : '<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber)">&#9201; Not yet verified</div>'}
+  `;
+}
+
+async function renderDocuments(p) {
+  let html = '';
+  const isPdf = p.id_document_url ? p.id_document_url.toLowerCase().endsWith('.pdf') : false;
+  const isImage = p.id_document_url ? /\.(jpg|jpeg|png|webp|gif)$/i.test(p.id_document_url) : false;
+
+  let signedUrl = null;
+  if (p.id_document_url) {
+    const { data: sd } = await supabase.storage.from('id-documents').createSignedUrl(p.id_document_url, 300);
+    signedUrl = sd?.signedUrl || null;
   }
-  if (!logs.length) {
-    wrap.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted)">
-      <div style="font-size:1.5rem;margin-bottom:0.5rem">&#128065;</div>
-      <div style="font-weight:600">No verification activity yet</div>
-      <div style="font-size:0.82rem;margin-top:0.25rem">Activity will appear here when users verify someone's identity.</div>
+
+  html += `<div style="display:grid;grid-template-columns:${p.selfie_url&&p.id_document_url?'1fr 1fr':'1fr'};gap:1rem;margin-bottom:1rem">`;
+  if (p.selfie_url) {
+    html += `<div><div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Selfie photo</div>
+      <img src="${p.selfie_url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block"></div>`;
+  }
+  if (p.id_document_url) {
+    html += `<div><div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document (latest)</div>`;
+    if (signedUrl && isImage) {
+      html += `<img src="${signedUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">`;
+    } else if (signedUrl && isPdf) {
+      html += `<div style="aspect-ratio:1;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem"><div style="font-size:2.5rem">&#128196;</div><div style="font-size:0.8rem;color:var(--muted);font-weight:600">PDF document</div></div>`;
+    } else {
+      html += `<div style="aspect-ratio:1;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center"><div style="font-size:0.8rem;color:var(--red);text-align:center;padding:1rem">&#10060; Could not load</div></div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  if (signedUrl) {
+    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-bottom:1rem">
+      &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;</a>`;
+  }
+
+  // Document history
+  const { data: files } = await supabase.storage.from('id-documents').list(p.id, {sortBy:{column:'created_at',order:'desc'}});
+  if (files && files.length > 0) {
+    html += `<div style="border-top:1px solid var(--border);padding-top:1rem">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">&#128196; All uploaded versions (${files.length})</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">`;
+    for (let i=0; i<files.length; i++) {
+      const f = files[i];
+      const { data: fsd } = await supabase.storage.from('id-documents').createSignedUrl(`${p.id}/${f.name}`, 300);
+      const uploadDate = f.created_at ? new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid ${i===0?'var(--green-border)':'var(--border)'}">
+        <div>
+          <div style="font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem">${f.name}${i===0?'<span style="background:var(--green-bg);color:var(--green);font-size:0.65rem;padding:0.1rem 0.5rem;border-radius:999px;font-weight:700">Latest</span>':''}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.1rem">${uploadDate}</div>
+        </div>
+        ${fsd?.signedUrl?`<a href="${fsd.signedUrl}" target="_blank" style="font-size:0.78rem;color:var(--blue);font-weight:600;text-decoration:none;white-space:nowrap">View &rarr;</a>`:''}
+      </div>`;
+    }
+    html += '</div></div>';
+  }
+
+  if (!p.selfie_url && !p.id_document_url) html = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">No documents uploaded yet.</p>';
+  document.getElementById('pmDocsContent').innerHTML = html;
+}
+
+async function renderRatings(userId) {
+  const { data: ratings } = await supabase.from('ratings').select('*').eq('provider_id', userId).order('created_at',{ascending:false});
+  const r = ratings || [];
+  const total = r.length;
+  const el = document.getElementById('pmRatingsContent');
+
+  if (!total) {
+    el.innerHTML = `<div style="text-align:center;padding:2rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="font-size:1.5rem;margin-bottom:0.4rem">&#11088;</div>
+      <div style="font-weight:600">No ratings yet</div>
     </div>`;
     return;
   }
-  wrap.innerHTML = `<table class="log-table">
-    <thead>
-      <tr>
-        <th>Person verified</th>
-        <th>Verified by</th>
-        <th>Verifier status</th>
-        <th>Date &amp; time</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${logs.map(l => {
-        const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-        const time = new Date(l.viewed_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
-        const verifierBadge = l.viewer_verified
-          ? `<span class="status-pill sp-verified" style="font-size:0.7rem;padding:0.2rem 0.6rem">&#10003; Verified</span>`
-          : `<span class="status-pill sp-pending" style="font-size:0.7rem;padding:0.2rem 0.6rem">Unverified</span>`;
-        return `<tr>
-          <td>
-            <div style="font-weight:700;font-size:0.875rem">${l.provider_name||'—'}</div>
-          </td>
-          <td>
-            <div style="font-weight:600;font-size:0.875rem">${l.viewer_name||'Anonymous'}</div>
-          </td>
-          <td>${verifierBadge}</td>
-          <td>
-            <div style="font-size:0.82rem;font-weight:600">${date}</div>
-            <div style="font-size:0.75rem;color:var(--muted)">${time}</div>
-          </td>
-        </tr>`;
-      }).join('')}
-    </tbody>
-  </table>`;
-};
+
+  const verified = r.filter(x=>x.rater_verified).length;
+  const unverified = r.filter(x=>!x.rater_verified).length;
+  const ws = r.reduce((s,x)=>s+(x.stars*(x.rater_verified?1.5:1)),0);
+  const wt = r.reduce((s,x)=>s+(x.rater_verified?1.5:1),0);
+  const score = wt>0 ? ws/wt : 0;
+  const counts = {5:0,4:0,3:0,2:0,1:0};
+  r.forEach(x=>counts[x.stars]++);
+  const badge = score>=4.5?{l:'&#129351; Excellent',c:'tsb-excellent'}:score>=3.5?{l:'&#128077; Good',c:'tsb-good'}:score>=2.5?{l:'&#128522; Average',c:'tsb-average'}:{l:'&#9888; Poor',c:'tsb-poor'};
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.75rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem">
+      <div style="font-weight:800;font-size:2.5rem;line-height:1;color:var(--blue)">${score.toFixed(1)}</div>
+      <div style="flex:1">
+        <div style="font-size:1.1rem;letter-spacing:2px">${'&#11088;'.repeat(Math.floor(score))}${'&#10025;'.repeat(5-Math.floor(score))}</div>
+        <div style="font-weight:700;font-size:0.875rem;margin-top:0.2rem">Trust Score</div>
+        <div style="font-size:0.78rem;color:var(--muted)">${verified} verified · ${unverified} unverified raters</div>
+      </div>
+      <span class="trust-score-badge ${badge.c}">${badge.l}</span>
+    </div>
+    <div style="margin-bottom:1.25rem">
+      ${[5,4,3,2,1].map(n=>`<div class="rating-bar-row">
+        <div class="rating-bar-label">${n} &#11088;</div>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="height:100%;border-radius:999px;width:${total?Math.round((counts[n]/total)*100):0}%;background:${n>=4?'#16a34a':n===3?'#fbbf24':n===2?'#fb923c':'#ef4444'}"></div></div>
+        <div style="width:24px;color:var(--muted);font-size:0.75rem">${counts[n]}</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem">${total} rating${total!==1?'s':''}</div>
+    ${r.map(x=>{
+      const stars = '&#11088;'.repeat(x.stars)+'&#10025;'.repeat(5-x.stars);
+      const date = new Date(x.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+      const rbadge = x.rater_verified
+        ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified</span>`
+        : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified</span>`;
+      return `<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem;margin-bottom:0.65rem;border-left:3px solid ${x.stars<=2?'var(--red)':'var(--green)'}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem">
+          <div style="font-weight:700;font-size:0.875rem">${x.rater_name}</div>
+          <div style="font-size:0.95rem">${stars}</div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.5rem">${rbadge} ${date}</div>
+        ${x.comment?`<div style="font-size:0.82rem;color:var(--body);line-height:1.6;font-style:italic">"${x.comment}"</div>`:''}
+        ${x.stars<=2?`<div style="background:var(--red-bg);padding:0.35rem 0.6rem;font-size:0.75rem;color:var(--red);margin-top:0.4rem;font-weight:600;border-radius:4px">&#9888; Low rating — review this feedback</div>`:''}
+      </div>`;
+    }).join('')}
+  `;
+}
+
+async function renderActivity(userId) {
+  const { data: logs } = await supabase
+    .from('verification_logs')
+    .select('*')
+    .eq('provider_id', userId)
+    .order('viewed_at', {ascending: false})
+    .limit(50);
+
+  const el = document.getElementById('pmActivityContent');
+  if (!logs || !logs.length) {
+    el.innerHTML = `<div style="text-align:center;padding:2rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="font-size:1.5rem;margin-bottom:0.4rem">&#128065;</div>
+      <div style="font-weight:600">No verification activity yet</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">This will show everyone who has verified this person's identity.</div>
+    </div>`;
+    return;
+  }
+
+  const verifiedViewers = logs.filter(l=>l.viewer_verified).length;
+  const unverifiedViewers = logs.filter(l=>!l.viewer_verified).length;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.25rem">
+      <div class="info-box"><div class="ib-label">Total views</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--blue)">${logs.length}</div></div>
+      <div class="info-box"><div class="ib-label">Verified viewers</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--green)">${verifiedViewers}</div></div>
+      <div class="info-box"><div class="ib-label">Unverified viewers</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--muted)">${unverifiedViewers}</div></div>
+    </div>
+    <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Verification history</div>
+    ${logs.map(l => {
+      const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+      const time = new Date(l.viewed_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+      const badge = l.viewer_verified
+        ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified</span>`
+        : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified</span>`;
+      return `<div class="log-row">
+        <div>
+          <div style="font-size:0.875rem;font-weight:700;display:flex;align-items:center;gap:0.5rem">${l.viewer_name} ${badge}</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.15rem">Verified this person's identity</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.82rem;font-weight:600">${date}</div>
+          <div style="font-size:0.75rem;color:var(--muted)">${time}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
 
 window.approveProvider = async (id) => {
   if (!confirm('Approve this provider?')) return;
@@ -256,133 +498,15 @@ window.rejectProvider = async (id) => {
   loadProfiles();
 };
 
-window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
-  document.getElementById('docModalName').textContent = name;
-  document.getElementById('docModalContent').innerHTML = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">Loading documents...</p>';
-  document.getElementById('docModal').classList.add('open');
-
-  let html = '';
-  const isPdf = idDocPath ? idDocPath.toLowerCase().endsWith('.pdf') : false;
-  const isImage = idDocPath ? /\.(jpg|jpeg|png|webp|gif)$/i.test(idDocPath) : false;
-
-  const { data: profileData } = await supabase.from('profiles').select('id_number,doc_type').eq('id', userId).maybeSingle();
-  if (profileData?.id_number) {
-    html += `<div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem">
-      <strong>&#128282; ${profileData.doc_type||'ID'} Number:</strong> ${profileData.id_number}
-    </div>`;
-  }
-
-  let signedUrl = null;
-  if (idDocPath) {
-    const { data: signedData } = await supabase.storage.from('id-documents').createSignedUrl(idDocPath, 300);
-    signedUrl = signedData?.signedUrl || null;
-    if (!signedUrl) {
-      const { data: pubData } = supabase.storage.from('id-documents').getPublicUrl(idDocPath);
-      signedUrl = pubData?.publicUrl || null;
-    }
-  }
-
-  html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
-  if (selfieUrl) {
-    html += `<div>
-      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Selfie photo</div>
-      <img src="${selfieUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">
-    </div>`;
-  }
-  if (idDocPath) {
-    html += `<div>
-      <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document (latest)</div>`;
-    if (signedUrl && isImage) {
-      html += `<img src="${signedUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">`;
-    } else if (signedUrl && isPdf) {
-      html += `<div style="aspect-ratio:1;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.5rem">
-        <div style="font-size:2.5rem">&#128196;</div>
-        <div style="font-size:0.8rem;color:var(--muted);font-weight:600">PDF document</div>
-      </div>`;
-    } else {
-      html += `<div style="aspect-ratio:1;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center">
-        <div style="font-size:0.8rem;color:var(--red);text-align:center;padding:1rem">&#10060; Could not load</div>
-      </div>`;
-    }
-    html += '</div>';
-  }
-  html += '</div>';
-
-  if (signedUrl) {
-    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-bottom:1rem">
-      &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;
-    </a>`;
-  }
-
-  if (userId) {
-    const { data: allFiles } = await supabase.storage.from('id-documents').list(userId, {sortBy:{column:'created_at',order:'desc'}});
-    if (allFiles && allFiles.length > 0) {
-      html += `<div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:0.5rem">
-        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">&#128196; Document history (${allFiles.length} file${allFiles.length!==1?'s':''})</div>
-        <div style="display:flex;flex-direction:column;gap:0.5rem">`;
-      for (let i = 0; i < allFiles.length; i++) {
-        const f = allFiles[i];
-        const { data: sd } = await supabase.storage.from('id-documents').createSignedUrl(`${userId}/${f.name}`, 300);
-        const isLatest = i === 0;
-        const uploadDate = f.created_at ? new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid ${isLatest?'var(--green-border)':'var(--border)'}">
-          <div>
-            <div style="font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem">
-              ${f.name}
-              ${isLatest?'<span style="background:var(--green-bg);color:var(--green);font-size:0.65rem;padding:0.1rem 0.5rem;border-radius:999px;font-weight:700">Latest</span>':''}
-            </div>
-            <div style="font-size:0.72rem;color:var(--muted);margin-top:0.1rem">${uploadDate}</div>
-          </div>
-          ${sd?.signedUrl?`<a href="${sd.signedUrl}" target="_blank" style="font-size:0.78rem;color:var(--blue);font-weight:600;text-decoration:none;white-space:nowrap">View &rarr;</a>`:'<span style="font-size:0.75rem;color:var(--muted)">Unavailable</span>'}
-        </div>`;
-      }
-      html += '</div></div>';
-    }
-  }
-
-  if (userId) {
-    const { data: logs } = await supabase
-      .from('verification_logs')
-      .select('*')
-      .eq('provider_id', userId)
-      .order('viewed_at', {ascending: false})
-      .limit(20);
-    if (logs && logs.length > 0) {
-      html += `<div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
-        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">
-          &#128065; Verification views (${logs.length})
-        </div>
-        <div style="display:flex;flex-direction:column;gap:0.5rem">
-          ${logs.map(l => {
-            const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-            const badge = l.viewer_verified
-              ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.65rem;font-weight:700;padding:0.1rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified</span>`
-              : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.65rem;font-weight:600;padding:0.1rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified</span>`;
-            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid var(--border)">
-              <div>
-                <div style="font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem">${l.viewer_name} ${badge}</div>
-                <div style="font-size:0.72rem;color:var(--muted);margin-top:0.1rem">${date}</div>
-              </div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-    }
-  }
-
-  if (!selfieUrl && !idDocPath) {
-    html = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">No documents uploaded yet.</p>';
-  }
-
-  document.getElementById('docModalContent').innerHTML = html;
-};
-
 window.showToast = msg => {
   const t = document.getElementById('toast');
   t.innerHTML = msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 3000);
 };
 
+document.getElementById('profileModal').addEventListener('click', e => {
+  if(e.target===e.currentTarget) e.currentTarget.classList.remove('open');
+});
 document.getElementById('docModal').addEventListener('click', e => {
   if(e.target===e.currentTarget) e.currentTarget.classList.remove('open');
 });
@@ -396,7 +520,6 @@ if (!session) {
     window.location.replace('/dashboard.html');
   } else {
     loadProfiles();
-    loadLogs();
   }
 }
 
