@@ -54,8 +54,8 @@
 </div>
 
 <div id="docModal" class="modal-bg">
-  <div class="modal" style="max-width:620px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+  <div class="modal" style="max-width:620px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;position:sticky;top:0;background:#fff;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
       <div>
         <h3 style="margin-bottom:0.15rem">&#128272; Documents</h3>
         <p id="docModalName" style="font-weight:600;color:var(--blue);font-size:0.95rem;margin:0"></p>
@@ -187,6 +187,15 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
   const isPdf = idDocPath ? idDocPath.toLowerCase().endsWith('.pdf') : false;
   const isImage = idDocPath ? /\.(jpg|jpeg|png|webp|gif)$/i.test(idDocPath) : false;
 
+  // ID number
+  const { data: profileData } = await supabase.from('profiles').select('id_number,doc_type').eq('id', userId).maybeSingle();
+  if (profileData?.id_number) {
+    html += `<div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem">
+      <strong>&#128282; ${profileData.doc_type||'ID'} Number:</strong> ${profileData.id_number}
+    </div>`;
+  }
+
+  // Signed URL
   let signedUrl = null;
   if (idDocPath) {
     const { data: signedData } = await supabase.storage.from('id-documents').createSignedUrl(idDocPath, 300);
@@ -197,23 +206,14 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     }
   }
 
-  // Get profile details for ID number display
-  const { data: profileData } = await supabase.from('profiles').select('id_number,doc_type').eq('id', userId).maybeSingle();
-  if (profileData?.id_number) {
-    html += `<div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-sm);padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.875rem">
-      <strong>&#128282; ${profileData.doc_type||'ID'} Number:</strong> ${profileData.id_number}
-    </div>`;
-  }
-
+  // Side by side images
   html += `<div style="display:grid;grid-template-columns:${selfieUrl && idDocPath ? '1fr 1fr' : '1fr'};gap:1rem;margin-bottom:1rem">`;
-
   if (selfieUrl) {
     html += `<div>
       <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Selfie photo</div>
       <img src="${selfieUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">
     </div>`;
   }
-
   if (idDocPath) {
     html += `<div>
       <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document (latest)</div>`;
@@ -231,7 +231,6 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     }
     html += '</div>';
   }
-
   html += '</div>';
 
   if (signedUrl) {
@@ -240,10 +239,11 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
     </a>`;
   }
 
+  // Document history
   if (userId) {
     const { data: allFiles } = await supabase.storage.from('id-documents').list(userId, {sortBy:{column:'created_at',order:'desc'}});
     if (allFiles && allFiles.length > 0) {
-      html += `<div style="border-top:1px solid var(--border);padding-top:1rem">
+      html += `<div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:0.5rem">
         <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">&#128196; Document history (${allFiles.length} file${allFiles.length!==1?'s':''})</div>
         <div style="display:flex;flex-direction:column;gap:0.5rem">`;
       for (let i = 0; i < allFiles.length; i++) {
@@ -263,6 +263,37 @@ window.viewDocs = async (name, idDocPath, selfieUrl, userId) => {
         </div>`;
       }
       html += '</div></div>';
+    }
+  }
+
+  // Verification history
+  if (userId) {
+    const { data: logs } = await supabase
+      .from('verification_logs')
+      .select('*')
+      .eq('provider_id', userId)
+      .order('viewed_at', {ascending: false})
+      .limit(20);
+    if (logs && logs.length > 0) {
+      html += `<div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1rem">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">
+          &#128065; Verification views (${logs.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          ${logs.map(l => {
+            const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+            const badge = l.viewer_verified
+              ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.65rem;font-weight:700;padding:0.1rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified</span>`
+              : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.65rem;font-weight:600;padding:0.1rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified</span>`;
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid var(--border)">
+              <div>
+                <div style="font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem">${l.viewer_name} ${badge}</div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-top:0.1rem">${date}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
     }
   }
 
