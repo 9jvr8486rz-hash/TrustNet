@@ -10,7 +10,7 @@
 <body>
 <nav id="navbar">
   <div class="nav-inner">
-    <a class="logo" href="/"><div class="logo-mark"><img src="/logo.png" alt="Digital Trust Network logo"></div>
+    <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security" style="height:52px;width:auto;display:block"></a>
     <ul class="nav-links">
       <li><a href="/">Home</a></li>
       <li><a href="#how">How it works</a></li>
@@ -144,10 +144,7 @@
 <footer>
   <div class="footer-logo">Digital Trust Network</div>
   <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
-  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">
-    Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times.
-    <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a>
-  </p>
+  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
   <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
 </footer>
 
@@ -176,8 +173,7 @@ async function lookupCode(code, resultId) {
   if (!code) { showToast('Please enter a verification code'); return; }
   const { data, error } = await supabase.from('profiles')
     .select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
-    .eq('public_id',code)
-    .maybeSingle();
+    .eq('public_id',code).maybeSingle();
   document.getElementById(resultId).innerHTML = buildCard(data, error);
   document.getElementById(resultId).classList.add('show');
 }
@@ -253,20 +249,15 @@ window.submitHomeRating = async (rid, publicId) => {
   const { data: profile } = await supabase.from('profiles').select('id').eq('public_id', publicId).maybeSingle();
   if (!profile) { showToast('Provider not found.'); if(btn){btn.textContent='Submit rating';btn.disabled=false;} return; }
   const { data: { session } } = await supabase.auth.getSession();
-  let isVerified = false;
-  let raterId = null;
+  let isVerified = false, raterId = null;
   if (session) {
     const { data: up } = await supabase.from('profiles').select('id,verification_status').eq('id', session.user.id).maybeSingle();
     isVerified = up?.verification_status === 'verified';
     raterId = up?.id || null;
   }
   const { error } = await supabase.from('ratings').insert({
-    provider_id: profile.id,
-    rater_name: name,
-    rater_verified: isVerified,
-    rater_user_id: raterId,
-    stars,
-    comment: comment||null
+    provider_id: profile.id, rater_name: name, rater_verified: isVerified,
+    rater_user_id: raterId, stars, comment: comment||null
   });
   if(error){ showToast('Error: '+error.message); if(btn){btn.textContent='Submit rating';btn.disabled=false;} return; }
   document.getElementById('rateform-'+rid).style.display='none';
