@@ -9,7 +9,7 @@
 </head>
 <body>
 <nav><div class="nav-inner">
-<a class="logo" href="/"><img src="/logo.png" alt="Online Market Security" style="height:48px;width:auto;object-fit:contain;display:block"></a>
+  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security" style="height:52px;width:auto;display:block"></a>
   <div class="nav-actions">
     <button class="btn-nav-ghost" onclick="location.href='/'">&#8592; Back</button>
     <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
@@ -22,11 +22,9 @@
     <h2>Welcome back</h2>
     <p>Sign in to your Digital Trust Network account.</p>
   </div>
-
   <div id="loginForm">
     <div id="loginError" class="error-box" style="display:none"></div>
     <div id="loginSuccess" class="success-box" style="display:none;margin-bottom:1rem"></div>
-
     <div class="form-field">
       <label>Email address</label>
       <input class="form-input" type="email" id="loginEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()">
@@ -38,13 +36,11 @@
         <a href="#" onclick="doForgotPassword()" style="font-size:0.78rem;color:var(--blue);text-decoration:none">Forgot password?</a>
       </div>
     </div>
-
     <button class="btn-full" onclick="doLogin()" id="loginBtn">Sign in</button>
     <p style="font-size:0.78rem;color:var(--subtle);text-align:center;margin-top:1rem">Don't have an account? <a href="/apply.html" style="color:var(--blue)">Apply for verification</a></p>
   </div>
 </div>
 
-<!-- LEGAL NOTICE -->
 <div style="max-width:480px;margin:0 auto;padding:0 1.5rem 2rem">
   <div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center">
     <p style="font-size:0.75rem;color:var(--muted);line-height:1.7">By signing in, you acknowledge that Digital Trust Network verifies identity documents only and does not guarantee the conduct of any user. You accept full responsibility for your own interactions on this platform.</p>
@@ -55,13 +51,12 @@
 <footer>
   <div class="footer-logo">Digital Trust Network</div>
   <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
-  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
+  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
   <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
 </footer>
 
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
-
 window.doLogin = async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
@@ -73,24 +68,16 @@ window.doLogin = async () => {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) { err.textContent=error.message; err.style.display='block'; btn.textContent='Sign in'; btn.disabled=false; return; }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle();
-  if (profile?.role === 'admin') {
-    window.location.replace('/admin.html');
-  } else {
-    window.location.replace('/dashboard.html');
-  }
+  window.location.replace(profile?.role === 'admin' ? '/admin.html' : '/dashboard.html');
 };
-
 window.doForgotPassword = async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const err = document.getElementById('loginError');
   const succ = document.getElementById('loginSuccess');
-  err.style.display = 'none';
-  succ.style.display = 'none';
+  err.style.display = 'none'; succ.style.display = 'none';
   if (!email) { err.textContent='Please enter your email address first.'; err.style.display='block'; return; }
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://trust-net-kappa.vercel.app/reset.html'
-  });
-  if (error) { err.textContent='Error sending reset email: '+error.message; err.style.display='block'; return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://trust-net-kappa.vercel.app/reset.html' });
+  if (error) { err.textContent='Error: '+error.message; err.style.display='block'; return; }
   succ.textContent='✓ Password reset email sent — check your inbox.';
   succ.style.display = 'block';
 };
