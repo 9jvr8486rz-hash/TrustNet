@@ -3,10 +3,10 @@
 html{scroll-behavior:smooth}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:64px}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:96px}
 .nav-inner{max-width:1100px;margin:0 auto;padding:0 1.5rem;height:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .logo{font-weight:800;font-size:1.1rem;color:var(--blue);letter-spacing:-.5px;text-decoration:none;display:flex;align-items:center;gap:.4rem;flex-shrink:0}
-.logo img{height:48px;width:auto;object-fit:contain;display:block}
+.logo img{height:80px;width:auto;object-fit:contain;display:block}
 .logo-mark{width:48px;height:48px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:transparent}
 .logo-mark img{width:100%;height:100%;object-fit:contain}
 .nav-links{display:flex;align-items:center;gap:.25rem;list-style:none}
@@ -278,8 +278,8 @@ footer a:hover{color:#fff}
 
 /* â”€â”€ MOBILE: 480px â”€â”€ */
 @media(max-width:480px){
-  nav{height:56px}
-  .logo img{height:40px}
+  nav{height:72px}
+  .logo img{height:60px}
   .btn-nav-ghost{padding:.4rem .75rem;font-size:.8rem}
   .btn-nav-solid{padding:.4rem .85rem;font-size:.8rem}
   .hero{padding:3rem 1rem 2.5rem}
