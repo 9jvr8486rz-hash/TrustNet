@@ -5,8 +5,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:64px}
 .nav-inner{max-width:1100px;margin:0 auto;padding:0 1.5rem;height:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.logo{font-weight:800;font-size:1.1rem;color:var(--blue);letter-spacing:-.5px;text-decoration:none;display:flex;align-items:center;gap:.4rem;flex-shrink:0;white-space:nowrap}
-.logo-mark{width:34px;height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.logo{font-weight:800;font-size:1.1rem;color:var(--blue);letter-spacing:-.5px;text-decoration:none;display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+.logo img{height:48px;width:auto;object-fit:contain;display:block}
+.logo-mark{width:48px;height:48px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:transparent}
 .logo-mark img{width:100%;height:100%;object-fit:contain}
 .nav-links{display:flex;align-items:center;gap:.25rem;list-style:none}
 .nav-links a{padding:.5rem .85rem;border-radius:var(--radius-sm);font-size:.9rem;font-weight:500;color:var(--body);text-decoration:none;transition:all .15s}
@@ -248,8 +249,13 @@ footer a:hover{color:#fff}
 .modal p{font-size:.875rem;color:var(--body);margin-bottom:1rem;line-height:1.65}
 .toast{position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--ink);color:#fff;padding:.75rem 1.5rem;border-radius:var(--radius);font-size:.875rem;font-weight:500;box-shadow:var(--shadow-lg);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:600;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
+.trust-score-badge{font-size:.72rem;font-weight:700;padding:.25rem .7rem;border-radius:999px;white-space:nowrap}
+.tsb-excellent{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.tsb-good{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.tsb-average{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.tsb-poor{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
 
-/* ── TABLET: 768px ── */
+/* â”€â”€ TABLET: 768px â”€â”€ */
 @media(max-width:768px){
   .hero-inner{grid-template-columns:1fr;gap:2rem}
   .hero-visual{display:none}
@@ -270,16 +276,12 @@ footer a:hover{color:#fff}
   .modal{padding:1.75rem}
 }
 
-/* ── MOBILE: 480px ── */
+/* â”€â”€ MOBILE: 480px â”€â”€ */
 @media(max-width:480px){
-  /* Nav */
   nav{height:56px}
-  .logo{font-size:.95rem}
-  .logo-mark{width:26px;height:26px;font-size:.85rem}
+  .logo img{height:40px}
   .btn-nav-ghost{padding:.4rem .75rem;font-size:.8rem}
   .btn-nav-solid{padding:.4rem .85rem;font-size:.8rem}
-
-  /* Hero */
   .hero{padding:3rem 1rem 2.5rem}
   .hero h1{font-size:1.85rem}
   .hero-sub{font-size:.95rem}
@@ -287,21 +289,15 @@ footer a:hover{color:#fff}
   .hero-actions{gap:.5rem}
   .hero-trust-row{gap:.75rem}
   .trust-chip{font-size:.75rem}
-
-  /* Sections */
   .verify-section,.how-section,.trust-section,.uses-section{padding:3rem 1rem}
   .cta-banner{padding:3rem 1rem}
   .verify-widget{padding:1.25rem;border-radius:var(--radius-lg)}
   .section-title{font-size:1.5rem}
-
-  /* Forms */
   .form-page{padding:2rem 1rem 4rem}
   .form-header h2{font-size:1.6rem}
   .form-row{grid-template-columns:1fr}
   .form-input{font-size:.9rem}
   .btn-full{padding:.85rem;font-size:.95rem}
-
-  /* Dashboard */
   .dashboard{padding:1.5rem 1rem 4rem}
   .dash-greet h2{font-size:1.4rem}
   .dc-body{padding:1rem}
@@ -312,8 +308,6 @@ footer a:hover{color:#fff}
   .id-row{font-size:.85rem;flex-wrap:wrap;gap:.5rem}
   .lookup-form{flex-direction:column}
   .lookup-btn{width:100%}
-
-  /* Admin */
   .admin-wrap{padding:1.5rem 1rem 4rem}
   .admin-header h2{font-size:1.5rem}
   .admin-stats{grid-template-columns:1fr}
@@ -324,19 +318,11 @@ footer a:hover{color:#fff}
   .provider-info{margin-bottom:.25rem}
   .action-btns{margin-top:.35rem}
   .action-btn{font-size:.75rem;padding:.3rem .6rem}
-
-  /* Verify page */
   .verify-wrap{padding:2rem 1rem}
   .verify-card{padding:1.5rem;border-radius:var(--radius-lg)}
   .verify-name{font-size:1.4rem}
-  .verify-checks{grid-template-columns:1fr 1fr}
-  .verify-dates{grid-template-columns:1fr 1fr}
-
-  /* Modal */
   .modal{padding:1.5rem;border-radius:var(--radius-lg);margin:.5rem}
   .modal-bg{padding:.5rem}
-
-  /* Footer */
   footer{padding:2rem 1rem;font-size:.78rem}
   .footer-logo{font-size:1rem}
 }
