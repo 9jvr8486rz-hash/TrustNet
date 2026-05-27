@@ -9,7 +9,7 @@
 </head>
 <body>
 <nav><div class="nav-inner">
-  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security" style="height:48px;width:auto;object-fit:contain;display:block"></a>
+  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security" style="height:52px;width:auto;display:block"></a>
   <div class="nav-actions">
     <button class="btn-nav-ghost" onclick="location.href='/'">&#8592; Back</button>
     <button class="btn-nav-ghost" onclick="location.href='/login.html'">Sign in</button>
@@ -62,7 +62,7 @@
       <div class="upload-box" onclick="document.getElementById('idFile').click()" id="idUploadBox">
         <div class="upload-icon">&#128196;</div>
         <p><strong>Click to upload</strong> your South African ID or passport</p>
-        <p style="font-size:0.78rem;color:var(--subtle);margin-top:0.25rem">JPG, PNG or PDF &middot; max 5MB</p>
+        <p style="font-size:0.78rem;margin-top:0.25rem">JPG, PNG or PDF &middot; max 5MB</p>
         <input type="file" id="idFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none" onchange="handleFile(this,'idUploadBox','idLabel')">
       </div>
       <p id="idLabel" style="font-size:0.8rem;color:var(--green);margin-top:0.35rem;display:none"></p>
@@ -72,13 +72,11 @@
       <div class="upload-box" onclick="document.getElementById('selfieFile').click()" id="selfieUploadBox">
         <div class="upload-icon">&#129315;</div>
         <p><strong>Click to upload</strong> a clear selfie of your face</p>
-        <p style="font-size:0.78rem;color:var(--subtle);margin-top:0.25rem">JPG or PNG &middot; max 5MB</p>
+        <p style="font-size:0.78rem;margin-top:0.25rem">JPG or PNG &middot; max 5MB</p>
         <input type="file" id="selfieFile" accept=".jpg,.jpeg,.png" style="display:none" onchange="handleFile(this,'selfieUploadBox','selfieLabel')">
       </div>
       <p id="selfieLabel" style="font-size:0.8rem;color:var(--green);margin-top:0.35rem;display:none"></p>
     </div>
-
-    <!-- LEGAL DISCLAIMER -->
     <div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem">
       <div style="font-weight:700;font-size:0.82rem;color:var(--amber);margin-bottom:0.4rem">&#9888; Important — Please Read</div>
       <p style="font-size:0.78rem;color:var(--body);line-height:1.7;margin-bottom:0.4rem">Digital Trust Network verifies identity documents only. Verification does not constitute a guarantee of trustworthiness, character, or conduct. Digital Trust Network shall not be held liable for any loss, fraud, or harm arising from interactions between users.</p>
@@ -88,7 +86,6 @@
         <span style="font-size:0.78rem;color:var(--body);line-height:1.6">I have read and agree to the <a href="/terms.html" target="_blank" style="color:var(--blue)">Terms of Use &amp; Disclaimer</a>. I understand that Digital Trust Network does not guarantee the conduct of verified users and I accept full responsibility for my own interactions on the platform.</span>
       </label>
     </div>
-
     <button class="btn-full" onclick="submitApplication()" id="submitBtn">Submit application</button>
     <p style="font-size:0.78rem;color:var(--subtle);text-align:center;margin-top:1rem">Already have an account? <a href="/login.html" style="color:var(--blue)">Sign in</a></p>
   </div>
@@ -99,17 +96,14 @@
     <button class="btn-full" style="margin-top:1.5rem;background:var(--green)" onclick="location.href='/login.html'">Sign in to your account &rarr;</button>
   </div>
 </div>
-
 <footer>
   <div class="footer-logo">Digital Trust Network</div>
   <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
-  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
+  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
   <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
 </footer>
-
 <script type="module">
 import { supabase } from '/src/lib/supabase.js';
-
 window.handleFile = (input, boxId, labelId) => {
   const file = input.files[0]; if (!file) return;
   document.getElementById(boxId).style.borderColor = 'var(--green)';
@@ -117,7 +111,6 @@ window.handleFile = (input, boxId, labelId) => {
   document.getElementById(labelId).textContent = '✓ ' + file.name;
   document.getElementById(labelId).style.display = 'block';
 };
-
 window.submitApplication = async () => {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -140,39 +133,26 @@ window.submitApplication = async () => {
   if (!termsCheck) { showErr('Please read and accept the Terms of Use & Disclaimer to continue.'); return; }
   const btn = document.getElementById('submitBtn');
   btn.textContent = 'Submitting...'; btn.disabled = true;
-
   const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
   if (authError) { showErr(authError.message); btn.textContent='Submit application'; btn.disabled=false; return; }
   const userId = authData.user.id;
-
   let selfieUrl = null;
   const selfieExt = selfieFile.name.split('.').pop().toLowerCase();
   const selfieName = `selfie_${Date.now()}.${selfieExt}`;
   const { data: selfieData } = await supabase.storage.from('selfies').upload(`${userId}/${selfieName}`, selfieFile, {cacheControl:'3600'});
-  if (selfieData) {
-    const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path);
-    selfieUrl = url.publicUrl;
-  }
-
+  if (selfieData) { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
   const idExt = idFile.name.split('.').pop().toLowerCase();
   const idName = `id_${Date.now()}.${idExt}`;
   await supabase.storage.from('id-documents').upload(`${userId}/${idName}`, idFile, {cacheControl:'3600'});
-
   await supabase.from('profiles').upsert({
-    id: userId, name, phone,
-    service_category: category,
-    id_number: idNumber || null,
-    doc_type: docType || null,
-    selfie_url: selfieUrl,
-    id_document_url: `${userId}/${idName}`,
-    verification_status: 'pending',
-    role: 'provider'
+    id: userId, name, phone, service_category: category,
+    id_number: idNumber || null, doc_type: docType || null,
+    selfie_url: selfieUrl, id_document_url: `${userId}/${idName}`,
+    verification_status: 'pending', role: 'provider'
   });
-
   document.getElementById('applyForm').style.display = 'none';
   document.getElementById('applySuccess').style.display = 'block';
 };
-
 function showErr(msg) { const e = document.getElementById('applyError'); e.textContent = msg; e.style.display = 'block'; }
 </script>
 </body>
