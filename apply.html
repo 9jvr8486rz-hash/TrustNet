@@ -39,8 +39,6 @@
       min-height: 100vh;
     }
     a { text-decoration: none; color: inherit; }
-
-    /* ── Nav ── */
     .nav {
       background: var(--white);
       border-bottom: 1px solid var(--gray-200);
@@ -92,30 +90,18 @@
       transition: opacity 0.15s, transform 0.15s;
     }
     .btn-get-verified:hover { opacity: 0.92; transform: translateY(-1px); }
-
-    /* ── Page Layout ── */
     .page {
       max-width: 780px;
       margin: 0 auto;
       padding: 3rem 1.5rem 5rem;
     }
-    .page-header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-    .page-header p {
-      font-size: 1rem;
-      color: var(--gray-500);
-    }
-
-    /* ── Stepper ── */
+    .page-header { text-align: center; margin-bottom: 2.5rem; }
+    .page-header p { font-size: 1rem; color: var(--gray-500); }
     .stepper {
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      gap: 0;
       margin-bottom: 2.5rem;
-      position: relative;
     }
     .stepper-item {
       display: flex;
@@ -140,97 +126,51 @@
       background: linear-gradient(90deg, var(--blue), var(--teal));
     }
     .step-circle {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      font-weight: 700;
-      background: var(--gray-100);
-      color: var(--gray-400);
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--gray-100); color: var(--gray-400);
       border: 2px solid var(--gray-200);
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
       transition: all 0.3s;
     }
     .stepper-item.active .step-circle {
       background: linear-gradient(135deg, var(--blue), var(--teal));
-      color: var(--white);
-      border-color: transparent;
+      color: var(--white); border-color: transparent;
       box-shadow: 0 0 0 4px rgba(26,79,168,0.15);
     }
     .stepper-item.done .step-circle {
-      background: var(--green);
-      color: var(--white);
-      border-color: transparent;
+      background: var(--green); color: var(--white); border-color: transparent;
     }
     .step-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--gray-400);
-      text-align: center;
-      transition: color 0.3s;
+      font-size: 0.8rem; font-weight: 600; color: var(--gray-400);
+      text-align: center; transition: color 0.3s;
     }
     .stepper-item.active .step-label { color: var(--blue); }
     .stepper-item.done .step-label { color: var(--green); }
-
-    /* ── Card ── */
     .card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: 20px;
-      padding: 2.5rem;
-      box-shadow: var(--shadow);
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: 20px; padding: 2.5rem; box-shadow: var(--shadow);
     }
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--gray-900);
-      margin-bottom: 0.25rem;
-    }
-    .card-subtitle {
-      font-size: 0.875rem;
-      color: var(--gray-500);
-      margin-bottom: 2rem;
-    }
-
-    /* ── Form Fields ── */
+    .card-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .card-subtitle { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 2rem; }
     .fields { display: flex; flex-direction: column; gap: 1.25rem; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
     .field { display: flex; flex-direction: column; gap: 0.4rem; }
-    .field label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--gray-700);
-    }
-    .field label .required { color: var(--red); margin-left: 2px; }
-    .input-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-    .input-wrap svg {
-      position: absolute;
-      left: 14px;
-      color: var(--gray-400);
-      pointer-events: none;
-      flex-shrink: 0;
+    .field label { font-size: 0.875rem; font-weight: 600; color: var(--gray-700); }
+    .field label .req { color: var(--red); margin-left: 2px; }
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .input-wrap .ico {
+      position: absolute; left: 14px; color: var(--gray-400);
+      pointer-events: none; flex-shrink: 0;
     }
     .input-wrap input,
     .input-wrap select {
       width: 100%;
       padding: 0.75rem 1rem 0.75rem 2.75rem;
-      border: 1.5px solid var(--gray-200);
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      color: var(--gray-900);
-      background: var(--white);
+      border: 1.5px solid var(--gray-200); border-radius: 10px;
+      font-family: inherit; font-size: 0.95rem; color: var(--gray-900);
+      background: var(--white); outline: none; -webkit-appearance: none;
       transition: border-color 0.15s, box-shadow 0.15s;
-      outline: none;
-      -webkit-appearance: none;
     }
     .input-wrap input:focus,
     .input-wrap select:focus {
@@ -238,35 +178,18 @@
       box-shadow: 0 0 0 3px rgba(26,79,168,0.1);
     }
     .input-wrap input::placeholder { color: var(--gray-400); }
-    .field-hint {
-      font-size: 0.78rem;
-      color: var(--gray-400);
-      margin-top: 0.1rem;
+    .field-hint { font-size: 0.78rem; color: var(--gray-400); }
+    .pw-toggle {
+      position: absolute; right: 12px;
+      background: none; border: none; cursor: pointer;
+      color: var(--gray-400); padding: 4px;
+      display: flex; align-items: center;
     }
-
-    /* ── Password toggle ── */
-    .input-wrap .pw-toggle {
-      position: absolute;
-      right: 12px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--gray-400);
-      padding: 4px;
-      display: flex;
-      align-items: center;
-    }
-    .input-wrap .pw-toggle:hover { color: var(--gray-700); }
-
-    /* ── Upload Area ── */
+    .pw-toggle:hover { color: var(--gray-700); }
     .upload-area {
-      border: 2px dashed var(--gray-200);
-      border-radius: 12px;
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      position: relative;
+      border: 2px dashed var(--gray-200); border-radius: 12px;
+      padding: 2rem; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s; position: relative;
     }
     .upload-area:hover { border-color: var(--blue); background: var(--blue-light); }
     .upload-area.has-file { border-color: var(--green); background: #f0fdf4; }
@@ -287,66 +210,34 @@
     }
     .upload-area.has-file .file-name { display: block; }
     .upload-area.has-file .upload-default { display: none; }
-
-    /* ── Doc type buttons ── */
-    .doc-type-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-    }
+    .doc-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
     .doc-type-btn {
-      border: 1.5px solid var(--gray-200);
-      border-radius: 10px;
-      padding: 0.75rem 0.5rem;
-      text-align: center;
-      cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--gray-500);
-      background: var(--white);
-      transition: all 0.15s;
-      user-select: none;
+      border: 1.5px solid var(--gray-200); border-radius: 10px;
+      padding: 0.75rem 0.5rem; text-align: center; cursor: pointer;
+      font-size: 0.82rem; font-weight: 600; color: var(--gray-500);
+      background: var(--white); transition: all 0.15s; user-select: none;
     }
-    .doc-type-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+    .doc-type-btn:hover,
     .doc-type-btn.selected { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
     .doc-type-btn .doc-icon { font-size: 1.3rem; display: block; margin-bottom: 0.3rem; }
-
-    /* ── Terms ── */
-    .terms-box {
-      background: var(--gray-50);
-      border: 1px solid var(--gray-200);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-    }
-    .terms-check {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      cursor: pointer;
-    }
+    .terms-box { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 1rem 1.25rem; }
+    .terms-check { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; }
     .terms-check input[type="checkbox"] {
       width: 18px; height: 18px; flex-shrink: 0;
       accent-color: var(--blue); margin-top: 2px; cursor: pointer;
     }
     .terms-check span { font-size: 0.875rem; color: var(--gray-700); line-height: 1.5; }
     .terms-check a { color: var(--blue); text-decoration: underline; }
-
-    /* ── Nav Buttons ── */
     .form-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 2rem;
-      gap: 1rem;
+      display: flex; justify-content: space-between;
+      align-items: center; margin-top: 2rem; gap: 1rem;
     }
     .btn-back {
       display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.75rem 1.5rem;
-      border: 1.5px solid var(--gray-200);
+      padding: 0.75rem 1.5rem; border: 1.5px solid var(--gray-200);
       border-radius: 10px; background: var(--white);
       color: var(--gray-700); font-weight: 600; font-size: 0.95rem;
-      cursor: pointer; transition: border-color 0.15s, background 0.15s;
-      font-family: inherit;
+      cursor: pointer; font-family: inherit; transition: border-color 0.15s, background 0.15s;
     }
     .btn-back:hover { border-color: var(--gray-300); background: var(--gray-50); }
     .btn-next {
@@ -355,33 +246,26 @@
       background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
       color: var(--white); border: none; border-radius: 10px;
       font-weight: 700; font-size: 0.95rem; cursor: pointer;
-      transition: transform 0.15s, opacity 0.15s; font-family: inherit;
-      margin-left: auto;
+      font-family: inherit; margin-left: auto;
+      transition: transform 0.15s, opacity 0.15s;
     }
     .btn-next:hover { transform: translateY(-1px); opacity: 0.93; }
     .btn-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    /* ── Alert ── */
     .alert {
-      padding: 0.875rem 1.25rem;
-      border-radius: 10px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 1.5rem;
-      display: none;
+      padding: 0.875rem 1.25rem; border-radius: 10px;
+      font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem;
+      display: none; gap: 0.5rem; align-items: flex-start;
     }
-    .alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: flex; gap: 0.5rem; align-items: flex-start; }
-
-    /* ── Footer ── */
-    .footer {
-      background: var(--dark-navy);
-      padding: 2rem;
-      text-align: center;
+    .alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: flex; }
+    .info-box {
+      border-radius: 10px; padding: 1rem 1.25rem;
+      font-size: 0.82rem; display: flex; gap: 0.75rem; align-items: flex-start;
     }
+    .info-box.blue { background: var(--blue-light); border: 1px solid #bfdbfe; color: var(--blue); }
+    .info-box.gray { background: var(--gray-50); border: 1px solid var(--gray-200); color: var(--gray-500); }
+    .footer { background: var(--dark-navy); padding: 2rem; text-align: center; }
     .footer p { font-size: 0.8rem; color: var(--gray-500); }
     .footer a { color: var(--gray-400); text-decoration: underline; }
-
-    /* ── Mobile ── */
     @media (max-width: 768px) {
       .nav { height: auto; padding: 0.75rem 1rem; }
       .nav-logo img { height: 56px; }
@@ -400,46 +284,33 @@
 </head>
 <body>
 
-  <!-- ── Nav ── -->
   <nav class="nav">
     <div class="nav-inner">
-      <a href="/" class="nav-logo">
-        <img src="/logo.png" alt="Online Market Security" />
-      </a>
+      <a href="/" class="nav-logo"><img src="/logo.png" alt="Online Market Security" /></a>
       <ul class="nav-links">
-        <li>
-          <a href="/">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Home
-          </a>
-        </li>
-        <li>
-          <a href="/verify.html">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            Verify
-          </a>
-        </li>
+        <li><a href="/">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+        </a></li>
+        <li><a href="/verify.html">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Verify
+        </a></li>
       </ul>
       <div class="nav-actions">
         <a href="/login.html" class="btn-signin">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          Sign In
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Sign In
         </a>
         <a href="/apply.html" class="btn-get-verified">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
-          Get Verified
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Get Verified
         </a>
       </div>
     </div>
   </nav>
 
-  <!-- ── Page ── -->
   <div class="page">
     <div class="page-header" id="pageHeader">
       <p>Join Online Market Security and start building credibility in your marketplace</p>
     </div>
 
-    <!-- Stepper -->
     <div class="stepper" id="stepper">
       <div class="stepper-item active" data-step="1">
         <div class="step-circle">
@@ -467,36 +338,43 @@
       </div>
     </div>
 
-    <!-- Alert -->
     <div class="alert" id="alertBox"></div>
 
-    <!-- Card -->
     <div class="card" id="formCard">
 
-      <!-- ── STEP 1: Personal Info ── -->
+      <!-- STEP 1 -->
       <div id="step1">
         <div class="card-title">Personal Information</div>
         <div class="card-subtitle">Enter your details exactly as they appear on your ID document</div>
         <div class="fields">
-          <div class="field">
-            <label>Full Name <span class="required">*</span></label>
-            <div class="input-wrap">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <input type="text" id="fullName" placeholder="John Doe" autocomplete="name" />
+          <div class="field-row">
+            <div class="field">
+              <label>First Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="firstName" placeholder="John" autocomplete="given-name" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Last Name <span class="req">*</span></label>
+              <div class="input-wrap">
+                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name" />
+              </div>
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <label>Phone Number <span class="required">*</span></label>
+              <label>Phone Number <span class="req">*</span></label>
               <div class="input-wrap">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                 <input type="tel" id="phone" placeholder="+27 82 123 4567" autocomplete="tel" />
               </div>
             </div>
             <div class="field">
-              <label>ID Number <span class="required">*</span></label>
+              <label>ID Number <span class="req">*</span></label>
               <div class="input-wrap">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                 <input type="text" id="idNumber" placeholder="9001015009087" />
               </div>
               <span class="field-hint">SA ID, passport, or other government ID number</span>
@@ -512,61 +390,54 @@
         </div>
       </div>
 
-      <!-- ── STEP 2: Service Details ── -->
+      <!-- STEP 2 -->
       <div id="step2" style="display:none;">
         <div class="card-title">Service Details</div>
         <div class="card-subtitle">Tell us about the type of service or work you offer</div>
         <div class="fields">
           <div class="field">
-            <label>Service Category <span class="required">*</span></label>
+            <label>Service Category <span class="req">*</span></label>
             <div class="input-wrap">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
               <select id="serviceCategory">
                 <option value="" disabled selected>Select your service type</option>
-                <option value="Plumber">Plumber</option>
-                <option value="Electrician">Electrician</option>
-                <option value="Painter">Painter</option>
-                <option value="Cleaner">Cleaner</option>
-                <option value="Carpenter">Carpenter</option>
-                <option value="Gardener">Gardener</option>
-                <option value="Builder">Builder / Contractor</option>
-                <option value="Tiler">Tiler</option>
-                <option value="Welder">Welder</option>
-                <option value="AC Technician">AC Technician</option>
+                <option>Plumber</option><option>Electrician</option><option>Painter</option>
+                <option>Cleaner</option><option>Carpenter</option><option>Gardener</option>
+                <option value="Builder">Builder / Contractor</option><option>Tiler</option>
+                <option>Welder</option><option value="AC Technician">AC Technician</option>
                 <option value="Domestic Worker">Domestic Worker</option>
                 <option value="Security Guard">Security Guard</option>
                 <option value="Driver">Driver / Chauffeur</option>
                 <option value="Tutor">Tutor / Teacher</option>
                 <option value="IT Support">IT Support</option>
                 <option value="Online Seller">Online Seller</option>
-                <option value="Other">Other</option>
+                <option>Other</option>
               </select>
             </div>
           </div>
           <div class="field">
-            <label>Describe Your Services <span class="required">*</span></label>
+            <label>Describe Your Services <span class="req">*</span></label>
             <div class="input-wrap" style="align-items:flex-start;">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="position:absolute;left:14px;top:14px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="top:14px;position:absolute;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <textarea id="serviceDesc" rows="4"
                 style="width:100%;padding:0.75rem 1rem 0.75rem 2.75rem;border:1.5px solid var(--gray-200);border-radius:10px;font-family:inherit;font-size:0.95rem;color:var(--gray-900);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;"
-                placeholder="e.g. Licensed electrician with 10 years experience, specialising in residential wiring and fault finding..."
+                placeholder="e.g. Licensed electrician with 10 years experience..."
                 onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,79,168,0.1)'"
                 onblur="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'"></textarea>
             </div>
             <span class="field-hint">This helps clients understand who you are and what you do</span>
           </div>
           <div class="field">
-            <label>Area / City You Operate In <span class="required">*</span></label>
+            <label>Area / City You Operate In <span class="req">*</span></label>
             <div class="input-wrap">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <input type="text" id="location" placeholder="e.g. Johannesburg, Sandton, Soweto" />
             </div>
           </div>
         </div>
         <div class="form-nav">
           <button class="btn-back" onclick="goToStep(1)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-            Back
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
           </button>
           <button class="btn-next" onclick="goToStep(3)">
             Continue
@@ -575,34 +446,31 @@
         </div>
       </div>
 
-      <!-- ── STEP 3: Upload Documents ── -->
+      <!-- STEP 3 -->
       <div id="step3" style="display:none;">
         <div class="card-title">Upload Documents</div>
         <div class="card-subtitle">Select your document type, then upload your selfie and ID. All files are stored securely.</div>
         <div class="fields">
-
-          <!-- Doc Type — lives here now -->
           <div class="field">
-            <label>Document Type <span class="required">*</span></label>
-            <div class="doc-type-grid" id="docTypeGrid">
-              <div class="doc-type-btn selected" data-val="sa_id">
+            <label>Document Type <span class="req">*</span></label>
+            <div class="doc-type-grid">
+              <div class="doc-type-btn selected" data-val="sa_id" onclick="selectDocType(this)">
                 <span class="doc-icon">🪪</span>SA ID Book / Card
               </div>
-              <div class="doc-type-btn" data-val="passport">
+              <div class="doc-type-btn" data-val="passport" onclick="selectDocType(this)">
                 <span class="doc-icon">📕</span>Passport
               </div>
-              <div class="doc-type-btn" data-val="drivers">
+              <div class="doc-type-btn" data-val="drivers" onclick="selectDocType(this)">
                 <span class="doc-icon">🚗</span>Driver's Licence
               </div>
             </div>
             <input type="hidden" id="docType" value="sa_id" />
           </div>
 
-          <!-- Selfie -->
           <div class="field">
-            <label>Selfie Photo <span class="required">*</span></label>
+            <label>Selfie Photo <span class="req">*</span></label>
             <div class="upload-area" id="selfieArea">
-              <input type="file" id="selfieFile" accept="image/*" onchange="handleFile('selfie', this)" />
+              <input type="file" id="selfieFile" accept="image/*" onchange="handleFile('selfie',this)" />
               <div class="upload-default">
                 <div class="upload-icon">
                   <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -615,32 +483,30 @@
             <span class="field-hint">Face must be clearly visible, no sunglasses or hat. Good lighting.</span>
           </div>
 
-          <!-- ID Doc -->
           <div class="field">
-            <label>ID Document Photo <span class="required">*</span></label>
+            <label>ID Document Photo <span class="req">*</span></label>
             <div class="upload-area" id="idDocArea">
-              <input type="file" id="idDocFile" accept="image/*,application/pdf" onchange="handleFile('idDoc', this)" />
+              <input type="file" id="idDocFile" accept="image/*,application/pdf" onchange="handleFile('idDoc',this)" />
               <div class="upload-default">
                 <div class="upload-icon">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 </div>
                 <h4>Upload your ID / Passport / Licence</h4>
                 <p>Click to browse or drag and drop<br/>JPG, PNG, PDF · Max 10MB</p>
               </div>
               <div class="file-name" id="idDocName"></div>
             </div>
-            <span class="field-hint">Both sides of the document must be clearly readable. No blurry images.</span>
+            <span class="field-hint">Document must be clearly readable. No blurry images.</span>
           </div>
 
-          <div style="background:var(--blue-light);border:1px solid #bfdbfe;border-radius:10px;padding:1rem 1.25rem;font-size:0.82rem;color:var(--blue);display:flex;gap:0.75rem;align-items:flex-start;">
+          <div class="info-box blue">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             <span>Your documents are stored securely and only reviewed by our verification team. They are never shared publicly.</span>
           </div>
         </div>
         <div class="form-nav">
           <button class="btn-back" onclick="goToStep(2)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-            Back
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
           </button>
           <button class="btn-next" onclick="goToStep(4)">
             Continue
@@ -649,35 +515,35 @@
         </div>
       </div>
 
-      <!-- ── STEP 4: Create Account ── -->
+      <!-- STEP 4 -->
       <div id="step4" style="display:none;">
         <div class="card-title">Create Your Account</div>
         <div class="card-subtitle">Set up your login credentials to manage your verification profile</div>
         <div class="fields">
           <div class="field">
-            <label>Email Address <span class="required">*</span></label>
+            <label>Email Address <span class="req">*</span></label>
             <div class="input-wrap">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
             </div>
           </div>
           <div class="field-row">
             <div class="field">
-              <label>Password <span class="required">*</span></label>
+              <label>Password <span class="req">*</span></label>
               <div class="input-wrap">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password" />
-                <button type="button" class="pw-toggle" onclick="togglePw('password', this)">
+                <button type="button" class="pw-toggle" onclick="togglePw('password',this)">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
             <div class="field">
-              <label>Confirm Password <span class="required">*</span></label>
+              <label>Confirm Password <span class="req">*</span></label>
               <div class="input-wrap">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <input type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password" />
-                <button type="button" class="pw-toggle" onclick="togglePw('confirmPassword', this)">
+                <button type="button" class="pw-toggle" onclick="togglePw('confirmPassword',this)">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
@@ -686,22 +552,17 @@
           <div class="terms-box">
             <label class="terms-check">
               <input type="checkbox" id="termsCheck" />
-              <span>
-                I have read and agree to the <a href="/terms.html" target="_blank">Terms of Use &amp; Disclaimer</a>.
-                I understand that Online Market Security verification confirms document review only and does not guarantee behaviour, safety, or service quality.
-                I confirm that all information and documents submitted are genuine and belong to me.
-              </span>
+              <span>I have read and agree to the <a href="/terms.html" target="_blank">Terms of Use &amp; Disclaimer</a>. I understand that Online Market Security verification confirms document review only and does not guarantee behaviour, safety, or service quality. I confirm all information and documents submitted are genuine and belong to me.</span>
             </label>
           </div>
-          <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:1rem 1.25rem;font-size:0.82rem;color:var(--gray-500);display:flex;gap:0.75rem;align-items:flex-start;">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;color:var(--gray-400)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>Once submitted, our team will review your application within 48 hours. You'll receive an email when your verification status is updated.</span>
+          <div class="info-box gray">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Once submitted, our team will review your application within 48 hours. You'll receive an email when your status is updated.</span>
           </div>
         </div>
         <div class="form-nav">
           <button class="btn-back" onclick="goToStep(3)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-            Back
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
           </button>
           <button class="btn-next" id="submitBtn" onclick="submitApplication()">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
@@ -710,16 +571,14 @@
         </div>
       </div>
 
-    </div><!-- /card -->
-  </div><!-- /page -->
+    </div>
+  </div>
 
-  <!-- ── Footer ── -->
   <footer class="footer">
     <p>
       Online Market Security verification confirms that documents have been reviewed by our team.
       It does not guarantee behaviour, safety, or service quality.<br/>
-      <a href="/terms.html">Terms of Use &amp; Disclaimer</a> ·
-      © 2026 Online Market Security · Republic of South Africa
+      <a href="/terms.html">Terms of Use &amp; Disclaimer</a> · © 2026 Online Market Security · Republic of South Africa
     </p>
   </footer>
 
@@ -734,13 +593,11 @@
     let selfieFileObj = null;
     let idDocFileObj  = null;
 
-    document.querySelectorAll('.doc-type-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        document.getElementById('docType').value = btn.dataset.val;
-      });
-    });
+    function selectDocType(btn) {
+      document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('docType').value = btn.dataset.val;
+    }
 
     function handleFile(type, input) {
       const file = input.files[0];
@@ -758,11 +615,11 @@
 
     function togglePw(id, btn) {
       const input = document.getElementById(id);
-      const isText = input.type === 'text';
-      input.type = isText ? 'password' : 'text';
-      btn.innerHTML = isText
-        ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
-        : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.innerHTML = show
+        ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+        : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
     }
 
     function showAlert(msg) {
@@ -777,16 +634,7 @@
       el.style.display = 'none';
     }
 
-    function goToStep(n) {
-      clearAlert();
-      if (n > currentStep) {
-        if (currentStep === 1 && !validateStep1()) return;
-        if (currentStep === 2 && !validateStep2()) return;
-        if (currentStep === 3 && !validateStep3()) return;
-      }
-      document.getElementById('step' + currentStep).style.display = 'none';
-      currentStep = n;
-      document.getElementById('step' + n).style.display = 'block';
+    function updateStepper(n) {
       document.querySelectorAll('.stepper-item').forEach((item, idx) => {
         const s = idx + 1;
         item.classList.remove('active', 'done');
@@ -797,19 +645,33 @@
           item.classList.add('active');
         }
       });
+    }
+
+    function goToStep(n) {
+      clearAlert();
+      if (n > currentStep) {
+        if (currentStep === 1 && !validateStep1()) return;
+        if (currentStep === 2 && !validateStep2()) return;
+        if (currentStep === 3 && !validateStep3()) return;
+      }
+      document.getElementById('step' + currentStep).style.display = 'none';
+      currentStep = n;
+      document.getElementById('step' + n).style.display = 'block';
+      updateStepper(n);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function validateStep1() {
-      if (!document.getElementById('fullName').value.trim()) { showAlert('Please enter your full name.'); return false; }
-      if (!document.getElementById('phone').value.trim())    { showAlert('Please enter your phone number.'); return false; }
-      if (!document.getElementById('idNumber').value.trim()) { showAlert('Please enter your ID number.'); return false; }
+      if (!document.getElementById('firstName').value.trim())  { showAlert('Please enter your first name.'); return false; }
+      if (!document.getElementById('lastName').value.trim())   { showAlert('Please enter your last name.'); return false; }
+      if (!document.getElementById('phone').value.trim())      { showAlert('Please enter your phone number.'); return false; }
+      if (!document.getElementById('idNumber').value.trim())   { showAlert('Please enter your ID number.'); return false; }
       return true;
     }
     function validateStep2() {
-      if (!document.getElementById('serviceCategory').value)        { showAlert('Please select a service category.'); return false; }
-      if (!document.getElementById('serviceDesc').value.trim())     { showAlert('Please describe your services.'); return false; }
-      if (!document.getElementById('location').value.trim())        { showAlert('Please enter your operating area.'); return false; }
+      if (!document.getElementById('serviceCategory').value)   { showAlert('Please select a service category.'); return false; }
+      if (!document.getElementById('serviceDesc').value.trim()){ showAlert('Please describe your services.'); return false; }
+      if (!document.getElementById('location').value.trim())   { showAlert('Please enter your operating area.'); return false; }
       return true;
     }
     function validateStep3() {
@@ -835,25 +697,38 @@
       btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting...`;
 
       try {
+        // 1. Create auth user
         const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
         if (authError) throw authError;
-        const userId = authData.user.id;
 
+        // signUp may return a session (email confirm OFF) or null session (email confirm ON)
+        // Either way, user.id is available immediately
+        const userId = authData.user?.id;
+        if (!userId) throw new Error('Could not create account. Please try again.');
+
+        // 2. Upload selfie
         const selfieExt  = selfieFileObj.name.split('.').pop();
-        const selfiePath = `${userId}_${Date.now()}.${selfieExt}`;
-        const { error: selfieError } = await sb.storage.from('selfies').upload(selfiePath, selfieFileObj, { contentType: selfieFileObj.type });
-        if (selfieError) throw selfieError;
+        const selfiePath = `${userId}_${Date.now()}_selfie.${selfieExt}`;
+        const { error: selfieErr } = await sb.storage
+          .from('selfies')
+          .upload(selfiePath, selfieFileObj, { contentType: selfieFileObj.type });
+        if (selfieErr) throw selfieErr;
         const selfieUrl = sb.storage.from('selfies').getPublicUrl(selfiePath).data.publicUrl;
 
+        // 3. Upload ID doc
         const idExt  = idDocFileObj.name.split('.').pop();
-        const idPath = `${userId}_${Date.now()}.${idExt}`;
-        const { error: idError } = await sb.storage.from('id-documents').upload(idPath, idDocFileObj, { contentType: idDocFileObj.type });
-        if (idError) throw idError;
+        const idPath = `${userId}_${Date.now()}_id.${idExt}`;
+        const { error: idErr } = await sb.storage
+          .from('id-documents')
+          .upload(idPath, idDocFileObj, { contentType: idDocFileObj.type });
+        if (idErr) throw idErr;
         const idUrl = sb.storage.from('id-documents').getPublicUrl(idPath).data.publicUrl;
 
-        const { error: profileError } = await sb.from('profiles').insert({
+        // 4. Insert profile — use upsert so it works whether session is active or not
+        const fullName = `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`;
+        const { error: profileErr } = await sb.from('profiles').upsert({
           id: userId,
-          name: document.getElementById('fullName').value.trim(),
+          name: fullName,
           phone: document.getElementById('phone').value.trim(),
           id_number: document.getElementById('idNumber').value.trim(),
           doc_type: document.getElementById('docType').value,
@@ -862,24 +737,25 @@
           id_document_url: idUrl,
           verification_status: 'pending',
           role: 'provider'
-        });
-        if (profileError) throw profileError;
+        }, { onConflict: 'id' });
+        if (profileErr) throw profileErr;
 
+        // 5. Show success
         document.getElementById('stepper').style.display = 'none';
         document.getElementById('pageHeader').style.display = 'none';
         document.getElementById('formCard').innerHTML = `
           <div style="text-align:center;padding:2rem 1rem;">
             <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2rem;">✓</div>
             <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.75rem;">Application Submitted!</h2>
-            <p style="color:#64748b;margin-bottom:0.5rem;">Thank you for applying to Online Market Security.</p>
+            <p style="color:#64748b;margin-bottom:0.5rem;">Thank you for applying, <strong>${fullName}</strong>.</p>
             <p style="color:#64748b;margin-bottom:1.5rem;">We'll review your documents and update your status within <strong>48 hours</strong>.</p>
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin:1.5rem 0;text-align:left;">
               <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;color:#334155;">What happens next?</h4>
-              <ul style="list-style:none;">
-                <li style="display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.5rem;font-size:0.875rem;color:#64748b;"><svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>You'll receive a confirmation email shortly</li>
-                <li style="display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.5rem;font-size:0.875rem;color:#64748b;"><svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>Our team will manually review your ID and selfie</li>
-                <li style="display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.5rem;font-size:0.875rem;color:#64748b;"><svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>Once approved, you'll get your unique TN- code and QR badge</li>
-                <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:#64748b;"><svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>Share your badge on WhatsApp, invoices, and social media</li>
+              <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
+                ${['You\'ll receive a confirmation email shortly','Our team will manually review your ID and selfie','Once approved, you\'ll get your unique TN- code and QR badge','Share your badge on WhatsApp, invoices, and social media'].map(t => `
+                <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:#64748b;">
+                  <svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>${t}
+                </li>`).join('')}
               </ul>
             </div>
             <a href="/login.html" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:0.95rem;text-decoration:none;">
