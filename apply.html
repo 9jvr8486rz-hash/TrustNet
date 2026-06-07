@@ -583,194 +583,205 @@
   </footer>
 
   <script>
-    const { createClient } = supabase;
-    const sb = createClient(
-      'https://oymmmevtzbzoneujtkhn.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU'
-    );
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://oymmmevtzbzoneujtkhn.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU'
+  );
 
-    let currentStep = 1;
-    let selfieFileObj = null;
-    let idDocFileObj  = null;
+  let currentStep = 1;
+  let selfieFileObj = null;
+  let idDocFileObj  = null;
 
-    function selectDocType(btn) {
-      document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      document.getElementById('docType').value = btn.dataset.val;
+  function selectDocType(btn) {
+    document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('docType').value = btn.dataset.val;
+  }
+
+  function handleFile(type, input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (type === 'selfie') {
+      selfieFileObj = file;
+      document.getElementById('selfieArea').classList.add('has-file');
+      document.getElementById('selfieName').textContent = '✓ ' + file.name;
+    } else {
+      idDocFileObj = file;
+      document.getElementById('idDocArea').classList.add('has-file');
+      document.getElementById('idDocName').textContent = '✓ ' + file.name;
     }
+  }
 
-    function handleFile(type, input) {
-      const file = input.files[0];
-      if (!file) return;
-      if (type === 'selfie') {
-        selfieFileObj = file;
-        document.getElementById('selfieArea').classList.add('has-file');
-        document.getElementById('selfieName').textContent = '✓ ' + file.name;
-      } else {
-        idDocFileObj = file;
-        document.getElementById('idDocArea').classList.add('has-file');
-        document.getElementById('idDocName').textContent = '✓ ' + file.name;
+  function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show
+      ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+      : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('alertBox');
+    el.className = 'alert error';
+    el.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function clearAlert() {
+    const el = document.getElementById('alertBox');
+    el.className = 'alert';
+    el.style.display = 'none';
+  }
+
+  function updateStepper(n) {
+    document.querySelectorAll('.stepper-item').forEach((item, idx) => {
+      const s = idx + 1;
+      item.classList.remove('active', 'done');
+      if (s < n) {
+        item.classList.add('done');
+        item.querySelector('.step-circle').innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+      } else if (s === n) {
+        item.classList.add('active');
       }
-    }
+    });
+  }
 
-    function togglePw(id, btn) {
-      const input = document.getElementById(id);
-      const show = input.type === 'password';
-      input.type = show ? 'text' : 'password';
-      btn.innerHTML = show
-        ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-        : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  function goToStep(n) {
+    clearAlert();
+    if (n > currentStep) {
+      if (currentStep === 1 && !validateStep1()) return;
+      if (currentStep === 2 && !validateStep2()) return;
+      if (currentStep === 3 && !validateStep3()) return;
     }
+    document.getElementById('step' + currentStep).style.display = 'none';
+    currentStep = n;
+    document.getElementById('step' + n).style.display = 'block';
+    updateStepper(n);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    function showAlert(msg) {
-      const el = document.getElementById('alertBox');
-      el.className = 'alert error';
-      el.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`;
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-    function clearAlert() {
-      const el = document.getElementById('alertBox');
-      el.className = 'alert';
-      el.style.display = 'none';
-    }
+  function validateStep1() {
+    if (!document.getElementById('firstName').value.trim())  { showAlert('Please enter your first name.'); return false; }
+    if (!document.getElementById('lastName').value.trim())   { showAlert('Please enter your last name.'); return false; }
+    if (!document.getElementById('phone').value.trim())      { showAlert('Please enter your phone number.'); return false; }
+    if (!document.getElementById('idNumber').value.trim())   { showAlert('Please enter your ID number.'); return false; }
+    return true;
+  }
+  function validateStep2() {
+    if (!document.getElementById('serviceCategory').value)    { showAlert('Please select a service category.'); return false; }
+    if (!document.getElementById('serviceDesc').value.trim()) { showAlert('Please describe your services.'); return false; }
+    if (!document.getElementById('location').value.trim())    { showAlert('Please enter your operating area.'); return false; }
+    return true;
+  }
+  function validateStep3() {
+    if (!selfieFileObj) { showAlert('Please upload a selfie photo.'); return false; }
+    if (!idDocFileObj)  { showAlert('Please upload your ID document.'); return false; }
+    return true;
+  }
 
-    function updateStepper(n) {
-      document.querySelectorAll('.stepper-item').forEach((item, idx) => {
-        const s = idx + 1;
-        item.classList.remove('active', 'done');
-        if (s < n) {
-          item.classList.add('done');
-          item.querySelector('.step-circle').innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
-        } else if (s === n) {
-          item.classList.add('active');
-        }
-      });
-    }
+  async function submitApplication() {
+    clearAlert();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirmPassword').value;
+    const terms    = document.getElementById('termsCheck').checked;
 
-    function goToStep(n) {
-      clearAlert();
-      if (n > currentStep) {
-        if (currentStep === 1 && !validateStep1()) return;
-        if (currentStep === 2 && !validateStep2()) return;
-        if (currentStep === 3 && !validateStep3()) return;
+    if (!email)                           { showAlert('Please enter your email address.'); return; }
+    if (!password || password.length < 8) { showAlert('Password must be at least 8 characters.'); return; }
+    if (password !== confirm)             { showAlert('Passwords do not match.'); return; }
+    if (!terms)                           { showAlert('You must agree to the Terms of Use before submitting.'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting...`;
+
+    try {
+      // STEP 1: Sign up
+      const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
+      if (authError) throw new Error(authError.message);
+      const userId = authData?.user?.id;
+      if (!userId) throw new Error('Could not create account. This email may already be registered.');
+
+      // STEP 2: Immediately sign in to get an active session for RLS + storage
+      const { error: signInError } = await sb.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        // Email confirmation may be required — continue anyway, profile insert uses userId directly
+        console.warn('Sign in after signup failed (email confirmation may be on):', signInError.message);
       }
-      document.getElementById('step' + currentStep).style.display = 'none';
-      currentStep = n;
-      document.getElementById('step' + n).style.display = 'block';
-      updateStepper(n);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // STEP 3: Upload selfie
+      const selfieExt  = selfieFileObj.name.split('.').pop().toLowerCase();
+      const selfiePath = `${userId}_${Date.now()}_selfie.${selfieExt}`;
+      const { error: selfieErr } = await sb.storage
+        .from('selfies')
+        .upload(selfiePath, selfieFileObj, { upsert: true, contentType: selfieFileObj.type });
+      if (selfieErr) throw new Error('Selfie upload failed: ' + selfieErr.message);
+      const selfieUrl = sb.storage.from('selfies').getPublicUrl(selfiePath).data.publicUrl;
+
+      // STEP 4: Upload ID doc
+      const idExt  = idDocFileObj.name.split('.').pop().toLowerCase();
+      const idPath = `${userId}_${Date.now()}_id.${idExt}`;
+      const { error: idErr } = await sb.storage
+        .from('id-documents')
+        .upload(idPath, idDocFileObj, { upsert: true, contentType: idDocFileObj.type });
+      if (idErr) throw new Error('ID upload failed: ' + idErr.message);
+      const idUrl = sb.storage.from('id-documents').getPublicUrl(idPath).data.publicUrl;
+
+      // STEP 5: Save profile
+      const fullName = `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`;
+      const { error: profileErr } = await sb.from('profiles').upsert({
+        id: userId,
+        name: fullName,
+        phone: document.getElementById('phone').value.trim(),
+        id_number: document.getElementById('idNumber').value.trim(),
+        doc_type: document.getElementById('docType').value,
+        service_category: document.getElementById('serviceCategory').value,
+        selfie_url: selfieUrl,
+        id_document_url: idUrl,
+        verification_status: 'pending',
+        role: 'provider'
+      }, { onConflict: 'id' });
+      if (profileErr) throw new Error('Profile save failed: ' + profileErr.message);
+
+      // STEP 6: Show success
+      document.getElementById('stepper').style.display = 'none';
+      document.getElementById('pageHeader').style.display = 'none';
+      document.getElementById('formCard').innerHTML = `
+        <div style="text-align:center;padding:2rem 1rem;">
+          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2rem;">✓</div>
+          <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.75rem;">Application Submitted!</h2>
+          <p style="color:#64748b;margin-bottom:0.5rem;">Thank you for applying, <strong>${fullName}</strong>.</p>
+          <p style="color:#64748b;margin-bottom:1.5rem;">We'll review your documents within <strong>48 hours</strong>.</p>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin:1.5rem 0;text-align:left;">
+            <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;color:#334155;">What happens next?</h4>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
+              ${[
+                "You'll receive a confirmation email shortly",
+                "Our team will manually review your ID and selfie",
+                "Once approved, you'll get your unique TN- code and QR badge",
+                "Share your badge on WhatsApp, invoices, and social media"
+              ].map(t => `
+              <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:#64748b;">
+                <svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>${t}
+              </li>`).join('')}
+            </ul>
+          </div>
+          <a href="/login.html" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:0.95rem;text-decoration:none;">
+            Sign In to Your Dashboard
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>`;
+
+    } catch (err) {
+      console.error('Submit error:', err);
+      showAlert(err.message || 'Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Submit Application`;
     }
-
-    function validateStep1() {
-      if (!document.getElementById('firstName').value.trim())  { showAlert('Please enter your first name.'); return false; }
-      if (!document.getElementById('lastName').value.trim())   { showAlert('Please enter your last name.'); return false; }
-      if (!document.getElementById('phone').value.trim())      { showAlert('Please enter your phone number.'); return false; }
-      if (!document.getElementById('idNumber').value.trim())   { showAlert('Please enter your ID number.'); return false; }
-      return true;
-    }
-    function validateStep2() {
-      if (!document.getElementById('serviceCategory').value)   { showAlert('Please select a service category.'); return false; }
-      if (!document.getElementById('serviceDesc').value.trim()){ showAlert('Please describe your services.'); return false; }
-      if (!document.getElementById('location').value.trim())   { showAlert('Please enter your operating area.'); return false; }
-      return true;
-    }
-    function validateStep3() {
-      if (!selfieFileObj) { showAlert('Please upload a selfie photo.'); return false; }
-      if (!idDocFileObj)  { showAlert('Please upload your ID document.'); return false; }
-      return true;
-    }
-
-    async function submitApplication() {
-      clearAlert();
-      const email    = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirm  = document.getElementById('confirmPassword').value;
-      const terms    = document.getElementById('termsCheck').checked;
-
-      if (!email)                           { showAlert('Please enter your email address.'); return; }
-      if (!password || password.length < 8) { showAlert('Password must be at least 8 characters.'); return; }
-      if (password !== confirm)             { showAlert('Passwords do not match.'); return; }
-      if (!terms)                           { showAlert('You must agree to the Terms of Use before submitting.'); return; }
-
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-      btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting...`;
-
-      try {
-        // 1. Create auth user
-        const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
-        if (authError) throw authError;
-
-        // signUp may return a session (email confirm OFF) or null session (email confirm ON)
-        // Either way, user.id is available immediately
-        const userId = authData.user?.id;
-        if (!userId) throw new Error('Could not create account. Please try again.');
-
-        // 2. Upload selfie
-        const selfieExt  = selfieFileObj.name.split('.').pop();
-        const selfiePath = `${userId}_${Date.now()}_selfie.${selfieExt}`;
-        const { error: selfieErr } = await sb.storage
-          .from('selfies')
-          .upload(selfiePath, selfieFileObj, { contentType: selfieFileObj.type });
-        if (selfieErr) throw selfieErr;
-        const selfieUrl = sb.storage.from('selfies').getPublicUrl(selfiePath).data.publicUrl;
-
-        // 3. Upload ID doc
-        const idExt  = idDocFileObj.name.split('.').pop();
-        const idPath = `${userId}_${Date.now()}_id.${idExt}`;
-        const { error: idErr } = await sb.storage
-          .from('id-documents')
-          .upload(idPath, idDocFileObj, { contentType: idDocFileObj.type });
-        if (idErr) throw idErr;
-        const idUrl = sb.storage.from('id-documents').getPublicUrl(idPath).data.publicUrl;
-
-        // 4. Insert profile — use upsert so it works whether session is active or not
-        const fullName = `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`;
-        const { error: profileErr } = await sb.from('profiles').upsert({
-          id: userId,
-          name: fullName,
-          phone: document.getElementById('phone').value.trim(),
-          id_number: document.getElementById('idNumber').value.trim(),
-          doc_type: document.getElementById('docType').value,
-          service_category: document.getElementById('serviceCategory').value,
-          selfie_url: selfieUrl,
-          id_document_url: idUrl,
-          verification_status: 'pending',
-          role: 'provider'
-        }, { onConflict: 'id' });
-        if (profileErr) throw profileErr;
-
-        // 5. Show success
-        document.getElementById('stepper').style.display = 'none';
-        document.getElementById('pageHeader').style.display = 'none';
-        document.getElementById('formCard').innerHTML = `
-          <div style="text-align:center;padding:2rem 1rem;">
-            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2rem;">✓</div>
-            <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.75rem;">Application Submitted!</h2>
-            <p style="color:#64748b;margin-bottom:0.5rem;">Thank you for applying, <strong>${fullName}</strong>.</p>
-            <p style="color:#64748b;margin-bottom:1.5rem;">We'll review your documents and update your status within <strong>48 hours</strong>.</p>
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin:1.5rem 0;text-align:left;">
-              <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;color:#334155;">What happens next?</h4>
-              <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
-                ${['You\'ll receive a confirmation email shortly','Our team will manually review your ID and selfie','Once approved, you\'ll get your unique TN- code and QR badge','Share your badge on WhatsApp, invoices, and social media'].map(t => `
-                <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:#64748b;">
-                  <svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>${t}
-                </li>`).join('')}
-              </ul>
-            </div>
-            <a href="/login.html" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:0.95rem;text-decoration:none;">
-              Sign In to Your Dashboard
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-          </div>`;
-
-      } catch (err) {
-        console.error(err);
-        showAlert(err.message || 'Something went wrong. Please try again.');
-        btn.disabled = false;
-        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Submit Application`;
-      }
-    }
+  }
+</script>
   </script>
 </body>
 </html>
