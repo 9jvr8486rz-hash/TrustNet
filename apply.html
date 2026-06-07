@@ -719,25 +719,51 @@
       document.getElementById('stepper').style.display = 'none';
       document.getElementById('pageHeader').style.display = 'none';
       document.getElementById('formCard').innerHTML = `
-        <div style="text-align:center;padding:2rem 1rem;">
-          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2rem;">✓</div>
-          <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.75rem;">Application Submitted!</h2>
-          <p style="color:#64748b;margin-bottom:0.5rem;">Thank you for applying, <strong>${fullName}</strong>.</p>
-          <p style="color:#64748b;margin-bottom:1.5rem;">We'll review your documents within <strong>48 hours</strong>.</p>
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin:1.5rem 0;text-align:left;">
-            <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;color:#334155;">What happens next?</h4>
-            <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
-              ${["You'll receive a confirmation email shortly","Our team will manually review your ID and selfie","Once approved, you'll get your unique TN- code and QR badge","Share your badge on WhatsApp, invoices, and social media"].map(t=>`
-              <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:#64748b;">
-                <svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>${t}
-              </li>`).join('')}
-            </ul>
-          </div>
-          <a href="/login.html" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:0.95rem;text-decoration:none;">
-            Sign In to Your Dashboard
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-          </a>
-        </div>`;
+       document.getElementById('formCard').innerHTML = `
+  <div style="text-align:center;padding:3rem 1rem;">
+    <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2.5rem;box-shadow:0 0 0 12px rgba(22,163,74,0.12);">✓</div>
+    <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:0.75rem;color:#0f172a;">Application Submitted!</h2>
+    <p style="color:#64748b;font-size:1rem;margin-bottom:0.25rem;">Thank you, <strong style="color:#0f172a;">${fullName}</strong>.</p>
+    <p style="color:#64748b;font-size:0.95rem;margin-bottom:2rem;">Your application is now with our team. We'll review your documents and update your status within <strong>48 hours</strong>.</p>
+
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:1.5rem;margin-bottom:2rem;text-align:left;">
+      <p style="font-size:0.85rem;font-weight:700;color:#166534;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        What happens next
+      </p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.65rem;">
+        ${["A confirmation email has been sent to <strong>${email}</strong>","Our team will manually review your selfie and ID document","Once approved you'll receive your unique TN- verification code","Share your badge on WhatsApp, invoices, Facebook and more"].map((t,i)=>`
+        <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:#374151;">
+          <span style="width:22px;height:22px;border-radius:50%;background:#16a34a;color:white;font-size:0.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</span>${t}
+        </li>`).join('')}
+      </ul>
+    </div>
+
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin-bottom:2rem;font-size:0.85rem;color:#92400e;display:flex;gap:0.75rem;align-items:flex-start;text-align:left;">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>While you wait, you can already sign in to your dashboard to track your application status and upload any additional documents.</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+      <a href="/" id="goHomeBtn" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.9rem 2.5rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;width:100%;max-width:320px;justify-content:center;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Go to Home &amp; Sign In
+      </a>
+      <p id="countdownMsg" style="font-size:0.82rem;color:#94a3b8;">Redirecting to home in <strong id="countdownNum">10</strong> seconds...</p>
+    </div>
+  </div>`;
+
+// Countdown redirect to home
+let secs = 5;
+const ticker = setInterval(() => {
+  secs--;
+  const el = document.getElementById('countdownNum');
+  if (el) el.textContent = secs;
+  if (secs <= 0) {
+    clearInterval(ticker);
+    window.location.href = '/';
+  }
+}, 1000);
 
     } catch(err) {
       if (err.message !== '__handled__') {
