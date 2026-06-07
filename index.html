@@ -1,271 +1,837 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digital Trust Network — Know Who You're Meeting</title>
-<link rel="stylesheet" href="/styles/main.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online Market Security — Verify Before You Buy or Hire</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="/styles/main.css" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:       #1a4fa8;
+      --blue-dark:  #143d84;
+      --blue-light: #e8f0fd;
+      --green:      #16a34a;
+      --green-btn:  #15803d;
+      --teal:       #0d9488;
+      --gray-50:    #f8fafc;
+      --gray-100:   #f1f5f9;
+      --gray-200:   #e2e8f0;
+      --gray-400:   #94a3b8;
+      --gray-500:   #64748b;
+      --gray-700:   #334155;
+      --gray-900:   #0f172a;
+      --dark-navy:  #0f172a;
+      --white:      #ffffff;
+      --radius:     12px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.08);
+      --shadow-lg:  0 8px 40px rgba(0,0,0,0.12);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--gray-900);
+      background: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      height: 100px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .nav-logo img { height: 88px; display: block; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-left: auto;
+      list-style: none;
+    }
+    .nav-links li a {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      transition: background 0.15s;
+    }
+    .nav-links li a:hover { background: var(--gray-100); }
+    .nav-links li a.active {
+      background: var(--gray-100);
+      color: var(--gray-900);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-left: 1.5rem;
+    }
+    .btn-signin {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    .btn-signin:hover { background: var(--gray-100); }
+    .btn-get-verified {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      color: var(--white);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn-get-verified:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 6rem 2rem 5rem;
+      background: var(--white);
+    }
+    .hero-bg-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: clamp(80px, 14vw, 180px);
+      font-weight: 800;
+      color: rgba(26,79,168,0.04);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: 0.1em;
+    }
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      margin-bottom: 1.75rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .hero-badge svg { color: var(--green); }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--gray-900);
+      margin-bottom: 1rem;
+    }
+    .hero-tagline {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--blue);
+      margin-bottom: 1rem;
+    }
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--gray-500);
+      margin-bottom: 2rem;
+      max-width: 480px;
+    }
+    .hero-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.75rem;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      color: var(--white);
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); opacity: 0.93; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.75rem;
+      background: var(--white);
+      color: var(--gray-700);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--blue); background: var(--blue-light); }
+
+    /* ── Hero Card ── */
+    .hero-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: var(--shadow-lg);
+    }
+    .hero-card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-card-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .hero-card-name { font-size: 1.1rem; font-weight: 700; }
+    .hero-card-role { font-size: 0.875rem; color: var(--gray-500); }
+    .hero-card-checks { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+    .hero-card-check {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+    .hero-card-check svg { color: var(--green); flex-shrink: 0; }
+    .hero-card-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--gray-100);
+      margin-bottom: 1.25rem;
+    }
+    .hero-card-meta-label { font-size: 0.78rem; color: var(--gray-400); margin-bottom: 0.2rem; }
+    .hero-card-meta-value { font-size: 0.95rem; font-weight: 700; }
+    .hero-card-public-id {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--gray-100);
+      font-size: 0.85rem;
+    }
+    .hero-card-public-id span { color: var(--gray-500); }
+    .hero-card-public-id strong { color: var(--blue); font-weight: 700; letter-spacing: 0.05em; }
+
+    /* ── Stats ── */
+    .stats-bar {
+      background: var(--white);
+      border-top: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--gray-100);
+      padding: 2.5rem 2rem;
+    }
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 3rem;
+      align-items: center;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+    .stat-number { font-size: 1.5rem; font-weight: 800; color: var(--gray-900); }
+    .stat-label { font-size: 0.875rem; color: var(--gray-500); }
+
+    /* ── Marquee ── */
+    .marquee-bar {
+      background: var(--gray-50);
+      border-top: 1px solid var(--gray-100);
+      border-bottom: 1px solid var(--gray-100);
+      padding: 0.875rem 0;
+      overflow: hidden;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 3rem;
+      white-space: nowrap;
+      animation: marquee 20s linear infinite;
+    }
+    .marquee-track span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--gray-400);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── Feature Cards ── */
+    .features {
+      padding: 5rem 2rem;
+      background: var(--white);
+    }
+    .features-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .feature-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      color: var(--blue);
+    }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .feature-card p { font-size: 0.9rem; color: var(--gray-500); line-height: 1.6; }
+
+    /* ── How It Works ── */
+    .how {
+      padding: 5rem 2rem;
+      background: var(--gray-50);
+    }
+    .how-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 0.75rem;
+    }
+    .section-subtitle {
+      font-size: 1rem;
+      color: var(--gray-500);
+      margin-bottom: 3.5rem;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: calc(16.66% + 16px);
+      right: calc(16.66% + 16px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue) 0%, var(--teal) 100%);
+      opacity: 0.3;
+    }
+    .step { text-align: center; position: relative; }
+    .step-num {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      color: var(--white);
+      font-size: 1.3rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+    .step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .step p { font-size: 0.9rem; color: var(--gray-500); line-height: 1.6; }
+
+    /* ── Use Cases ── */
+    .use-cases {
+      padding: 5rem 2rem;
+      background: var(--white);
+    }
+    .use-cases-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .use-cases h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; margin-bottom: 2rem; }
+    .use-case-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+    .use-case-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+    .use-case-list li svg { color: var(--green); flex-shrink: 0; }
+
+    /* ── Quick Verification Card ── */
+    .qv-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+    .qv-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .qv-card-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .qv-card p { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 1.5rem; line-height: 1.6; }
+    .qv-code-box {
+      background: var(--gray-50);
+      border: 1.5px dashed var(--gray-200);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .qv-code-box .qv-label { font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem; }
+    .qv-code-box .qv-code { font-size: 1.5rem; font-weight: 800; color: var(--blue); letter-spacing: 0.1em; }
+
+    /* ── CTA Banner ── */
+    .cta-banner {
+      background: var(--dark-navy);
+      padding: 5rem 2rem;
+      text-align: center;
+    }
+    .cta-inner { max-width: 700px; margin: 0 auto; }
+    .cta-banner h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 1rem;
+    }
+    .cta-banner p { font-size: 1rem; color: #94a3b8; margin-bottom: 2.5rem; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-cta-primary {
+      padding: 0.85rem 1.75rem;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      color: var(--white);
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-cta-primary:hover { transform: translateY(-2px); opacity: 0.93; }
+    .btn-cta-secondary {
+      padding: 0.85rem 1.75rem;
+      background: rgba(255,255,255,0.08);
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background 0.15s;
+    }
+    .btn-cta-secondary:hover { background: rgba(255,255,255,0.15); }
+
+    /* ── Footer ── */
+    .footer {
+      background: var(--dark-navy);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+    }
+    .footer-inner { max-width: 800px; margin: 0 auto; }
+    .footer-logo { height: 64px; margin-bottom: 1.75rem; }
+    .footer-legal {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .footer-terms a {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.15s;
+    }
+    .footer-terms a:hover { color: var(--white); }
+    .footer-copy {
+      font-size: 0.78rem;
+      color: #475569;
+      margin-top: 1rem;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .nav { height: auto; padding: 0.75rem 1rem; }
+      .nav-logo img { height: 56px; }
+      .nav-links { display: none; }
+      .hero { padding: 3rem 1.25rem; }
+      .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero-card { order: -1; }
+      .stats-inner { flex-direction: column; gap: 1.5rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .steps::before { display: none; }
+      .use-cases-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .hero-btns { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 2rem; }
+      .section-title { font-size: 1.6rem; }
+      .cta-banner h2 { font-size: 1.8rem; }
+      .cta-btns { flex-direction: column; align-items: center; }
+    }
+  </style>
 </head>
 <body>
-<nav id="navbar">
-  <div class="nav-inner">
-    <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"
-    <ul class="nav-links">
-      <li><a href="/">Home</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="/#verify-section" onclick="document.getElementById('verify-section')?.scrollIntoView({behavior:'smooth'});return false;">Verify someone</a></li>
-    </ul>
-    <div class="nav-actions" id="navActions">
-      <button class="btn-nav-ghost" onclick="location.href='/login.html'">Sign in</button>
-      <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
-    </div>
-  </div>
-</nav>
 
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-text">
-      <div class="hero-tag">&#10003; Trusted identity verification</div>
-      <h1>Verify who you're meeting <span class="highlight">before</span> you meet them.</h1>
-      <p class="hero-sub">Digital Trust Network lets you confirm someone's verified identity in seconds — using a simple code or QR scan. No account needed to check.</p>
-      <div class="hero-actions">
-        <button class="btn-primary" onclick="document.getElementById('verify-section').scrollIntoView({behavior:'smooth'})">Check someone now &rarr;</button>
-        <button class="btn-secondary" onclick="location.href='/apply.html'">Get verified</button>
-      </div>
-      <div class="hero-trust-row">
-        <div class="trust-chip">&#128274; Secure</div>
-        <div class="trust-chip">&#9989; Manually verified</div>
-        <div class="trust-chip">&#9889; Instant results</div>
+  <!-- ── Nav ── -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/logo.png" alt="Online Market Security" />
+      </a>
+      <ul class="nav-links">
+        <li>
+          <a href="/" class="active">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+          </a>
+        </li>
+        <li>
+          <a href="/verify.html">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Verify
+          </a>
+        </li>
+      </ul>
+      <div class="nav-actions">
+        <a href="/login.html" class="btn-signin">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Sign In
+        </a>
+        <a href="/apply.html" class="btn-get-verified">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+          Get Verified
+        </a>
       </div>
     </div>
-    <div class="hero-visual">
-      <div class="hero-card-stack">
-        <div class="hc-float hc-float-1"><span class="float-dot dot-green"></span>Identity verified</div>
-        <div class="hc-main">
-          <div class="hc-avatar-wrap">
-            <div class="hc-avatar">&#128295;</div>
-            <div class="hc-name">Sipho Dlamini</div>
-            <div class="hc-role">Licensed Plumber</div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-bg-text">SECURITY</div>
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Trusted Worldwide
+        </div>
+        <h1>Verify before you buy or hire</h1>
+        <p class="hero-tagline">Secure People. Trusted Trades. Better Online.</p>
+        <p class="hero-desc">Global identity verification platform for secure online marketplace transactions and service provider verification.</p>
+        <div class="hero-btns">
+          <a href="/verify.html" class="btn-primary">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Verify Someone
+          </a>
+          <a href="/apply.html" class="btn-secondary">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+            Get Verified
+          </a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <div class="hero-card-avatar">🛒</div>
+            <div>
+              <div class="hero-card-name">Thabo Mkhize</div>
+              <div class="hero-card-role">Licensed Electrician</div>
+            </div>
           </div>
-          <div class="verified-badge-large">&#10003;&nbsp; Fully Verified</div>
-          <div class="hc-detail-row">
-            <div class="hc-detail"><div class="lbl">Verified</div><div class="val">1 May 2026</div></div>
-            <div class="hc-detail"><div class="lbl">Expires</div><div class="val">31 May 2026</div></div>
+          <div class="hero-card-checks">
+            <div class="hero-card-check">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              ID Verified
+            </div>
+            <div class="hero-card-check">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              Selfie Verified
+            </div>
+          </div>
+          <div class="hero-card-meta">
+            <div>
+              <div class="hero-card-meta-label">Verified</div>
+              <div class="hero-card-meta-value">15 Jan 2026</div>
+            </div>
+            <div>
+              <div class="hero-card-meta-label">Expires</div>
+              <div class="hero-card-meta-value">15 Jan 2027</div>
+            </div>
+          </div>
+          <div class="hero-card-public-id">
+            <span>Public ID</span>
+            <strong>TN-B34XPQ72</strong>
           </div>
         </div>
-        <div class="hc-float hc-float-2"><span class="float-dot dot-blue"></span>ID &amp; selfie checked</div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="verify-section" id="verify-section">
-  <div class="verify-section-inner">
-    <div class="section-label">Instant verification</div>
-    <h2 class="section-title">Check someone's verification</h2>
-    <p class="section-sub">If someone shared a Digital Trust Network code with you, enter it below to confirm their identity.</p>
-    <div class="verify-widget">
-      <div class="widget-tabs">
-        <button class="wtab active" onclick="switchTab('code',this)">&#128290;&nbsp; Enter a code</button>
-        <button class="wtab" onclick="switchTab('qr',this)">&#128247;&nbsp; Scan QR code</button>
-      </div>
-      <div class="tab-pane active" id="tp-code">
-        <div class="input-group">
-          <label>Verification code</label>
-          <input class="code-input" id="codeInput" type="text" placeholder="e.g. TN-A92KX81Q" maxlength="14" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')checkCode()">
+  <!-- ── Stats ── -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-        <button class="btn-full" onclick="checkCode()">Check verification &rarr;</button>
-        <p class="input-hint">The code starts with <span>TN-</span> and was shared by the person.</p>
-        <div class="result-wrap" id="codeResult"></div>
-      </div>
-      <div class="tab-pane" id="tp-qr">
-        <div class="qr-scan-box">
-          <div class="scan-anim"></div>
-          <div class="qr-scan-icon">&#128247;</div>
-          <h4>Camera scanning coming soon</h4>
-          <p>For now, ask the provider to share their code directly</p>
-        </div>
-        <div class="or-row">or enter code manually</div>
-        <input class="code-input" id="qrInput" type="text" placeholder="TN-XXXXXXXX" maxlength="14" oninput="this.value=this.value.toUpperCase()">
-        <button class="btn-full" style="margin-top:0.75rem" onclick="checkQRCode()">Check verification &rarr;</button>
-        <div class="result-wrap" id="qrResult"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="how-section" id="how">
-  <div class="container">
-    <div class="section-label" style="text-align:center">Simple process</div>
-    <h2 class="section-title" style="text-align:center">How Digital Trust Network works</h2>
-    <div class="how-grid">
-      <div class="how-card"><div class="step-num">1</div><div class="how-icon">&#128221;</div><h3>Register &amp; apply</h3><p>Sign up and complete a short application with your name, service type, and contact details.</p></div>
-      <div class="how-card"><div class="step-num">2</div><div class="how-icon">&#128282;</div><h3>Verify your identity</h3><p>Upload a photo ID and selfie. Our team manually reviews your documents within 48 hours.</p></div>
-      <div class="how-card"><div class="step-num">3</div><div class="how-icon">&#128242;</div><h3>Share your badge</h3><p>Get a unique code and QR to share on WhatsApp, invoices, or Facebook — so clients can verify you instantly.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="trust-section">
-  <div class="container">
-    <div class="section-label" style="text-align:center">Verification levels</div>
-    <h2 class="section-title" style="text-align:center">What each status means</h2>
-    <div class="trust-grid">
-      <div class="trust-card tc-full"><div class="trust-icon">&#9989;</div><h3>Fully Verified</h3><p>ID document and selfie have both been reviewed and confirmed by Digital Trust Network.</p></div>
-      <div class="trust-card tc-partial"><div class="trust-icon">&#9888;&#65039;</div><h3>Partially Verified</h3><p>Some steps complete but review is still in progress.</p></div>
-      <div class="trust-card tc-expired"><div class="trust-icon">&#9200;</div><h3>Expired</h3><p>This verification was valid but has since expired. Ask the provider to renew.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="uses-section">
-  <div class="container">
-    <div class="section-label" style="text-align:center">Where it helps</div>
-    <h2 class="section-title" style="text-align:center">Feel confident in any situation</h2>
-    <div class="uses-grid">
-      <div class="use-card"><div class="use-icon-wrap ui-blue">&#128295;</div><div><h4>Hiring a service provider</h4><p>Inviting someone into your home? Scan their Digital Trust Network QR before opening the door.</p></div></div>
-      <div class="use-card"><div class="use-icon-wrap ui-amber">&#128717;</div><div><h4>Online buying &amp; selling</h4><p>Meeting a stranger from Marketplace? Verify their identity before handing over money.</p></div></div>
-      <div class="use-card"><div class="use-icon-wrap ui-green">&#129309;</div><div><h4>Freelance &amp; business</h4><p>A shared code gives both parties confidence in a new working relationship.</p></div></div>
-      <div class="use-card"><div class="use-icon-wrap ui-purple">&#128101;</div><div><h4>Community &amp; social</h4><p>Meeting someone from online? Verify their real identity first.</p></div></div>
-    </div>
-  </div>
-</section>
-
-<section class="cta-banner">
-  <h2>Ready to be trusted?</h2>
-  <p>Get your identity verified and start sharing your Digital Trust Network badge with clients today. Free to apply.</p>
-  <div class="cta-btns">
-    <button class="btn-white" onclick="location.href='/apply.html'">Get verified for free &rarr;</button>
-    <button class="btn-outline-white" onclick="location.href='/login.html'">Sign in</button>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-logo">Digital Trust Network</div>
-  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
-  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times. <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a></p>
-  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
-</footer>
-
-<div class="toast" id="toast"></div>
-
-<script type="module">
-import { supabase } from '/src/lib/supabase.js';
-
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-  const { data: profile } = await supabase.from('profiles').select('name,role').eq('id', session.user.id).maybeSingle();
-  document.getElementById('navActions').innerHTML = `
-    <span style="font-size:0.875rem;font-weight:600">${profile?.name || session.user.email}</span>
-    <button class="btn-nav-solid" onclick="location.href='${profile?.role==='admin'?'/admin.html':'/dashboard.html'}'">Dashboard</button>
-  `;
-}
-
-window.switchTab = (name, btn) => {
-  document.querySelectorAll('.wtab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tp-'+name).classList.add('active');
-  btn.classList.add('active');
-};
-
-async function lookupCode(code, resultId) {
-  if (!code) { showToast('Please enter a verification code'); return; }
-  const { data, error } = await supabase.from('profiles')
-    .select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
-    .eq('public_id',code).maybeSingle();
-  document.getElementById(resultId).innerHTML = buildCard(data, error);
-  document.getElementById(resultId).classList.add('show');
-}
-
-window.checkCode = () => lookupCode(document.getElementById('codeInput').value.trim().toUpperCase(), 'codeResult');
-window.checkQRCode = () => lookupCode(document.getElementById('qrInput').value.trim().toUpperCase(), 'qrResult');
-
-function buildCard(p, error) {
-  if (!p || error) return `<div class="result-card" style="padding:1.5rem;text-align:center"><div style="font-size:2rem">&#128269;</div><div style="font-weight:700;margin-top:0.5rem">No result found</div><div style="font-size:0.875rem;color:var(--muted)">Double-check the code and try again.</div></div>`;
-  const now = new Date();
-  const expiry = p.expiry_date ? new Date(p.expiry_date) : null;
-  const status = (expiry && now > expiry) ? 'expired' : p.verification_status;
-  const pills = {verified:['sp-verified','&#10003; Verified'],expired:['sp-expired','&#9888; Expired'],pending:['sp-pending','&#8987; Pending'],rejected:['sp-expired','&#10007; Rejected']};
-  const [pc,pl] = pills[status]||pills.pending;
-  const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
-  const avatar = p.selfie_url ? `<img src="${p.selfie_url}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:var(--shadow-sm)">` : `<div class="r-avatar">&#128100;</div>`;
-  const firstName = p.name?.split(' ')[0] || 'this person';
-  const rid = 'r'+Math.random().toString(36).slice(2);
-  return `<div class="result-card ${status==='verified'?'verified':status==='expired'?'expired':'pending'}">
-    <div class="result-top">${avatar}<div><div class="r-name">${p.name||'Unknown'}</div><div class="r-cat">${p.service_category||''}</div></div><span class="status-pill ${pc}">${pl}</span></div>
-    <div class="result-body">
-      ${status==='verified'?'<div class="checks-row"><div class="check-badge">&#10003; ID document checked</div><div class="check-badge">&#10003; Selfie checked</div></div>':''}
-      <div class="dates-row">
-        <div class="date-box"><div class="dl">Verified on</div><div class="dv">${fmt(p.verification_date)}</div></div>
-        <div class="date-box"><div class="dl">Expires on</div><div class="dv">${fmt(p.expiry_date)}</div></div>
-      </div>
-      <div style="border-top:1px solid var(--border);margin-top:1rem;padding-top:1rem">
-        <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem">&#11088; Rate your experience with ${firstName}</div>
-        <div style="display:flex;gap:0.35rem;margin-bottom:0.5rem" id="stars-${rid}">
-          ${[1,2,3,4,5].map(n=>`<button onclick="selectHomeStar('${rid}',${n},'${p.public_id}','${firstName}')" style="font-size:1.75rem;cursor:pointer;background:none;border:none;padding:0.1rem;filter:grayscale(1) opacity(.35);transition:transform .15s;line-height:1" id="star-${rid}-${n}">&#11088;</button>`).join('')}
-        </div>
-        <div style="font-size:0.78rem;color:var(--blue);font-weight:600;min-height:1.1rem;margin-bottom:0.75rem" id="starlabel-${rid}">Tap a star to rate</div>
-        <div id="rateform-${rid}" style="display:none">
-          <input type="text" placeholder="Your name (optional — leave blank to rate anonymously)" id="ratername-${rid}" style="width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;margin-bottom:0.6rem;box-sizing:border-box">
-          <div id="commentnote-${rid}" style="font-size:0.75rem;color:var(--red);font-weight:600;margin-bottom:0.35rem;display:none">&#9888; A comment is required for 1 or 2 star ratings.</div>
-          <textarea placeholder="Share your experience... (optional for 3-5 stars)" id="ratercomment-${rid}" rows="2" style="width:100%;padding:0.6rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:0.6rem"></textarea>
-          <button onclick="submitHomeRating('${rid}','${p.public_id}')" id="submitbtn-${rid}" style="width:100%;padding:0.75rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer">Submit rating</button>
-        </div>
-        <div id="ratesuccess-${rid}" style="display:none;text-align:center;padding:0.75rem;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm)">
-          <div style="font-size:1.25rem">&#127881;</div>
-          <div style="font-weight:700;color:var(--green);font-size:0.875rem">Thank you for your rating!</div>
+        <div>
+          <div class="stat-number">5,000+</div>
+          <div class="stat-label">Verified Users</div>
         </div>
       </div>
-      <div class="disclaimer">Verification confirms identity documents were reviewed. It does not guarantee behaviour, safety, or service quality.</div>
+      <div class="stat-item">
+        <div class="stat-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        </div>
+        <div>
+          <div class="stat-number">15,000+</div>
+          <div class="stat-label">Safe Transactions</div>
+        </div>
+      </div>
     </div>
-  </div>`;
-}
+  </div>
 
-window.selectHomeStar = (rid, n, publicId, firstName) => {
-  window['homeStars_'+rid] = n;
-  for(let i=1;i<=5;i++){
-    const s = document.getElementById(`star-${rid}-${i}`);
-    if(s){ s.style.filter=i<=n?'none':'grayscale(1) opacity(.35)'; s.style.transform=i===n?'scale(1.2)':'scale(1)'; }
-  }
-  const labels = {1:'1 star — Poor experience',2:'2 stars — Below average',3:'3 stars — Average',4:'4 stars — Good experience',5:'5 stars — Excellent experience'};
-  const lbl = document.getElementById('starlabel-'+rid);
-  if(lbl) lbl.textContent = labels[n];
-  const form = document.getElementById('rateform-'+rid);
-  if(form) form.style.display='block';
-  const note = document.getElementById('commentnote-'+rid);
-  if(note) note.style.display = n<=2?'block':'none';
-};
+  <!-- ── Marquee ── -->
+  <div class="marquee-bar">
+    <div class="marquee-track">
+      <span>✦ VERIFY</span>
+      <span>✦ TRUST</span>
+      <span>✦ PROTECT</span>
+      <span>✦ TRADE SAFE</span>
+      <span>✦ VERIFY</span>
+      <span>✦ TRUST</span>
+      <span>✦ PROTECT</span>
+      <span>✦ TRADE SAFE</span>
+      <span>✦ VERIFY</span>
+      <span>✦ TRUST</span>
+      <span>✦ PROTECT</span>
+      <span>✦ TRADE SAFE</span>
+      <span>✦ VERIFY</span>
+      <span>✦ TRUST</span>
+      <span>✦ PROTECT</span>
+      <span>✦ TRADE SAFE</span>
+    </div>
+  </div>
 
-window.submitHomeRating = async (rid, publicId) => {
-  const stars = window['homeStars_'+rid];
-  const nameVal = document.getElementById('ratername-'+rid)?.value.trim();
-  const name = nameVal || 'Anonymous';
-  const comment = document.getElementById('ratercomment-'+rid)?.value.trim();
-  const btn = document.getElementById('submitbtn-'+rid);
-  if (!stars) { showToast('Please select a star rating.'); return; }
-  if (stars<=2 && !comment) { showToast('Please add a comment explaining your low rating.'); return; }
-  if(btn){ btn.textContent='Submitting...'; btn.disabled=true; }
-  const { data: profile } = await supabase.from('profiles').select('id').eq('public_id', publicId).maybeSingle();
-  if (!profile) { showToast('Provider not found.'); if(btn){btn.textContent='Submit rating';btn.disabled=false;} return; }
-  const { data: { session } } = await supabase.auth.getSession();
-  let isVerified = false, raterId = null;
-  if (session) {
-    const { data: up } = await supabase.from('profiles').select('id,verification_status').eq('id', session.user.id).maybeSingle();
-    isVerified = up?.verification_status === 'verified';
-    raterId = up?.id || null;
-  }
-  const { error } = await supabase.from('ratings').insert({
-    provider_id: profile.id, rater_name: name, rater_verified: isVerified,
-    rater_user_id: raterId, stars, comment: comment||null
-  });
-  if(error){ showToast('Error: '+error.message); if(btn){btn.textContent='Submit rating';btn.disabled=false;} return; }
-  document.getElementById('rateform-'+rid).style.display='none';
-  document.getElementById('ratesuccess-'+rid).style.display='block';
-  document.getElementById('starlabel-'+rid).textContent='&#10003; Rating submitted!';
-};
+  <!-- ── Feature Cards ── -->
+  <section class="features">
+    <div class="features-inner">
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3>Secure &amp; Private</h3>
+          <p>Your data is encrypted and protected with industry-standard security</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+          </div>
+          <h3>Manually Verified</h3>
+          <p>Every profile is reviewed by our team within 48 hours</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Instant Results</h3>
+          <p>Get verification status in seconds with our quick lookup</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-window.showToast = msg => { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
-</script>
+  <!-- ── How It Works ── -->
+  <section class="how" id="how">
+    <div class="how-inner">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Get verified in three simple steps and start building trust with your clients</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Register &amp; Apply</h3>
+          <p>Create your account and submit your verification application with your details</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Upload Documents</h3>
+          <p>Submit your ID and a selfie photo for manual verification by our team (48 hours)</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Share Your Badge</h3>
+          <p>Once verified, share your unique code or QR code with clients to build trust</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Use Cases ── -->
+  <section class="use-cases">
+    <div class="use-cases-inner">
+      <div>
+        <h2>Perfect for any situation where trust matters</h2>
+        <ul class="use-case-list">
+          <li>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Hiring service providers and contractors
+          </li>
+          <li>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Online marketplace transactions
+          </li>
+          <li>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Freelance and business relationships
+          </li>
+          <li>
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Community and social meetings
+          </li>
+        </ul>
+        <a href="/apply.html" class="btn-primary" style="display:inline-flex;">Start Your Application</a>
+      </div>
+      <div>
+        <div class="qv-card">
+          <div class="qv-card-header">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="4" height="4"/></svg>
+            <h3>Quick Verification</h3>
+          </div>
+          <p>Share your unique verification code or QR code with anyone who wants to verify your identity before meeting.</p>
+          <div class="qv-code-box">
+            <div class="qv-label">Example Code</div>
+            <div class="qv-code">TN-B34XPQ72</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA Banner ── -->
+  <section class="cta-banner">
+    <div class="cta-inner">
+      <h2>Ready to build trust?</h2>
+      <p>Join thousands of verified users worldwide and start building credibility today</p>
+      <div class="cta-btns">
+        <a href="/apply.html" class="btn-cta-primary">Get Verified Now</a>
+        <a href="/verify.html" class="btn-cta-secondary">Verify Someone</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="/logo.png" alt="Online Market Security" class="footer-logo" />
+      <p class="footer-legal">
+        Online Market Security verification confirms that documents have been reviewed by our team.
+        It does not guarantee behaviour, safety, or service quality.
+        Online Market Security does not accept liability for any loss, fraud, or harm arising from
+        interactions between users. Users are advised to exercise independent caution at all times.
+      </p>
+      <p class="footer-terms">
+        <a href="/terms.html">Terms of Use &amp; Disclaimer →</a>
+      </p>
+      <p class="footer-copy">© 2026 Online Market Security · Republic of South Africa</p>
+    </div>
+  </footer>
+
 </body>
 </html>
