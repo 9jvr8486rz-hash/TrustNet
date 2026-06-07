@@ -11,578 +11,393 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --blue:      #1a4fa8;
-      --blue-dark: #143d84;
-      --blue-light:#e8f0fd;
-      --teal:      #0d9488;
-      --green:     #16a34a;
-      --gray-50:   #f8fafc;
-      --gray-100:  #f1f5f9;
-      --gray-200:  #e2e8f0;
-      --gray-300:  #cbd5e1;
-      --gray-400:  #94a3b8;
-      --gray-500:  #64748b;
-      --gray-700:  #334155;
-      --gray-900:  #0f172a;
-      --dark-navy: #0f172a;
-      --white:     #ffffff;
-      --red:       #dc2626;
-      --radius:    12px;
-      --shadow:    0 4px 24px rgba(0,0,0,0.08);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+      --blue:#1a4fa8; --blue-dark:#143d84; --blue-light:#e8f0fd;
+      --teal:#0d9488; --green:#16a34a;
+      --gray-50:#f8fafc; --gray-100:#f1f5f9; --gray-200:#e2e8f0;
+      --gray-300:#cbd5e1; --gray-400:#94a3b8; --gray-500:#64748b;
+      --gray-700:#334155; --gray-900:#0f172a;
+      --dark-navy:#0f172a; --white:#ffffff; --red:#dc2626;
+      --shadow:0 4px 24px rgba(0,0,0,0.08);
     }
     html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      color: var(--gray-900);
-      background: var(--gray-50);
-      min-height: 100vh;
+    body { font-family:'Plus Jakarta Sans',sans-serif; color:var(--gray-900); background:var(--gray-50); min-height:100vh; }
+    a { text-decoration:none; color:inherit; }
+
+    .nav { background:var(--white); border-bottom:1px solid var(--gray-200); height:100px; display:flex; align-items:center; }
+    .nav-inner { max-width:1200px; width:100%; margin:0 auto; padding:0 2rem; display:flex; align-items:center; gap:2rem; }
+    .nav-logo img { height:88px; display:block; }
+    .nav-links { display:flex; align-items:center; gap:0.25rem; margin-left:auto; list-style:none; }
+    .nav-links li a { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; border-radius:8px; font-size:0.95rem; font-weight:500; color:var(--gray-700); transition:background 0.15s; }
+    .nav-links li a:hover { background:var(--gray-100); }
+    .nav-actions { display:flex; align-items:center; gap:0.75rem; margin-left:1.5rem; }
+    .btn-signin { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; font-size:0.95rem; font-weight:500; color:var(--gray-700); border-radius:8px; transition:background 0.15s; }
+    .btn-signin:hover { background:var(--gray-100); }
+    .btn-get-verified { display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1.25rem; background:linear-gradient(135deg,var(--blue),var(--teal)); color:var(--white); border-radius:8px; font-size:0.95rem; font-weight:600; transition:opacity 0.15s,transform 0.15s; }
+    .btn-get-verified:hover { opacity:0.92; transform:translateY(-1px); }
+
+    .page { max-width:780px; margin:0 auto; padding:3rem 1.5rem 5rem; }
+    .page-header { text-align:center; margin-bottom:2.5rem; }
+    .page-header p { font-size:1rem; color:var(--gray-500); }
+
+    .stepper { display:flex; align-items:flex-start; justify-content:center; margin-bottom:2.5rem; }
+    .stepper-item { display:flex; flex-direction:column; align-items:center; gap:0.5rem; flex:1; position:relative; }
+    .stepper-item:not(:last-child)::after { content:''; position:absolute; top:22px; left:calc(50% + 22px); right:calc(-50% + 22px); height:2px; background:var(--gray-200); z-index:0; transition:background 0.3s; }
+    .stepper-item.done:not(:last-child)::after { background:linear-gradient(90deg,var(--blue),var(--teal)); }
+    .step-circle { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--gray-100); color:var(--gray-400); border:2px solid var(--gray-200); position:relative; z-index:1; transition:all 0.3s; }
+    .stepper-item.active .step-circle { background:linear-gradient(135deg,var(--blue),var(--teal)); color:var(--white); border-color:transparent; box-shadow:0 0 0 4px rgba(26,79,168,0.15); }
+    .stepper-item.done .step-circle { background:var(--green); color:var(--white); border-color:transparent; }
+    .step-label { font-size:0.8rem; font-weight:600; color:var(--gray-400); text-align:center; transition:color 0.3s; }
+    .stepper-item.active .step-label { color:var(--blue); }
+    .stepper-item.done .step-label { color:var(--green); }
+
+    .card { background:var(--white); border:1px solid var(--gray-200); border-radius:20px; padding:2.5rem; box-shadow:var(--shadow); }
+    .card-title { font-size:1.3rem; font-weight:800; margin-bottom:0.25rem; }
+    .card-subtitle { font-size:0.875rem; color:var(--gray-500); margin-bottom:2rem; }
+    .fields { display:flex; flex-direction:column; gap:1.25rem; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+    .field { display:flex; flex-direction:column; gap:0.4rem; }
+    .field label { font-size:0.875rem; font-weight:600; color:var(--gray-700); }
+    .req { color:var(--red); margin-left:2px; }
+    .input-wrap { position:relative; display:flex; align-items:center; }
+    .ico { position:absolute; left:14px; color:var(--gray-400); pointer-events:none; }
+    .input-wrap input, .input-wrap select {
+      width:100%; padding:0.75rem 1rem 0.75rem 2.75rem;
+      border:1.5px solid var(--gray-200); border-radius:10px;
+      font-family:inherit; font-size:0.95rem; color:var(--gray-900);
+      background:var(--white); outline:none; -webkit-appearance:none;
+      transition:border-color 0.15s,box-shadow 0.15s;
     }
-    a { text-decoration: none; color: inherit; }
-    .nav {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      height: 100px;
-      display: flex;
-      align-items: center;
+    .input-wrap input:focus, .input-wrap select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,79,168,0.1); }
+    .input-wrap input::placeholder { color:var(--gray-400); }
+    .field-hint { font-size:0.78rem; color:var(--gray-400); }
+    .pw-toggle { position:absolute; right:12px; background:none; border:none; cursor:pointer; color:var(--gray-400); padding:4px; display:flex; align-items:center; }
+    .pw-toggle:hover { color:var(--gray-700); }
+
+    .upload-area { border:2px dashed var(--gray-200); border-radius:12px; padding:2rem; text-align:center; cursor:pointer; transition:border-color 0.2s,background 0.2s; position:relative; }
+    .upload-area:hover { border-color:var(--blue); background:var(--blue-light); }
+    .upload-area.has-file { border-color:var(--green); background:#f0fdf4; }
+    .upload-area input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .upload-icon { width:48px; height:48px; border-radius:12px; background:var(--blue-light); display:flex; align-items:center; justify-content:center; margin:0 auto 0.75rem; color:var(--blue); }
+    .upload-area h4 { font-size:0.95rem; font-weight:700; margin-bottom:0.3rem; }
+    .upload-area p { font-size:0.82rem; color:var(--gray-400); }
+    .file-name { margin-top:0.75rem; font-size:0.85rem; font-weight:600; color:var(--green); display:none; }
+    .upload-area.has-file .file-name { display:block; }
+    .upload-area.has-file .upload-default { display:none; }
+
+    .doc-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; }
+    .doc-type-btn { border:1.5px solid var(--gray-200); border-radius:10px; padding:0.75rem 0.5rem; text-align:center; cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--gray-500); background:var(--white); transition:all 0.15s; user-select:none; }
+    .doc-type-btn:hover, .doc-type-btn.selected { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+    .doc-icon { font-size:1.3rem; display:block; margin-bottom:0.3rem; }
+
+    .terms-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:1rem 1.25rem; }
+    .terms-check { display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; }
+    .terms-check input[type="checkbox"] { width:18px; height:18px; flex-shrink:0; accent-color:var(--blue); margin-top:2px; cursor:pointer; }
+    .terms-check span { font-size:0.875rem; color:var(--gray-700); line-height:1.5; }
+    .terms-check a { color:var(--blue); text-decoration:underline; }
+
+    .form-nav { display:flex; justify-content:space-between; align-items:center; margin-top:2rem; gap:1rem; }
+    .btn-back { display:inline-flex; align-items:center; gap:0.4rem; padding:0.75rem 1.5rem; border:1.5px solid var(--gray-200); border-radius:10px; background:var(--white); color:var(--gray-700); font-weight:600; font-size:0.95rem; cursor:pointer; font-family:inherit; transition:border-color 0.15s,background 0.15s; }
+    .btn-back:hover { border-color:var(--gray-300); background:var(--gray-50); }
+    .btn-next { display:inline-flex; align-items:center; gap:0.5rem; padding:0.75rem 2rem; background:linear-gradient(135deg,var(--blue),var(--teal)); color:var(--white); border:none; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer; font-family:inherit; margin-left:auto; transition:transform 0.15s,opacity 0.15s; }
+    .btn-next:hover { transform:translateY(-1px); opacity:0.93; }
+    .btn-next:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .alert { padding:0.875rem 1.25rem; border-radius:10px; font-size:0.875rem; font-weight:500; margin-bottom:1.5rem; display:none; gap:0.5rem; align-items:flex-start; }
+    .alert.error { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; display:flex; }
+    .info-box { border-radius:10px; padding:1rem 1.25rem; font-size:0.82rem; display:flex; gap:0.75rem; align-items:flex-start; }
+    .info-box.blue { background:var(--blue-light); border:1px solid #bfdbfe; color:var(--blue); }
+    .info-box.gray { background:var(--gray-50); border:1px solid var(--gray-200); color:var(--gray-500); }
+
+    .footer { background:var(--dark-navy); padding:2rem; text-align:center; }
+    .footer p { font-size:0.8rem; color:var(--gray-500); }
+    .footer a { color:var(--gray-400); text-decoration:underline; }
+
+    @media (max-width:768px) {
+      .nav { height:auto; padding:0.75rem 1rem; }
+      .nav-logo img { height:56px; }
+      .nav-links { display:none; }
+      .field-row { grid-template-columns:1fr; }
+      .doc-type-grid { grid-template-columns:1fr 1fr; }
+      .card { padding:1.5rem; }
+      .page { padding:1.5rem 1rem 3rem; }
     }
-    .nav-inner {
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      gap: 2rem;
+    @media (max-width:480px) {
+      .step-label { font-size:0.7rem; }
+      .step-circle { width:36px; height:36px; }
     }
-    .nav-logo img { height: 88px; display: block; }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      margin-left: auto;
-      list-style: none;
-    }
-    .nav-links li a {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--gray-700);
-      transition: background 0.15s;
-    }
-    .nav-links li a:hover { background: var(--gray-100); }
-    .nav-actions { display: flex; align-items: center; gap: 0.75rem; margin-left: 1.5rem; }
-    .btn-signin {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.5rem 1rem; font-size: 0.95rem; font-weight: 500;
-      color: var(--gray-700); border-radius: 8px; transition: background 0.15s;
-    }
-    .btn-signin:hover { background: var(--gray-100); }
-    .btn-get-verified {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.6rem 1.25rem;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
-      color: var(--white); border-radius: 8px; font-size: 0.95rem; font-weight: 600;
-      transition: opacity 0.15s, transform 0.15s;
-    }
-    .btn-get-verified:hover { opacity: 0.92; transform: translateY(-1px); }
-    .page {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem 5rem;
-    }
-    .page-header { text-align: center; margin-bottom: 2.5rem; }
-    .page-header p { font-size: 1rem; color: var(--gray-500); }
-    .stepper {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      margin-bottom: 2.5rem;
-    }
-    .stepper-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      flex: 1;
-      position: relative;
-    }
-    .stepper-item:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 22px;
-      left: calc(50% + 22px);
-      right: calc(-50% + 22px);
-      height: 2px;
-      background: var(--gray-200);
-      z-index: 0;
-      transition: background 0.3s;
-    }
-    .stepper-item.done:not(:last-child)::after {
-      background: linear-gradient(90deg, var(--blue), var(--teal));
-    }
-    .step-circle {
-      width: 44px; height: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--gray-100); color: var(--gray-400);
-      border: 2px solid var(--gray-200);
-      position: relative; z-index: 1;
-      transition: all 0.3s;
-    }
-    .stepper-item.active .step-circle {
-      background: linear-gradient(135deg, var(--blue), var(--teal));
-      color: var(--white); border-color: transparent;
-      box-shadow: 0 0 0 4px rgba(26,79,168,0.15);
-    }
-    .stepper-item.done .step-circle {
-      background: var(--green); color: var(--white); border-color: transparent;
-    }
-    .step-label {
-      font-size: 0.8rem; font-weight: 600; color: var(--gray-400);
-      text-align: center; transition: color 0.3s;
-    }
-    .stepper-item.active .step-label { color: var(--blue); }
-    .stepper-item.done .step-label { color: var(--green); }
-    .card {
-      background: var(--white); border: 1px solid var(--gray-200);
-      border-radius: 20px; padding: 2.5rem; box-shadow: var(--shadow);
-    }
-    .card-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.25rem; }
-    .card-subtitle { font-size: 0.875rem; color: var(--gray-500); margin-bottom: 2rem; }
-    .fields { display: flex; flex-direction: column; gap: 1.25rem; }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-    .field { display: flex; flex-direction: column; gap: 0.4rem; }
-    .field label { font-size: 0.875rem; font-weight: 600; color: var(--gray-700); }
-    .field label .req { color: var(--red); margin-left: 2px; }
-    .input-wrap { position: relative; display: flex; align-items: center; }
-    .input-wrap .ico {
-      position: absolute; left: 14px; color: var(--gray-400);
-      pointer-events: none; flex-shrink: 0;
-    }
-    .input-wrap input,
-    .input-wrap select {
-      width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.75rem;
-      border: 1.5px solid var(--gray-200); border-radius: 10px;
-      font-family: inherit; font-size: 0.95rem; color: var(--gray-900);
-      background: var(--white); outline: none; -webkit-appearance: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .input-wrap input:focus,
-    .input-wrap select:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(26,79,168,0.1);
-    }
-    .input-wrap input::placeholder { color: var(--gray-400); }
-    .field-hint { font-size: 0.78rem; color: var(--gray-400); }
-    .pw-toggle {
-      position: absolute; right: 12px;
-      background: none; border: none; cursor: pointer;
-      color: var(--gray-400); padding: 4px;
-      display: flex; align-items: center;
-    }
-    .pw-toggle:hover { color: var(--gray-700); }
-    .upload-area {
-      border: 2px dashed var(--gray-200); border-radius: 12px;
-      padding: 2rem; text-align: center; cursor: pointer;
-      transition: border-color 0.2s, background 0.2s; position: relative;
-    }
-    .upload-area:hover { border-color: var(--blue); background: var(--blue-light); }
-    .upload-area.has-file { border-color: var(--green); background: #f0fdf4; }
-    .upload-area input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-    }
-    .upload-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: var(--blue-light);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 0.75rem; color: var(--blue);
-    }
-    .upload-area h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .upload-area p { font-size: 0.82rem; color: var(--gray-400); }
-    .upload-area .file-name {
-      margin-top: 0.75rem; font-size: 0.85rem; font-weight: 600;
-      color: var(--green); display: none;
-    }
-    .upload-area.has-file .file-name { display: block; }
-    .upload-area.has-file .upload-default { display: none; }
-    .doc-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-    .doc-type-btn {
-      border: 1.5px solid var(--gray-200); border-radius: 10px;
-      padding: 0.75rem 0.5rem; text-align: center; cursor: pointer;
-      font-size: 0.82rem; font-weight: 600; color: var(--gray-500);
-      background: var(--white); transition: all 0.15s; user-select: none;
-    }
-    .doc-type-btn:hover,
-    .doc-type-btn.selected { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
-    .doc-type-btn .doc-icon { font-size: 1.3rem; display: block; margin-bottom: 0.3rem; }
-    .terms-box { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 1rem 1.25rem; }
-    .terms-check { display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; }
-    .terms-check input[type="checkbox"] {
-      width: 18px; height: 18px; flex-shrink: 0;
-      accent-color: var(--blue); margin-top: 2px; cursor: pointer;
-    }
-    .terms-check span { font-size: 0.875rem; color: var(--gray-700); line-height: 1.5; }
-    .terms-check a { color: var(--blue); text-decoration: underline; }
-    .form-nav {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-top: 2rem; gap: 1rem;
-    }
-    .btn-back {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.75rem 1.5rem; border: 1.5px solid var(--gray-200);
-      border-radius: 10px; background: var(--white);
-      color: var(--gray-700); font-weight: 600; font-size: 0.95rem;
-      cursor: pointer; font-family: inherit; transition: border-color 0.15s, background 0.15s;
-    }
-    .btn-back:hover { border-color: var(--gray-300); background: var(--gray-50); }
-    .btn-next {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.75rem 2rem;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
-      color: var(--white); border: none; border-radius: 10px;
-      font-weight: 700; font-size: 0.95rem; cursor: pointer;
-      font-family: inherit; margin-left: auto;
-      transition: transform 0.15s, opacity 0.15s;
-    }
-    .btn-next:hover { transform: translateY(-1px); opacity: 0.93; }
-    .btn-next:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .alert {
-      padding: 0.875rem 1.25rem; border-radius: 10px;
-      font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem;
-      display: none; gap: 0.5rem; align-items: flex-start;
-    }
-    .alert.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; display: flex; }
-    .info-box {
-      border-radius: 10px; padding: 1rem 1.25rem;
-      font-size: 0.82rem; display: flex; gap: 0.75rem; align-items: flex-start;
-    }
-    .info-box.blue { background: var(--blue-light); border: 1px solid #bfdbfe; color: var(--blue); }
-    .info-box.gray { background: var(--gray-50); border: 1px solid var(--gray-200); color: var(--gray-500); }
-    .footer { background: var(--dark-navy); padding: 2rem; text-align: center; }
-    .footer p { font-size: 0.8rem; color: var(--gray-500); }
-    .footer a { color: var(--gray-400); text-decoration: underline; }
-    @media (max-width: 768px) {
-      .nav { height: auto; padding: 0.75rem 1rem; }
-      .nav-logo img { height: 56px; }
-      .nav-links { display: none; }
-      .field-row { grid-template-columns: 1fr; }
-      .doc-type-grid { grid-template-columns: 1fr 1fr; }
-      .card { padding: 1.5rem; }
-      .page { padding: 1.5rem 1rem 3rem; }
-    }
-    @media (max-width: 480px) {
-      .step-label { font-size: 0.7rem; }
-      .step-circle { width: 36px; height: 36px; }
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-logo"><img src="/logo.png" alt="Online Market Security" /></a>
-      <ul class="nav-links">
-        <li><a href="/">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
-        </a></li>
-        <li><a href="/verify.html">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Verify
-        </a></li>
-      </ul>
-      <div class="nav-actions">
-        <a href="/login.html" class="btn-signin">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Sign In
-        </a>
-        <a href="/apply.html" class="btn-get-verified">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Get Verified
-        </a>
-      </div>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><img src="/logo.png" alt="Online Market Security" /></a>
+    <ul class="nav-links">
+      <li><a href="/"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a></li>
+      <li><a href="/verify.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Verify</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login.html" class="btn-signin"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Sign In</a>
+      <a href="/apply.html" class="btn-get-verified"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Get Verified</a>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <div class="page">
-    <div class="page-header" id="pageHeader">
-      <p>Join Online Market Security and start building credibility in your marketplace</p>
+<div class="page">
+  <div class="page-header" id="pageHeader">
+    <p>Join Online Market Security and start building credibility in your marketplace</p>
+  </div>
+
+  <div class="stepper" id="stepper">
+    <div class="stepper-item active" data-step="1">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <span class="step-label">Personal Info</span>
     </div>
-
-    <div class="stepper" id="stepper">
-      <div class="stepper-item active" data-step="1">
-        <div class="step-circle">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </div>
-        <span class="step-label">Personal Info</span>
-      </div>
-      <div class="stepper-item" data-step="2">
-        <div class="step-circle">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        </div>
-        <span class="step-label">Service Details</span>
-      </div>
-      <div class="stepper-item" data-step="3">
-        <div class="step-circle">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
-        <span class="step-label">Upload Documents</span>
-      </div>
-      <div class="stepper-item" data-step="4">
-        <div class="step-circle">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <span class="step-label">Create Account</span>
-      </div>
+    <div class="stepper-item" data-step="2">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+      <span class="step-label">Service Details</span>
     </div>
-
-    <div class="alert" id="alertBox"></div>
-
-    <div class="card" id="formCard">
-
-      <!-- STEP 1 -->
-      <div id="step1">
-        <div class="card-title">Personal Information</div>
-        <div class="card-subtitle">Enter your details exactly as they appear on your ID document</div>
-        <div class="fields">
-          <div class="field-row">
-            <div class="field">
-              <label>First Name <span class="req">*</span></label>
-              <div class="input-wrap">
-                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <input type="text" id="firstName" placeholder="John" autocomplete="given-name" />
-              </div>
-            </div>
-            <div class="field">
-              <label>Last Name <span class="req">*</span></label>
-              <div class="input-wrap">
-                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name" />
-              </div>
-            </div>
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label>Phone Number <span class="req">*</span></label>
-              <div class="input-wrap">
-                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <input type="tel" id="phone" placeholder="+27 82 123 4567" autocomplete="tel" />
-              </div>
-            </div>
-            <div class="field">
-              <label>ID Number <span class="req">*</span></label>
-              <div class="input-wrap">
-                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                <input type="text" id="idNumber" placeholder="9001015009087" />
-              </div>
-              <span class="field-hint">SA ID, passport, or other government ID number</span>
-            </div>
-          </div>
-        </div>
-        <div class="form-nav">
-          <div></div>
-          <button class="btn-next" onclick="goToStep(2)">
-            Continue
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- STEP 2 -->
-      <div id="step2" style="display:none;">
-        <div class="card-title">Service Details</div>
-        <div class="card-subtitle">Tell us about the type of service or work you offer</div>
-        <div class="fields">
-          <div class="field">
-            <label>Service Category <span class="req">*</span></label>
-            <div class="input-wrap">
-              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-              <select id="serviceCategory">
-                <option value="" disabled selected>Select your service type</option>
-                <option>Plumber</option><option>Electrician</option><option>Painter</option>
-                <option>Cleaner</option><option>Carpenter</option><option>Gardener</option>
-                <option value="Builder">Builder / Contractor</option><option>Tiler</option>
-                <option>Welder</option><option value="AC Technician">AC Technician</option>
-                <option value="Domestic Worker">Domestic Worker</option>
-                <option value="Security Guard">Security Guard</option>
-                <option value="Driver">Driver / Chauffeur</option>
-                <option value="Tutor">Tutor / Teacher</option>
-                <option value="IT Support">IT Support</option>
-                <option value="Online Seller">Online Seller</option>
-                <option>Other</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label>Describe Your Services <span class="req">*</span></label>
-            <div class="input-wrap" style="align-items:flex-start;">
-              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="top:14px;position:absolute;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <textarea id="serviceDesc" rows="4"
-                style="width:100%;padding:0.75rem 1rem 0.75rem 2.75rem;border:1.5px solid var(--gray-200);border-radius:10px;font-family:inherit;font-size:0.95rem;color:var(--gray-900);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;"
-                placeholder="e.g. Licensed electrician with 10 years experience..."
-                onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,79,168,0.1)'"
-                onblur="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'"></textarea>
-            </div>
-            <span class="field-hint">This helps clients understand who you are and what you do</span>
-          </div>
-          <div class="field">
-            <label>Area / City You Operate In <span class="req">*</span></label>
-            <div class="input-wrap">
-              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <input type="text" id="location" placeholder="e.g. Johannesburg, Sandton, Soweto" />
-            </div>
-          </div>
-        </div>
-        <div class="form-nav">
-          <button class="btn-back" onclick="goToStep(1)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-          </button>
-          <button class="btn-next" onclick="goToStep(3)">
-            Continue
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- STEP 3 -->
-      <div id="step3" style="display:none;">
-        <div class="card-title">Upload Documents</div>
-        <div class="card-subtitle">Select your document type, then upload your selfie and ID. All files are stored securely.</div>
-        <div class="fields">
-          <div class="field">
-            <label>Document Type <span class="req">*</span></label>
-            <div class="doc-type-grid">
-              <div class="doc-type-btn selected" data-val="sa_id" onclick="selectDocType(this)">
-                <span class="doc-icon">🪪</span>SA ID Book / Card
-              </div>
-              <div class="doc-type-btn" data-val="passport" onclick="selectDocType(this)">
-                <span class="doc-icon">📕</span>Passport
-              </div>
-              <div class="doc-type-btn" data-val="drivers" onclick="selectDocType(this)">
-                <span class="doc-icon">🚗</span>Driver's Licence
-              </div>
-            </div>
-            <input type="hidden" id="docType" value="sa_id" />
-          </div>
-
-          <div class="field">
-            <label>Selfie Photo <span class="req">*</span></label>
-            <div class="upload-area" id="selfieArea">
-              <input type="file" id="selfieFile" accept="image/*" onchange="handleFile('selfie',this)" />
-              <div class="upload-default">
-                <div class="upload-icon">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                </div>
-                <h4>Upload a clear selfie</h4>
-                <p>Click to browse or drag and drop<br/>JPG, PNG · Max 5MB</p>
-              </div>
-              <div class="file-name" id="selfieName"></div>
-            </div>
-            <span class="field-hint">Face must be clearly visible, no sunglasses or hat. Good lighting.</span>
-          </div>
-
-          <div class="field">
-            <label>ID Document Photo <span class="req">*</span></label>
-            <div class="upload-area" id="idDocArea">
-              <input type="file" id="idDocFile" accept="image/*,application/pdf" onchange="handleFile('idDoc',this)" />
-              <div class="upload-default">
-                <div class="upload-icon">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                </div>
-                <h4>Upload your ID / Passport / Licence</h4>
-                <p>Click to browse or drag and drop<br/>JPG, PNG, PDF · Max 10MB</p>
-              </div>
-              <div class="file-name" id="idDocName"></div>
-            </div>
-            <span class="field-hint">Document must be clearly readable. No blurry images.</span>
-          </div>
-
-          <div class="info-box blue">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>Your documents are stored securely and only reviewed by our verification team. They are never shared publicly.</span>
-          </div>
-        </div>
-        <div class="form-nav">
-          <button class="btn-back" onclick="goToStep(2)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-          </button>
-          <button class="btn-next" onclick="goToStep(4)">
-            Continue
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- STEP 4 -->
-      <div id="step4" style="display:none;">
-        <div class="card-title">Create Your Account</div>
-        <div class="card-subtitle">Set up your login credentials to manage your verification profile</div>
-        <div class="fields">
-          <div class="field">
-            <label>Email Address <span class="req">*</span></label>
-            <div class="input-wrap">
-              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
-            </div>
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label>Password <span class="req">*</span></label>
-              <div class="input-wrap">
-                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password" />
-                <button type="button" class="pw-toggle" onclick="togglePw('password',this)">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="field">
-              <label>Confirm Password <span class="req">*</span></label>
-              <div class="input-wrap">
-                <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password" />
-                <button type="button" class="pw-toggle" onclick="togglePw('confirmPassword',this)">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="terms-box">
-            <label class="terms-check">
-              <input type="checkbox" id="termsCheck" />
-              <span>I have read and agree to the <a href="/terms.html" target="_blank">Terms of Use &amp; Disclaimer</a>. I understand that Online Market Security verification confirms document review only and does not guarantee behaviour, safety, or service quality. I confirm all information and documents submitted are genuine and belong to me.</span>
-            </label>
-          </div>
-          <div class="info-box gray">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>Once submitted, our team will review your application within 48 hours. You'll receive an email when your status is updated.</span>
-          </div>
-        </div>
-        <div class="form-nav">
-          <button class="btn-back" onclick="goToStep(3)">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-          </button>
-          <button class="btn-next" id="submitBtn" onclick="submitApplication()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-            Submit Application
-          </button>
-        </div>
-      </div>
-
+    <div class="stepper-item" data-step="3">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <span class="step-label">Upload Documents</span>
+    </div>
+    <div class="stepper-item" data-step="4">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <span class="step-label">Create Account</span>
     </div>
   </div>
 
-  <footer class="footer">
-    <p>
-      Online Market Security verification confirms that documents have been reviewed by our team.
-      It does not guarantee behaviour, safety, or service quality.<br/>
-      <a href="/terms.html">Terms of Use &amp; Disclaimer</a> · © 2026 Online Market Security · Republic of South Africa
-    </p>
-  </footer>
+  <div class="alert" id="alertBox"></div>
 
-  <script>
+  <div class="card" id="formCard">
+
+    <!-- STEP 1 -->
+    <div id="step1">
+      <div class="card-title">Personal Information</div>
+      <div class="card-subtitle">Enter your details exactly as they appear on your ID document</div>
+      <div class="fields">
+        <div class="field-row">
+          <div class="field">
+            <label>First Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="firstName" placeholder="John" autocomplete="given-name" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Last Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name" />
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Phone Number <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <input type="tel" id="phone" placeholder="+27 82 123 4567" autocomplete="tel" />
+            </div>
+          </div>
+          <div class="field">
+            <label>ID Number <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <input type="text" id="idNumber" placeholder="9001015009087" />
+            </div>
+            <span class="field-hint">SA ID, passport, or other government ID number</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <div></div>
+        <button class="btn-next" id="step1Btn">
+          Continue
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" style="display:none;">
+      <div class="card-title">Service Details</div>
+      <div class="card-subtitle">Tell us about the type of service or work you offer</div>
+      <div class="fields">
+        <div class="field">
+          <label>Service Category <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <select id="serviceCategory">
+              <option value="" disabled selected>Select your service type</option>
+              <option>Plumber</option><option>Electrician</option><option>Painter</option>
+              <option>Cleaner</option><option>Carpenter</option><option>Gardener</option>
+              <option value="Builder">Builder / Contractor</option><option>Tiler</option>
+              <option>Welder</option><option value="AC Technician">AC Technician</option>
+              <option value="Domestic Worker">Domestic Worker</option>
+              <option value="Security Guard">Security Guard</option>
+              <option value="Driver">Driver / Chauffeur</option>
+              <option value="Tutor">Tutor / Teacher</option>
+              <option value="IT Support">IT Support</option>
+              <option value="Online Seller">Online Seller</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Describe Your Services <span class="req">*</span></label>
+          <div class="input-wrap" style="align-items:flex-start;">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="top:14px;position:absolute;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <textarea id="serviceDesc" rows="4"
+              style="width:100%;padding:0.75rem 1rem 0.75rem 2.75rem;border:1.5px solid var(--gray-200);border-radius:10px;font-family:inherit;font-size:0.95rem;color:var(--gray-900);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;"
+              placeholder="e.g. Licensed electrician with 10 years experience..."
+              onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,79,168,0.1)'"
+              onblur="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'"></textarea>
+          </div>
+          <span class="field-hint">This helps clients understand who you are and what you do</span>
+        </div>
+        <div class="field">
+          <label>Area / City You Operate In <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="text" id="location" placeholder="e.g. Johannesburg, Sandton, Soweto" />
+          </div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="step2Back">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+        </button>
+        <button class="btn-next" id="step2Btn">
+          Continue
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" style="display:none;">
+      <div class="card-title">Upload Documents</div>
+      <div class="card-subtitle">Select your document type, then upload your selfie and ID. All files are stored securely.</div>
+      <div class="fields">
+        <div class="field">
+          <label>Document Type <span class="req">*</span></label>
+          <div class="doc-type-grid">
+            <div class="doc-type-btn selected" data-val="sa_id">
+              <span class="doc-icon">🪪</span>SA ID Book / Card
+            </div>
+            <div class="doc-type-btn" data-val="passport">
+              <span class="doc-icon">📕</span>Passport
+            </div>
+            <div class="doc-type-btn" data-val="drivers">
+              <span class="doc-icon">🚗</span>Driver's Licence
+            </div>
+          </div>
+          <input type="hidden" id="docType" value="sa_id" />
+        </div>
+        <div class="field">
+          <label>Selfie Photo <span class="req">*</span></label>
+          <div class="upload-area" id="selfieArea">
+            <input type="file" id="selfieFile" accept="image/*" />
+            <div class="upload-default">
+              <div class="upload-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+              <h4>Upload a clear selfie</h4>
+              <p>Click to browse or drag and drop<br/>JPG, PNG · Max 5MB</p>
+            </div>
+            <div class="file-name" id="selfieName"></div>
+          </div>
+          <span class="field-hint">Face clearly visible, no sunglasses. Good lighting.</span>
+        </div>
+        <div class="field">
+          <label>ID Document <span class="req">*</span></label>
+          <div class="upload-area" id="idDocArea">
+            <input type="file" id="idDocFile" accept="image/*,application/pdf" />
+            <div class="upload-default">
+              <div class="upload-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+              <h4>Upload your ID / Passport / Licence</h4>
+              <p>Click to browse or drag and drop<br/>JPG, PNG, PDF · Max 10MB</p>
+            </div>
+            <div class="file-name" id="idDocName"></div>
+          </div>
+          <span class="field-hint">Must be clearly readable. No blurry images.</span>
+        </div>
+        <div class="info-box blue">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Documents are stored securely and only reviewed by our team. Never shared publicly.</span>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="step3Back">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+        </button>
+        <button class="btn-next" id="step3Btn">
+          Continue
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step4" style="display:none;">
+      <div class="card-title">Create Your Account</div>
+      <div class="card-subtitle">Set up your login credentials to manage your verification profile</div>
+      <div class="fields">
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Password <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="pwToggle1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Confirm Password <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="pwToggle2"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="terms-box">
+          <label class="terms-check">
+            <input type="checkbox" id="termsCheck" />
+            <span>I have read and agree to the <a href="/terms.html" target="_blank">Terms of Use &amp; Disclaimer</a>. I understand that Online Market Security verification confirms document review only and does not guarantee behaviour, safety, or service quality. I confirm all information and documents submitted are genuine and belong to me.</span>
+          </label>
+        </div>
+        <div class="info-box gray">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Once submitted, our team will review your application within 48 hours.</span>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="step4Back">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+        </button>
+        <button class="btn-next" id="submitBtn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          Submit Application
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /page -->
+
+<footer class="footer">
+  <p>Online Market Security verification confirms that documents have been reviewed by our team. It does not guarantee behaviour, safety, or service quality.<br/>
+  <a href="/terms.html">Terms of Use &amp; Disclaimer</a> · © 2026 Online Market Security · Republic of South Africa</p>
+</footer>
+
 <script>
   const { createClient } = supabase;
   const sb = createClient(
@@ -594,25 +409,47 @@
   let selfieFileObj = null;
   let idDocFileObj  = null;
 
-  function selectDocType(btn) {
-    document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    document.getElementById('docType').value = btn.dataset.val;
-  }
+  // ── Wire up ALL buttons via addEventListener (no inline onclick) ──
+  document.addEventListener('DOMContentLoaded', function() {
 
-  function handleFile(type, input) {
-    const file = input.files[0];
-    if (!file) return;
-    if (type === 'selfie') {
+    // Doc type buttons
+    document.querySelectorAll('.doc-type-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('docType').value = this.dataset.val;
+      });
+    });
+
+    // File uploads
+    document.getElementById('selfieFile').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
       selfieFileObj = file;
       document.getElementById('selfieArea').classList.add('has-file');
       document.getElementById('selfieName').textContent = '✓ ' + file.name;
-    } else {
+    });
+    document.getElementById('idDocFile').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
       idDocFileObj = file;
       document.getElementById('idDocArea').classList.add('has-file');
       document.getElementById('idDocName').textContent = '✓ ' + file.name;
-    }
-  }
+    });
+
+    // Password toggles
+    document.getElementById('pwToggle1').addEventListener('click', function() { togglePw('password', this); });
+    document.getElementById('pwToggle2').addEventListener('click', function() { togglePw('confirmPassword', this); });
+
+    // Step navigation
+    document.getElementById('step1Btn').addEventListener('click', function() { goToStep(2); });
+    document.getElementById('step2Back').addEventListener('click', function() { goToStep(1); });
+    document.getElementById('step2Btn').addEventListener('click', function() { goToStep(3); });
+    document.getElementById('step3Back').addEventListener('click', function() { goToStep(2); });
+    document.getElementById('step3Btn').addEventListener('click', function() { goToStep(4); });
+    document.getElementById('step4Back').addEventListener('click', function() { goToStep(3); });
+    document.getElementById('submitBtn').addEventListener('click', submitApplication);
+  });
 
   function togglePw(id, btn) {
     const input = document.getElementById(id);
@@ -627,7 +464,7 @@
     const el = document.getElementById('alertBox');
     el.className = 'alert error';
     el.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`;
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
   function clearAlert() {
     const el = document.getElementById('alertBox');
@@ -638,13 +475,9 @@
   function updateStepper(n) {
     document.querySelectorAll('.stepper-item').forEach((item, idx) => {
       const s = idx + 1;
-      item.classList.remove('active', 'done');
-      if (s < n) {
-        item.classList.add('done');
-        item.querySelector('.step-circle').innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
-      } else if (s === n) {
-        item.classList.add('active');
-      }
+      item.classList.remove('active','done');
+      if (s < n) item.classList.add('done');
+      else if (s === n) item.classList.add('active');
     });
   }
 
@@ -659,20 +492,27 @@
     currentStep = n;
     document.getElementById('step' + n).style.display = 'block';
     updateStepper(n);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top:0, behavior:'smooth' });
   }
 
   function validateStep1() {
-    if (!document.getElementById('firstName').value.trim())  { showAlert('Please enter your first name.'); return false; }
-    if (!document.getElementById('lastName').value.trim())   { showAlert('Please enter your last name.'); return false; }
-    if (!document.getElementById('phone').value.trim())      { showAlert('Please enter your phone number.'); return false; }
-    if (!document.getElementById('idNumber').value.trim())   { showAlert('Please enter your ID number.'); return false; }
+    const fn = document.getElementById('firstName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    const ph = document.getElementById('phone').value.trim();
+    const id = document.getElementById('idNumber').value.trim();
+    if (!fn) { showAlert('Please enter your first name.'); return false; }
+    if (!ln) { showAlert('Please enter your last name.'); return false; }
+    if (!ph) { showAlert('Please enter your phone number.'); return false; }
+    if (!id) { showAlert('Please enter your ID number.'); return false; }
     return true;
   }
   function validateStep2() {
-    if (!document.getElementById('serviceCategory').value)    { showAlert('Please select a service category.'); return false; }
-    if (!document.getElementById('serviceDesc').value.trim()) { showAlert('Please describe your services.'); return false; }
-    if (!document.getElementById('location').value.trim())    { showAlert('Please enter your operating area.'); return false; }
+    const cat  = document.getElementById('serviceCategory').value;
+    const desc = document.getElementById('serviceDesc').value.trim();
+    const loc  = document.getElementById('location').value.trim();
+    if (!cat)  { showAlert('Please select a service category.'); return false; }
+    if (!desc) { showAlert('Please describe your services.'); return false; }
+    if (!loc)  { showAlert('Please enter your operating area.'); return false; }
     return true;
   }
   function validateStep3() {
@@ -698,39 +538,33 @@
     btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting...`;
 
     try {
-      // STEP 1: Sign up
+      // 1. Sign up
       const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
       if (authError) throw new Error(authError.message);
       const userId = authData?.user?.id;
-      if (!userId) throw new Error('Could not create account. This email may already be registered.');
+      if (!userId) throw new Error('Could not create account. Email may already be registered.');
 
-      // STEP 2: Immediately sign in to get an active session for RLS + storage
-      const { error: signInError } = await sb.auth.signInWithPassword({ email, password });
-      if (signInError) {
-        // Email confirmation may be required — continue anyway, profile insert uses userId directly
-        console.warn('Sign in after signup failed (email confirmation may be on):', signInError.message);
-      }
+      // 2. Sign in immediately to get active session
+      await sb.auth.signInWithPassword({ email, password });
 
-      // STEP 3: Upload selfie
+      // 3. Upload selfie
       const selfieExt  = selfieFileObj.name.split('.').pop().toLowerCase();
       const selfiePath = `${userId}_${Date.now()}_selfie.${selfieExt}`;
-      const { error: selfieErr } = await sb.storage
-        .from('selfies')
-        .upload(selfiePath, selfieFileObj, { upsert: true, contentType: selfieFileObj.type });
+      const { error: selfieErr } = await sb.storage.from('selfies')
+        .upload(selfiePath, selfieFileObj, { upsert:true, contentType:selfieFileObj.type });
       if (selfieErr) throw new Error('Selfie upload failed: ' + selfieErr.message);
       const selfieUrl = sb.storage.from('selfies').getPublicUrl(selfiePath).data.publicUrl;
 
-      // STEP 4: Upload ID doc
+      // 4. Upload ID doc
       const idExt  = idDocFileObj.name.split('.').pop().toLowerCase();
       const idPath = `${userId}_${Date.now()}_id.${idExt}`;
-      const { error: idErr } = await sb.storage
-        .from('id-documents')
-        .upload(idPath, idDocFileObj, { upsert: true, contentType: idDocFileObj.type });
+      const { error: idErr } = await sb.storage.from('id-documents')
+        .upload(idPath, idDocFileObj, { upsert:true, contentType:idDocFileObj.type });
       if (idErr) throw new Error('ID upload failed: ' + idErr.message);
       const idUrl = sb.storage.from('id-documents').getPublicUrl(idPath).data.publicUrl;
 
-      // STEP 5: Save profile
-      const fullName = `${document.getElementById('firstName').value.trim()} ${document.getElementById('lastName').value.trim()}`;
+      // 5. Save profile
+      const fullName = document.getElementById('firstName').value.trim() + ' ' + document.getElementById('lastName').value.trim();
       const { error: profileErr } = await sb.from('profiles').upsert({
         id: userId,
         name: fullName,
@@ -742,10 +576,10 @@
         id_document_url: idUrl,
         verification_status: 'pending',
         role: 'provider'
-      }, { onConflict: 'id' });
+      }, { onConflict:'id' });
       if (profileErr) throw new Error('Profile save failed: ' + profileErr.message);
 
-      // STEP 6: Show success
+      // 6. Success
       document.getElementById('stepper').style.display = 'none';
       document.getElementById('pageHeader').style.display = 'none';
       document.getElementById('formCard').innerHTML = `
@@ -757,12 +591,7 @@
           <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.5rem;margin:1.5rem 0;text-align:left;">
             <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;color:#334155;">What happens next?</h4>
             <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;">
-              ${[
-                "You'll receive a confirmation email shortly",
-                "Our team will manually review your ID and selfie",
-                "Once approved, you'll get your unique TN- code and QR badge",
-                "Share your badge on WhatsApp, invoices, and social media"
-              ].map(t => `
+              ${["You'll receive a confirmation email shortly","Our team will manually review your ID and selfie","Once approved, you'll get your unique TN- code and QR badge","Share your badge on WhatsApp, invoices, and social media"].map(t=>`
               <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:#64748b;">
                 <svg width="16" height="16" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>${t}
               </li>`).join('')}
@@ -774,7 +603,7 @@
           </a>
         </div>`;
 
-    } catch (err) {
+    } catch(err) {
       console.error('Submit error:', err);
       showAlert(err.message || 'Something went wrong. Please try again.');
       btn.disabled = false;
@@ -782,6 +611,5 @@
     }
   }
 </script>
-  </script>
 </body>
 </html>
