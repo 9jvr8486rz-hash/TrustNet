@@ -69,8 +69,8 @@
     }
     .input-wrap input:focus, .input-wrap select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,79,168,0.1); }
     .input-wrap input::placeholder { color:var(--gray-400); }
-    .input-wrap input.invalid { border-color:var(--red); }
-    .input-wrap input.valid { border-color:var(--green); }
+    .input-wrap input.invalid { border-color:var(--red) !important; }
+    .input-wrap input.valid { border-color:var(--green) !important; }
     .field-hint { font-size:0.78rem; color:var(--gray-400); }
     .field-error { font-size:0.78rem; color:var(--red); font-weight:500; display:none; }
     .field-error.show { display:block; }
@@ -228,8 +228,7 @@
       <div class="form-nav">
         <div></div>
         <button class="btn-next" id="step1Btn">
-          Continue
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
     </div>
@@ -266,7 +265,7 @@
             <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="top:14px;position:absolute;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <textarea id="serviceDesc" rows="4"
               style="width:100%;padding:0.75rem 1rem 0.75rem 2.75rem;border:1.5px solid var(--gray-200);border-radius:10px;font-family:inherit;font-size:0.95rem;color:var(--gray-900);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;"
-              placeholder="e.g. Licensed electrician with 10 years experience, specialising in residential wiring..."
+              placeholder="e.g. Licensed electrician with 10 years experience..."
               onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,79,168,0.1)'"
               onblur="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'"></textarea>
           </div>
@@ -290,7 +289,7 @@
     <!-- STEP 3 -->
     <div id="step3" style="display:none;">
       <div class="card-title">Upload Documents</div>
-      <div class="card-subtitle">Select your document type, upload your selfie and ID. All files are stored securely.</div>
+      <div class="card-subtitle">Select your document type, upload your selfie and ID. All files stored securely.</div>
       <div class="fields">
         <div class="field">
           <label>Document Type <span class="req">*</span></label>
@@ -352,9 +351,6 @@
             <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
           </div>
           <span class="field-error" id="emailErr">Please enter a valid email address.</span>
-          <span class="checking" id="emailChecking" style="display:none;">
-            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Checking if email is available...
-          </span>
         </div>
         <div class="field-row">
           <div class="field">
@@ -397,8 +393,8 @@
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /card -->
+</div><!-- /page -->
 
 <footer class="footer">
   <p>Online Market Security verification confirms that documents have been reviewed by our team. It does not guarantee behaviour, safety, or service quality.<br/>
@@ -412,15 +408,17 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU'
   );
 
-  let currentStep = 1;
+  // ── Global state ──
+  let currentStep   = 1;
   let selfieFileObj = null;
   let idDocFileObj  = null;
+  let idCheckTimer  = null;
 
   // ── Helpers ──
   function fieldError(id, msg, show) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.textContent = msg || el.textContent;
+    if (msg) el.textContent = msg;
     el.classList.toggle('show', show);
   }
   function markInput(id, state) {
@@ -432,138 +430,6 @@
   function isValidPhone(v) { return /^[+]?[\d\s\-()]{7,15}$/.test(v.trim()); }
   function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
   function isValidId(v)    { return v.trim().length >= 6; }
-
-  // ── Debounce check: ID number exists in profiles ──
-  let idCheckTimer = null;
-  function scheduleIdCheck(val) {
-    clearTimeout(idCheckTimer);
-    document.getElementById('idChecking').style.display = 'none';
-    if (val.trim().length < 6) return;
-    idCheckTimer = setTimeout(async () => {
-      document.getElementById('idChecking').style.display = 'flex';
-      const { data } = await sb.from('profiles').select('id').eq('id_number', val.trim()).maybeSingle();
-      document.getElementById('idChecking').style.display = 'none';
-      if (data) {
-        markInput('idNumber', 'invalid');
-        fieldError('idNumberErr', 'This ID number is already registered. If this is you, please sign in instead.', true);
-      } else {
-        markInput('idNumber', 'valid');
-        fieldError('idNumberErr', '', false);
-      }
-    }, 700);
-  }
-
-  // ── Debounce check: email exists ──
-  let emailCheckTimer = null;
-  function scheduleEmailCheck(val) {
-    clearTimeout(emailCheckTimer);
-    document.getElementById('emailChecking').style.display = 'none';
-    if (!isValidEmail(val)) return;
-    emailCheckTimer = setTimeout(async () => {
-      document.getElementById('emailChecking').style.display = 'flex';
-      // Use signInWithOtp trick-free: just check profiles table by cross-referencing auth
-      // Best we can do with anon key: try to look up profile email if stored, else warn on submit
-      document.getElementById('emailChecking').style.display = 'none';
-    }, 700);
-  }
-
-  // ── Phone live check ──
-  function schedulePhoneCheck(val) {
-    if (!val.trim()) { markInput('phone',''); fieldError('phoneErr','',false); return; }
-    if (!isValidPhone(val)) {
-      markInput('phone','invalid');
-      fieldError('phoneErr','Please enter a valid phone number (e.g. +27 82 123 4567).', true);
-    } else {
-      markInput('phone','valid');
-      fieldError('phoneErr','',false);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-
-    // Doc type
-    document.querySelectorAll('.doc-type-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('docType').value = this.dataset.val;
-      });
-    });
-
-    // File uploads
-    document.getElementById('selfieFile').addEventListener('change', function() {
-      const file = this.files[0]; if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { fieldError('selfieErr','File too large. Max 5MB.',true); return; }
-      selfieFileObj = file;
-      document.getElementById('selfieArea').classList.add('has-file');
-      document.getElementById('selfieName').textContent = '✓ ' + file.name;
-      fieldError('selfieErr','',false);
-    });
-    document.getElementById('idDocFile').addEventListener('change', function() {
-      const file = this.files[0]; if (!file) return;
-      if (file.size > 10 * 1024 * 1024) { fieldError('idDocErr','File too large. Max 10MB.',true); return; }
-      idDocFileObj = file;
-      document.getElementById('idDocArea').classList.add('has-file');
-      document.getElementById('idDocName').textContent = '✓ ' + file.name;
-      fieldError('idDocErr','',false);
-    });
-
-    // Live validation listeners
-    document.getElementById('firstName').addEventListener('blur', function() {
-      const ok = this.value.trim().length > 0;
-      markInput('firstName', ok ? 'valid' : 'invalid');
-      fieldError('firstNameErr','',!ok);
-    });
-    document.getElementById('lastName').addEventListener('blur', function() {
-      const ok = this.value.trim().length > 0;
-      markInput('lastName', ok ? 'valid' : 'invalid');
-      fieldError('lastNameErr','',!ok);
-    });
-    document.getElementById('phone').addEventListener('input', function() { schedulePhoneCheck(this.value); });
-    document.getElementById('idNumber').addEventListener('input', function() { scheduleIdCheck(this.value); });
-    document.getElementById('email').addEventListener('input', function() {
-      const ok = isValidEmail(this.value);
-      markInput('email', this.value ? (ok ? 'valid' : 'invalid') : '');
-      fieldError('emailErr', ok || !this.value ? '' : 'Please enter a valid email address.', !ok && !!this.value);
-      if (ok) scheduleEmailCheck(this.value);
-    });
-    document.getElementById('password').addEventListener('input', function() {
-      const ok = this.value.length >= 8;
-      markInput('password', this.value ? (ok ? 'valid' : 'invalid') : '');
-      fieldError('pwErr','',!ok && !!this.value);
-      // Re-check confirm
-      const cv = document.getElementById('confirmPassword').value;
-      if (cv) { markInput('confirmPassword', cv===this.value?'valid':'invalid'); fieldError('confirmErr','',cv!==this.value); }
-    });
-    document.getElementById('confirmPassword').addEventListener('input', function() {
-      const pw = document.getElementById('password').value;
-      const ok = this.value === pw && this.value.length > 0;
-      markInput('confirmPassword', this.value ? (ok ? 'valid' : 'invalid') : '');
-      fieldError('confirmErr','',!ok && !!this.value);
-    });
-
-    // Password toggles
-    document.getElementById('pwToggle1').addEventListener('click', function() { togglePw('password',this); });
-    document.getElementById('pwToggle2').addEventListener('click', function() { togglePw('confirmPassword',this); });
-
-    // Step navigation
-    document.getElementById('step1Btn').addEventListener('click',  function() { goToStep(2); });
-    document.getElementById('step2Back').addEventListener('click', function() { goToStep(1); });
-    document.getElementById('step2Btn').addEventListener('click',  function() { goToStep(3); });
-    document.getElementById('step3Back').addEventListener('click', function() { goToStep(2); });
-    document.getElementById('step3Btn').addEventListener('click',  function() { goToStep(4); });
-    document.getElementById('step4Back').addEventListener('click', function() { goToStep(3); });
-    document.getElementById('submitBtn').addEventListener('click', submitApplication);
-  });
-
-  function togglePw(id, btn) {
-    const input = document.getElementById(id);
-    const show = input.type === 'password';
-    input.type = show ? 'text' : 'password';
-    btn.innerHTML = show
-      ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-      : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-  }
 
   function showAlert(msg, type='error') {
     const el = document.getElementById('alertBox');
@@ -608,56 +474,89 @@
     const id = document.getElementById('idNumber').value.trim();
 
     if (!fn) { markInput('firstName','invalid'); fieldError('firstNameErr','Please enter your first name.',true); ok=false; }
-    else { markInput('firstName','valid'); fieldError('firstNameErr','',false); }
+    else     { markInput('firstName','valid');   fieldError('firstNameErr','',false); }
 
     if (!ln) { markInput('lastName','invalid'); fieldError('lastNameErr','Please enter your last name.',true); ok=false; }
-    else { markInput('lastName','valid'); fieldError('lastNameErr','',false); }
+    else     { markInput('lastName','valid');   fieldError('lastNameErr','',false); }
 
-    if (!ph || !isValidPhone(ph)) { markInput('phone','invalid'); fieldError('phoneErr','Please enter a valid phone number (e.g. +27 82 123 4567).',true); ok=false; }
-    else { markInput('phone','valid'); fieldError('phoneErr','',false); }
+    if (!ph || !isValidPhone(ph)) { markInput('phone','invalid'); fieldError('phoneErr','Please enter a valid phone number e.g. +27 82 123 4567.',true); ok=false; }
+    else                          { markInput('phone','valid');   fieldError('phoneErr','',false); }
 
     if (!id || !isValidId(id)) { markInput('idNumber','invalid'); fieldError('idNumberErr','Please enter your ID number (min 6 characters).',true); ok=false; }
+    else if (document.getElementById('idNumber').classList.contains('invalid')) { ok=false; }
 
-    // Block if ID already flagged as duplicate
-    const idInput = document.getElementById('idNumber');
-    if (idInput.classList.contains('invalid')) ok=false;
-
-    if (!ok) showAlert('Please fix the errors highlighted below.');
+    if (!ok) showAlert('Please fix the highlighted fields before continuing.');
     return ok;
   }
 
   function validateStep2() {
     let ok = true;
-    if (!document.getElementById('serviceCategory').value) { fieldError('catErr','Please select a service category.',true); ok=false; } else fieldError('catErr','',false);
-    if (!document.getElementById('serviceDesc').value.trim()) { fieldError('descErr','Please describe your services.',true); ok=false; } else fieldError('descErr','',false);
-    if (!document.getElementById('location').value.trim()) { fieldError('locErr','Please enter your operating area.',true); ok=false; } else fieldError('locErr','',false);
+    if (!document.getElementById('serviceCategory').value)    { fieldError('catErr','Please select a service category.',true);  ok=false; } else fieldError('catErr','',false);
+    if (!document.getElementById('serviceDesc').value.trim()) { fieldError('descErr','Please describe your services.',true);    ok=false; } else fieldError('descErr','',false);
+    if (!document.getElementById('location').value.trim())    { fieldError('locErr','Please enter your operating area.',true);  ok=false; } else fieldError('locErr','',false);
     if (!ok) showAlert('Please fill in all required fields.');
     return ok;
   }
 
   function validateStep3() {
     let ok = true;
-    if (!selfieFileObj) { fieldError('selfieErr','Please upload a selfie photo.',true); ok=false; } else fieldError('selfieErr','',false);
+    if (!selfieFileObj) { fieldError('selfieErr','Please upload a selfie photo.',true);  ok=false; } else fieldError('selfieErr','',false);
     if (!idDocFileObj)  { fieldError('idDocErr','Please upload your ID document.',true); ok=false; } else fieldError('idDocErr','',false);
     if (!ok) showAlert('Please upload both your selfie and ID document.');
     return ok;
   }
 
+  function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show
+      ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+      : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  function scheduleIdCheck(val) {
+    clearTimeout(idCheckTimer);
+    document.getElementById('idChecking').style.display = 'none';
+    markInput('idNumber','');
+    fieldError('idNumberErr','',false);
+    if (val.trim().length < 6) return;
+    idCheckTimer = setTimeout(async () => {
+      document.getElementById('idChecking').style.display = 'flex';
+      try {
+        const { data } = await sb.from('profiles').select('id').eq('id_number', val.trim()).maybeSingle();
+        document.getElementById('idChecking').style.display = 'none';
+        if (data) {
+          markInput('idNumber','invalid');
+          fieldError('idNumberErr','This ID number is already registered. Please sign in instead.',true);
+        } else {
+          markInput('idNumber','valid');
+          fieldError('idNumberErr','',false);
+        }
+      } catch(e) {
+        document.getElementById('idChecking').style.display = 'none';
+      }
+    }, 700);
+  }
+
   async function submitApplication() {
     clearAlert();
     let ok = true;
-
-    const email   = document.getElementById('email').value.trim();
+    const email    = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     const confirm  = document.getElementById('confirmPassword').value;
     const terms    = document.getElementById('termsCheck').checked;
 
-    if (!isValidEmail(email)) { markInput('email','invalid'); fieldError('emailErr','Please enter a valid email address.',true); ok=false; } else { markInput('email','valid'); fieldError('emailErr','',false); }
-    if (!password || password.length < 8) { markInput('password','invalid'); fieldError('pwErr','Password must be at least 8 characters.',true); ok=false; } else { markInput('password','valid'); fieldError('pwErr','',false); }
-    if (password !== confirm) { markInput('confirmPassword','invalid'); fieldError('confirmErr','Passwords do not match.',true); ok=false; } else { markInput('confirmPassword','valid'); fieldError('confirmErr','',false); }
-    if (!terms) { fieldError('termsErr','You must agree to the Terms of Use to continue.',true); ok=false; } else fieldError('termsErr','',false);
+    if (!isValidEmail(email)) { markInput('email','invalid'); fieldError('emailErr','Please enter a valid email address.',true); ok=false; }
+    else { markInput('email','valid'); fieldError('emailErr','',false); }
+    if (!password || password.length < 8) { markInput('password','invalid'); fieldError('pwErr','Password must be at least 8 characters.',true); ok=false; }
+    else { markInput('password','valid'); fieldError('pwErr','',false); }
+    if (password !== confirm) { markInput('confirmPassword','invalid'); fieldError('confirmErr','Passwords do not match.',true); ok=false; }
+    else if (confirm) { markInput('confirmPassword','valid'); fieldError('confirmErr','',false); }
+    if (!terms) { fieldError('termsErr','You must agree to the Terms of Use to continue.',true); ok=false; }
+    else fieldError('termsErr','',false);
 
-    if (!ok) { showAlert('Please fix the errors highlighted below.'); return; }
+    if (!ok) { showAlert('Please fix the highlighted fields before submitting.'); return; }
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
@@ -667,35 +566,31 @@
       // 1. Sign up
       const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
       if (authError) {
-        // Handle already registered
-        if (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already exists') || authError.message.toLowerCase().includes('user already')) {
+        if (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already exists')) {
           markInput('email','invalid');
-          fieldError('emailErr','This email is already registered. Please sign in instead.',true);
-          showAlert('This email address is already registered. <a href="/login.html" style="color:#991b1b;font-weight:700;text-decoration:underline;">Sign in here →</a>');
+          fieldError('emailErr','This email is already registered.',true);
+          showAlert('This email is already registered. <a href="/login.html" style="color:#991b1b;font-weight:700;text-decoration:underline;">Sign in here →</a>');
           throw new Error('__handled__');
         }
         throw new Error(authError.message);
       }
-
       const userId = authData?.user?.id;
       if (!userId) throw new Error('Could not create account. Please try again.');
 
-      // 2. Sign in immediately for session
+      // 2. Sign in immediately for active session
       await sb.auth.signInWithPassword({ email, password });
 
       // 3. Upload selfie
       const selfieExt  = selfieFileObj.name.split('.').pop().toLowerCase();
       const selfiePath = `${userId}_${Date.now()}_selfie.${selfieExt}`;
-      const { error: selfieErr } = await sb.storage.from('selfies')
-        .upload(selfiePath, selfieFileObj, { upsert:true, contentType:selfieFileObj.type });
+      const { error: selfieErr } = await sb.storage.from('selfies').upload(selfiePath, selfieFileObj, { upsert:true, contentType:selfieFileObj.type });
       if (selfieErr) throw new Error('Selfie upload failed: ' + selfieErr.message);
       const selfieUrl = sb.storage.from('selfies').getPublicUrl(selfiePath).data.publicUrl;
 
       // 4. Upload ID doc
       const idExt  = idDocFileObj.name.split('.').pop().toLowerCase();
       const idPath = `${userId}_${Date.now()}_id.${idExt}`;
-      const { error: idErr } = await sb.storage.from('id-documents')
-        .upload(idPath, idDocFileObj, { upsert:true, contentType:idDocFileObj.type });
+      const { error: idErr } = await sb.storage.from('id-documents').upload(idPath, idDocFileObj, { upsert:true, contentType:idDocFileObj.type });
       if (idErr) throw new Error('ID document upload failed: ' + idErr.message);
       const idUrl = sb.storage.from('id-documents').getPublicUrl(idPath).data.publicUrl;
 
@@ -719,61 +614,145 @@
       document.getElementById('stepper').style.display = 'none';
       document.getElementById('pageHeader').style.display = 'none';
       document.getElementById('formCard').innerHTML = `
-       document.getElementById('formCard').innerHTML = `
-  <div style="text-align:center;padding:3rem 1rem;">
-    <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2.5rem;box-shadow:0 0 0 12px rgba(22,163,74,0.12);">✓</div>
-    <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:0.75rem;color:#0f172a;">Application Submitted!</h2>
-    <p style="color:#64748b;font-size:1rem;margin-bottom:0.25rem;">Thank you, <strong style="color:#0f172a;">${fullName}</strong>.</p>
-    <p style="color:#64748b;font-size:0.95rem;margin-bottom:2rem;">Your application is now with our team. We'll review your documents and update your status within <strong>48 hours</strong>.</p>
+        <div style="text-align:center;padding:3rem 1rem;">
+          <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2.5rem;box-shadow:0 0 0 12px rgba(22,163,74,0.12);">✓</div>
+          <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:0.75rem;color:#0f172a;">Application Submitted!</h2>
+          <p style="color:#64748b;font-size:1rem;margin-bottom:0.25rem;">Thank you, <strong style="color:#0f172a;">${fullName}</strong>.</p>
+          <p style="color:#64748b;font-size:0.95rem;margin-bottom:2rem;">Your application is with our team. We'll review your documents within <strong>48 hours</strong>.</p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:1.5rem;margin-bottom:2rem;text-align:left;">
+            <p style="font-size:0.85rem;font-weight:700;color:#166534;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>What happens next
+            </p>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:0.65rem;">
+              ${[
+                'A confirmation email has been sent to <strong>' + email + '</strong>',
+                'Our team will manually review your selfie and ID document',
+                "Once approved you'll receive your unique TN- verification code",
+                'Share your badge on WhatsApp, invoices, Facebook and more'
+              ].map((t,i) => `
+              <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:#374151;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#16a34a;color:white;font-size:0.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</span>${t}
+              </li>`).join('')}
+            </ul>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin-bottom:2rem;font-size:0.85rem;color:#92400e;display:flex;gap:0.75rem;align-items:flex-start;text-align:left;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>While you wait, you can sign in to track your application status and upload additional documents if needed.</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+            <a href="/" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.9rem 2.5rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;width:100%;max-width:340px;justify-content:center;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Go to Home &amp; Sign In
+            </a>
+            <p style="font-size:0.82rem;color:#94a3b8;">Redirecting to home in <strong id="countdownNum">10</strong> seconds...</p>
+          </div>
+        </div>`;
 
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:1.5rem;margin-bottom:2rem;text-align:left;">
-      <p style="font-size:0.85rem;font-weight:700;color:#166534;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        What happens next
-      </p>
-      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.65rem;">
-        ${["A confirmation email has been sent to <strong>${email}</strong>","Our team will manually review your selfie and ID document","Once approved you'll receive your unique TN- verification code","Share your badge on WhatsApp, invoices, Facebook and more"].map((t,i)=>`
-        <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:#374151;">
-          <span style="width:22px;height:22px;border-radius:50%;background:#16a34a;color:white;font-size:0.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</span>${t}
-        </li>`).join('')}
-      </ul>
-    </div>
-
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin-bottom:2rem;font-size:0.85rem;color:#92400e;display:flex;gap:0.75rem;align-items:flex-start;text-align:left;">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <span>While you wait, you can already sign in to your dashboard to track your application status and upload any additional documents.</span>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
-      <a href="/" id="goHomeBtn" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.9rem 2.5rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;width:100%;max-width:320px;justify-content:center;">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Go to Home &amp; Sign In
-      </a>
-      <p id="countdownMsg" style="font-size:0.82rem;color:#94a3b8;">Redirecting to home in <strong id="countdownNum">10</strong> seconds...</p>
-    </div>
-  </div>`;
-
-// Countdown redirect to home
-let secs = 5;
-const ticker = setInterval(() => {
-  secs--;
-  const el = document.getElementById('countdownNum');
-  if (el) el.textContent = secs;
-  if (secs <= 0) {
-    clearInterval(ticker);
-    window.location.href = '/';
-  }
-}, 1000);
+      // Countdown redirect
+      let secs = 10;
+      const ticker = setInterval(() => {
+        secs--;
+        const el = document.getElementById('countdownNum');
+        if (el) el.textContent = secs;
+        if (secs <= 0) { clearInterval(ticker); window.location.href = '/'; }
+      }, 1000);
 
     } catch(err) {
       if (err.message !== '__handled__') {
         console.error('Submit error:', err);
         showAlert(err.message || 'Something went wrong. Please try again.');
       }
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Submit Application`;
+      const btn = document.getElementById('submitBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Submit Application`;
+      }
     }
   }
+
+  // ── Wire up all events on DOM ready ──
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // Doc type buttons
+    document.querySelectorAll('.doc-type-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('docType').value = this.dataset.val;
+      });
+    });
+
+    // File uploads
+    document.getElementById('selfieFile').addEventListener('change', function() {
+      const file = this.files[0]; if (!file) return;
+      if (file.size > 5*1024*1024) { fieldError('selfieErr','File too large. Max 5MB.',true); return; }
+      selfieFileObj = file;
+      document.getElementById('selfieArea').classList.add('has-file');
+      document.getElementById('selfieName').textContent = '✓ ' + file.name;
+      fieldError('selfieErr','',false);
+    });
+    document.getElementById('idDocFile').addEventListener('change', function() {
+      const file = this.files[0]; if (!file) return;
+      if (file.size > 10*1024*1024) { fieldError('idDocErr','File too large. Max 10MB.',true); return; }
+      idDocFileObj = file;
+      document.getElementById('idDocArea').classList.add('has-file');
+      document.getElementById('idDocName').textContent = '✓ ' + file.name;
+      fieldError('idDocErr','',false);
+    });
+
+    // Live field validation
+    document.getElementById('firstName').addEventListener('blur', function() {
+      const ok = this.value.trim().length > 0;
+      markInput('firstName', ok?'valid':'invalid');
+      fieldError('firstNameErr','Please enter your first name.',!ok);
+    });
+    document.getElementById('lastName').addEventListener('blur', function() {
+      const ok = this.value.trim().length > 0;
+      markInput('lastName', ok?'valid':'invalid');
+      fieldError('lastNameErr','Please enter your last name.',!ok);
+    });
+    document.getElementById('phone').addEventListener('input', function() {
+      if (!this.value.trim()) { markInput('phone',''); fieldError('phoneErr','',false); return; }
+      const ok = isValidPhone(this.value);
+      markInput('phone', ok?'valid':'invalid');
+      fieldError('phoneErr','Please enter a valid phone number e.g. +27 82 123 4567.',!ok);
+    });
+    document.getElementById('idNumber').addEventListener('input', function() {
+      scheduleIdCheck(this.value);
+    });
+    document.getElementById('email').addEventListener('input', function() {
+      if (!this.value) { markInput('email',''); fieldError('emailErr','',false); return; }
+      const ok = isValidEmail(this.value);
+      markInput('email', ok?'valid':'invalid');
+      fieldError('emailErr','Please enter a valid email address.',!ok);
+    });
+    document.getElementById('password').addEventListener('input', function() {
+      const ok = this.value.length >= 8;
+      markInput('password', this.value?(ok?'valid':'invalid'):'');
+      fieldError('pwErr','Password must be at least 8 characters.',!ok&&!!this.value);
+      const cv = document.getElementById('confirmPassword').value;
+      if (cv) { markInput('confirmPassword',cv===this.value?'valid':'invalid'); fieldError('confirmErr','Passwords do not match.',cv!==this.value); }
+    });
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const pw = document.getElementById('password').value;
+      const ok = this.value === pw && this.value.length > 0;
+      markInput('confirmPassword', this.value?(ok?'valid':'invalid'):'');
+      fieldError('confirmErr','Passwords do not match.',!ok&&!!this.value);
+    });
+
+    // Password toggles
+    document.getElementById('pwToggle1').addEventListener('click', function() { togglePw('password',this); });
+    document.getElementById('pwToggle2').addEventListener('click', function() { togglePw('confirmPassword',this); });
+
+    // Step navigation
+    document.getElementById('step1Btn').addEventListener('click',  function() { goToStep(2); });
+    document.getElementById('step2Back').addEventListener('click', function() { goToStep(1); });
+    document.getElementById('step2Btn').addEventListener('click',  function() { goToStep(3); });
+    document.getElementById('step3Back').addEventListener('click', function() { goToStep(2); });
+    document.getElementById('step3Btn').addEventListener('click',  function() { goToStep(4); });
+    document.getElementById('step4Back').addEventListener('click', function() { goToStep(3); });
+    document.getElementById('submitBtn').addEventListener('click', submitApplication);
+  });
 </script>
 </body>
 </html>
