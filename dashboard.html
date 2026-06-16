@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Dashboard — Digital Trust Network</title>
+<title>My Dashboard — Online Market Security</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -27,15 +27,25 @@
 .tsb-good{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
 .tsb-average{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
 .tsb-poor{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.token-card{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap}
+.token-code{font-family:monospace;font-size:1.1rem;font-weight:800;color:var(--blue);letter-spacing:0.1em}
+.token-meta{font-size:0.75rem;color:var(--muted);margin-top:0.2rem}
+.token-status-used{color:var(--muted);font-size:0.72rem;font-weight:700;background:var(--bg-soft);border:1px solid var(--border);padding:0.2rem 0.6rem;border-radius:999px}
+.token-status-active{color:var(--green);font-size:0.72rem;font-weight:700;background:var(--green-bg);border:1px solid var(--green-border);padding:0.2rem 0.6rem;border-radius:999px}
+.token-status-expired{color:var(--muted);font-size:0.72rem;font-weight:700;background:var(--bg-soft);border:1px solid var(--border);padding:0.2rem 0.6rem;border-radius:999px}
+.token-status-archived{color:var(--muted);font-size:0.72rem;font-weight:700;background:var(--bg-soft);border:1px solid var(--border);padding:0.2rem 0.6rem;border-radius:999px}
+.gen-btn{padding:0.6rem 1.2rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.4rem}
+.gen-btn:hover{background:var(--blue-mid);transform:translateY(-1px)}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
 </style>
 </head>
 <body>
 <nav><div class="nav-inner">
-  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"
+  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"></a>
   <div class="nav-actions">
     <span id="navName" style="font-size:0.875rem;font-weight:600;color:var(--body)"></span>
-    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
-    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
+    <button type="button" class="btn-nav-ghost" onclick="location.href='/'">Home</button>
+    <button type="button" class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
 
@@ -55,13 +65,13 @@
       <div class="dc-body" id="myVerificationBody"><div style="color:var(--muted);font-size:0.875rem">Loading...</div></div>
     </div>
 
-    <!-- SHARE QR -->
+    <!-- GENERATE ONE-TIME CODE -->
     <div class="dash-card">
-      <div class="dc-head"><div class="dc-title">Share your badge</div><span class="dc-badge dcb-blue">Share</span></div>
-      <div class="dc-body" id="shareBody">
+      <div class="dc-head"><div class="dc-title">&#128273; Generate verification code</div><span class="dc-badge dcb-blue">One-time use</span></div>
+      <div class="dc-body" id="tokenBody">
         <div style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem 0">
           <div style="font-size:2rem;margin-bottom:0.5rem">&#128274;</div>
-          Your QR code will appear here once your identity is verified.
+          Generate a one-time code to share with a specific person. Each code can only be used once.
         </div>
       </div>
     </div>
@@ -97,7 +107,7 @@
             <p id="idFileLabel" style="font-size:0.78rem;color:var(--green);margin-top:0.3rem;display:none"></p>
           </div>
         </div>
-        <button class="doc-submit-btn" id="docSubmitBtn" onclick="uploadDocuments()">&#128228; Submit documents for review</button>
+        <button type="button" class="doc-submit-btn" id="docSubmitBtn" onclick="uploadDocuments()">&#128228; Submit documents for review</button>
         <div id="docUploadResult"></div>
       </div>
     </div>
@@ -117,10 +127,10 @@
     <div class="dash-card span2">
       <div class="dc-head"><div class="dc-title">Verify someone else</div><span class="dc-badge dcb-blue">Lookup</span></div>
       <div class="dc-body">
-        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's Digital Trust Network code to check their verification status.</p>
+        <p style="font-size:0.875rem;color:var(--body);margin-bottom:1rem">Enter another person's one-time verification code to check their identity.</p>
         <div class="lookup-form">
-          <input class="lookup-input" id="lookupInput" type="text" placeholder="Enter code e.g. TN-B34XPQ72" maxlength="14" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')doLookup()">
-          <button class="lookup-btn" onclick="doLookup()">Check &rarr;</button>
+          <input class="lookup-input" id="lookupInput" type="text" placeholder="Enter code e.g. OMS-A1B2C3D4" maxlength="20" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')doLookup()">
+          <button type="button" class="lookup-btn" onclick="doLookup()">Check &rarr;</button>
         </div>
         <div class="lookup-result" id="lookupResult"></div>
       </div>
@@ -133,18 +143,18 @@
       <div style="font-weight:700;margin-bottom:0.25rem">Need help?</div>
       <div style="font-size:0.875rem;color:var(--muted)">Contact our support team for assistance.</div>
     </div>
-    <a href="mailto:support@digitaltrustnetwork.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
+    <a href="mailto:support@onlinemarketsecurity.co.za" class="btn-primary" style="text-decoration:none;font-size:0.875rem;padding:0.65rem 1.4rem">Contact support</a>
   </div>
 </div>
 
 <footer>
-  <div class="footer-logo">Digital Trust Network</div>
-  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
+  <div class="footer-logo">Online Market Security</div>
+  <p>Verification confirms identity documents were reviewed by Online Market Security. It does not guarantee behaviour, safety, or service quality.</p>
   <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">
-    Digital Trust Network does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times.
+    Online Market Security does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times.
     <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a>
   </p>
-  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
+  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Online Market Security · Republic of South Africa</p>
 </footer>
 <div class="toast" id="toast"></div>
 
@@ -155,6 +165,120 @@ window.doLogout = async () => { await supabase.auth.signOut(); window.location.r
 
 let currentProfile = null;
 let currentSession = null;
+
+// ── Generate unique token ──
+function generateToken() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return 'OMS-' + Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+// ── Generate one-time verification code ──
+window.generateCode = async () => {
+  if (!currentProfile || currentProfile.verification_status !== 'verified') {
+    showToast('&#10060; You must be verified to generate codes.'); return;
+  }
+  const btn = document.getElementById('genCodeBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+
+  let token;
+  // Ensure unique
+  while (true) {
+    token = generateToken();
+    const { data } = await supabase.from('verification_tokens').select('id').eq('token', token).maybeSingle();
+    if (!data) break;
+  }
+
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days to be used
+  const { error } = await supabase.from('verification_tokens').insert({
+    provider_id: currentSession.user.id,
+    token,
+    expires_at: expiresAt.toISOString(),
+    status: 'active'
+  });
+
+  if (error) {
+    showToast('&#10060; Error: ' + error.message);
+    if (btn) { btn.disabled = false; btn.textContent = '+ Generate new code'; }
+    return;
+  }
+
+  showToast('&#10003; New code generated!');
+  await loadTokens();
+};
+
+// ── Load tokens for this provider ──
+async function loadTokens() {
+  if (!currentProfile || currentProfile.verification_status !== 'verified') return;
+
+  const { data: tokens } = await supabase
+    .from('verification_tokens')
+    .select('*')
+    .eq('provider_id', currentSession.user.id)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const body = document.getElementById('tokenBody');
+  const verifyBase = `${location.origin}/verify.html?token=`;
+
+  const activeTokens = (tokens||[]).filter(t => t.status === 'active');
+  const usedTokens = (tokens||[]).filter(t => t.status !== 'active');
+
+  let html = `
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">
+      Each code is <strong>single-use</strong> — once someone verifies your identity with it, the code is consumed.
+      If forwarded to another person, it won't work. Codes expire after <strong>7 days</strong> if unused.
+    </p>
+    <button type="button" class="gen-btn" id="genCodeBtn" onclick="generateCode()">&#128273; Generate new code</button>`;
+
+  if (activeTokens.length > 0) {
+    html += `<div style="margin-top:1.25rem;margin-bottom:0.5rem;font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Active codes</div>`;
+    html += activeTokens.map(t => {
+      const url = verifyBase + encodeURIComponent(t.token);
+      const expires = new Date(t.expires_at);
+      const daysLeft = Math.max(0, Math.round((expires - new Date()) / 86400000));
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}`;
+      return `<div class="token-card" style="flex-direction:column;align-items:flex-start">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:0.5rem">
+          <div>
+            <div class="token-code">${t.token}</div>
+            <div class="token-meta">Expires in ${daysLeft} day${daysLeft!==1?'s':''} · Share this code or QR with one specific person</div>
+          </div>
+          <span class="token-status-active">&#9679; Active</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;margin-top:0.75rem;flex-wrap:wrap">
+          <img src="${qrUrl}" width="80" height="80" alt="QR Code" style="border-radius:8px;border:1px solid var(--border)">
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <button type="button" class="share-btn sb-wa" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="window.open('https://api.whatsapp.com/send?text=Please verify my identity using this one-time code: ${t.token} or scan the QR at ${encodeURIComponent(url)}','_blank')">&#128242; WhatsApp</button>
+            <button type="button" class="share-btn sb-link" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="copyText('${url}','Link copied!')">&#128279; Copy link</button>
+            <button type="button" class="share-btn sb-code" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="copyText('${t.token}','Code copied!')">&#128203; Copy code</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if (usedTokens.length > 0) {
+    html += `<div style="margin-top:1.25rem;margin-bottom:0.5rem;font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Previous codes</div>`;
+    html += usedTokens.slice(0,5).map(t => {
+      const usedAt = t.used_at ? new Date(t.used_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : null;
+      const archivesAt = t.verification_expires_at ? new Date(t.verification_expires_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : null;
+      const statusEl = t.status === 'used'
+        ? `<span class="token-status-used">&#10003; Used${usedAt?' · '+usedAt:''}</span>`
+        : t.status === 'archived'
+        ? `<span class="token-status-archived">Archived</span>`
+        : `<span class="token-status-expired">Expired</span>`;
+      return `<div class="token-card" style="opacity:0.7">
+        <div>
+          <div class="token-code" style="color:var(--muted)">${t.token}</div>
+          <div class="token-meta">${t.used_by_name ? 'Used by: '+t.used_by_name : ''}${archivesAt&&t.status==='used'?' · Archived '+archivesAt:''}</div>
+        </div>
+        ${statusEl}
+      </div>`;
+    }).join('');
+  }
+
+  body.innerHTML = html;
+}
 
 async function renderDashboard(session) {
   if (!session) { window.location.replace('/login.html'); return; }
@@ -186,7 +310,7 @@ async function renderDashboard(session) {
   const start = profile.verification_date ? new Date(profile.verification_date) : null;
   const pct = (expiry&&start) ? Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100))) : 0;
   const days = expiry ? Math.max(0,Math.round((expiry-now)/86400000)) : 0;
-  const barClass = days>10?'ef-good':days>3?'ef-warn':'ef-bad';
+  const barClass = days>365?'ef-good':days>90?'ef-warn':'ef-bad';
 
   document.getElementById('myVerificationBody').innerHTML = `
     <div class="my-profile-row">
@@ -199,8 +323,8 @@ async function renderDashboard(session) {
       <div class="info-box"><div class="ib-label">Expires on</div><div class="ib-val">${fmt(profile.expiry_date)}</div></div>
     </div>
     ${profile.public_id?`
-      <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem">Your verification ID</div>
-      <div class="id-row"><span>${profile.public_id}</span><button class="copy-btn" onclick="copyText('${profile.public_id}','Code copied!')">Copy</button></div>
+      <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem">Your permanent badge ID (admin reference)</div>
+      <div class="id-row"><span>${profile.public_id}</span><button type="button" class="copy-btn" onclick="copyText('${profile.public_id}','Code copied!')">Copy</button></div>
       <div class="expiry-wrap">
         <div class="expiry-labels"><span>Validity</span><span>${days>0?days+' days remaining':'Expired'}</span></div>
         <div class="expiry-track"><div class="expiry-fill ${barClass}" style="width:${pct}%"></div></div>
@@ -208,19 +332,14 @@ async function renderDashboard(session) {
     :`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">&#9201; Your application is under review. We'll email you within 48 hours when approved.</div>`}
   `;
 
-  if (profile.public_id&&status==='verified') {
-    const verifyUrl = `${location.origin}/verify.html?id=${profile.public_id}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
-    document.getElementById('shareBody').innerHTML = `
-      <div class="qr-center">
-        <div class="qr-box"><img src="${qrUrl}" width="130" height="130" alt="Your QR Code"></div>
-        <div class="qr-link">${verifyUrl}</div>
-        <div class="share-grid">
-          <button class="share-btn sb-wa" onclick="window.open('https://api.whatsapp.com/send?text=Verify my Digital Trust Network identity: ${encodeURIComponent(verifyUrl)}','_blank')">&#128242; WhatsApp</button>
-          <button class="share-btn sb-link" onclick="copyText('${verifyUrl}','Link copied!')">&#128279; Copy link</button>
-          <button class="share-btn sb-code" onclick="copyText('${profile.public_id}','Code copied!')">&#128203; Copy code</button>
-          <button class="share-btn sb-dl" onclick="window.open('${qrUrl}','_blank')">&#11015;&#65039; Save QR</button>
-        </div>
+  // Load token section
+  if (status === 'verified') {
+    await loadTokens();
+  } else {
+    document.getElementById('tokenBody').innerHTML = `
+      <div style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem 0">
+        <div style="font-size:2rem;margin-bottom:0.5rem">&#128274;</div>
+        One-time codes will be available once your identity is verified.
       </div>`;
   }
 
@@ -278,27 +397,38 @@ window.uploadDocuments = async () => {
   btn.textContent = 'Uploading...'; btn.disabled = true;
   result.innerHTML = '';
   const userId = currentSession.user.id;
+  const token = currentSession.access_token;
+  const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
+
+  async function uploadDirect(bucket, path, file) {
+    const fd = new FormData(); fd.append('', file, file.name);
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY },
+      body: fd
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error||e.message); }
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+  }
+
   let selfieUrl = currentProfile.selfie_url;
   let idDocUrl = currentProfile.id_document_url;
   let errors = [];
 
-  if (selfieFile) {
-    const ext = selfieFile.name.split('.').pop().toLowerCase();
-    const safeName = `selfie_${Date.now()}.${ext}`;
-    const { data: selfieData, error: selfieError } = await supabase.storage
-      .from('selfies').upload(`${userId}/${safeName}`, selfieFile, {cacheControl:'3600'});
-    if (selfieError) { errors.push('Selfie upload failed: ' + selfieError.message); }
-    else { const { data: url } = supabase.storage.from('selfies').getPublicUrl(selfieData.path); selfieUrl = url.publicUrl; }
-  }
+  try {
+    if (selfieFile) {
+      const ext = selfieFile.name.split('.').pop().toLowerCase();
+      selfieUrl = await uploadDirect('selfies', `${userId}_${Date.now()}_selfie.${ext}`, selfieFile);
+    }
+  } catch(e) { errors.push('Selfie: ' + e.message); }
 
-  if (idFile) {
-    const ext = idFile.name.split('.').pop().toLowerCase();
-    const safeName = `id_${Date.now()}.${ext}`;
-    const { data: idData, error: idError } = await supabase.storage
-      .from('id-documents').upload(`${userId}/${safeName}`, idFile, {cacheControl:'3600'});
-    if (idError) { errors.push('ID document upload failed: ' + idError.message); }
-    else { idDocUrl = `${userId}/${safeName}`; }
-  }
+  try {
+    if (idFile) {
+      const ext = idFile.name.split('.').pop().toLowerCase();
+      idDocUrl = await uploadDirect('id-documents', `${userId}_${Date.now()}_id.${ext}`, idFile);
+    }
+  } catch(e) { errors.push('ID document: ' + e.message); }
 
   if (errors.length > 0) {
     result.innerHTML = `<div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:0.75rem;font-size:0.82rem;color:var(--red);margin-top:0.75rem">${errors.join('<br>')}</div>`;
@@ -319,7 +449,7 @@ window.uploadDocuments = async () => {
   }
 
   result.innerHTML = `<div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--green);margin-top:0.75rem;line-height:1.6">
-    &#127881; <strong>Documents submitted!</strong> Our team will review them within 48 hours and update your verification status.
+    &#127881; <strong>Documents submitted!</strong> Our team will review them within 48 hours.
   </div>`;
   btn.textContent = 'Submit documents for review'; btn.disabled = false;
 
@@ -361,7 +491,7 @@ async function loadMyRatings(userId) {
     body.innerHTML = `<div style="text-align:center;padding:1.5rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border)">
       <div style="font-size:2rem;margin-bottom:0.5rem">&#11088;</div>
       <div style="font-weight:600;font-size:0.875rem">No ratings yet</div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Share your verification link so people can rate you after interactions.</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.25rem">Share your one-time verification codes so people can rate you after interactions.</div>
     </div>`;
     return;
   }
@@ -398,7 +528,6 @@ async function loadMyRatings(userId) {
       </div>
       <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">${raterBadge} <span>${date}</span></div>
       ${r.comment?`<div style="font-size:0.82rem;color:var(--body);line-height:1.6;font-style:italic">"${r.comment}"</div>`:''}
-      ${r.stars<=2?`<div style="background:var(--red-bg);border-left:3px solid var(--red);padding:0.4rem 0.75rem;font-size:0.75rem;color:var(--red);margin-top:0.5rem;font-weight:600">&#9888; Low rating — review this feedback</div>`:''}
     </div>`;
   }).join('');
 
@@ -415,9 +544,6 @@ async function loadMyRatings(userId) {
           <span style="font-size:0.72rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;white-space:nowrap" class="${trustCls}">${trustBadge}</span>
         </div>
         <div>${breakdown}</div>
-        <div style="background:var(--blue-pale);border:1px solid var(--blue-light);border-radius:var(--radius-sm);padding:0.75rem 1rem;font-size:0.82rem;color:var(--blue);margin-top:0.75rem">
-          <strong>&#128161; Tip:</strong> Share your verify link after every job to collect more ratings and build trust.
-        </div>
       </div>
       <div>
         <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem">${total} rating${total!==1?'s':''}</div>
@@ -429,15 +555,35 @@ async function loadMyRatings(userId) {
 window.doLookup = async () => {
   const code = document.getElementById('lookupInput').value.trim().toUpperCase();
   if (!code) { showToast('Please enter a code'); return; }
-  const { data, error } = await supabase.from('profiles').select('name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id').eq('public_id',code).single();
   const el = document.getElementById('lookupResult');
-  if (!data||error) { el.innerHTML=`<div style="padding:0.75rem;color:var(--muted);font-size:0.875rem">&#10060; No provider found with code <strong style="font-family:monospace;color:var(--ink)">${code}</strong>.</div>`; el.classList.add('show'); return; }
-  const s = (data.expiry_date&&new Date()>new Date(data.expiry_date))?'expired':data.verification_status;
-  const pc = s==='verified'?'sp-verified':s==='expired'?'sp-expired':'sp-pending';
-  const pl = s==='verified'?'&#10003; Verified':s==='expired'?'&#9888; Expired':'&#8987; Pending';
-  const fmt2 = d => d?new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}):'—';
-  el.innerHTML = `<div class="vr-inner"><div class="vr-row">${data.selfie_url?`<img src="${data.selfie_url}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0">`:'<div class="vr-avatar">&#128100;</div>'}<div class="vr-info"><div class="vr-name">${data.name}</div><div class="vr-cat">${data.service_category||''}</div></div><span class="status-pill ${pc}">${pl}</span></div><div class="vr-dates-row"><div class="vr-date-chip"><div class="vdl">Verified</div><div class="vdv">${fmt2(data.verification_date)}</div></div><div class="vr-date-chip"><div class="vdl">Expires</div><div class="vdv">${fmt2(data.expiry_date)}</div></div>${s==='verified'?'<div class="vr-date-chip" style="color:var(--green)">&#10003; ID checked</div><div class="vr-date-chip" style="color:var(--green)">&#10003; Selfie checked</div>':''}</div></div>`;
-  el.classList.add('show');
+
+  // Check verification_tokens table
+  const { data: tokenData } = await supabase
+    .from('verification_tokens')
+    .select('*, profiles(name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id)')
+    .eq('token', code)
+    .maybeSingle();
+
+  if (!tokenData) {
+    el.innerHTML = `<div style="padding:0.75rem;color:var(--muted);font-size:0.875rem">&#10060; No provider found with code <strong style="font-family:monospace;color:var(--ink)">${code}</strong>.</div>`;
+    el.classList.add('show'); return;
+  }
+
+  if (tokenData.status === 'used') {
+    el.innerHTML = `<div style="padding:0.75rem;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);font-size:0.875rem;color:var(--red)">&#10060; This code has already been used. Ask the provider to generate a new one.</div>`;
+    el.classList.add('show'); return;
+  }
+  if (tokenData.status === 'expired' || new Date() > new Date(tokenData.expires_at)) {
+    el.innerHTML = `<div style="padding:0.75rem;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);font-size:0.875rem;color:var(--amber)">&#9888; This code has expired. Ask the provider to generate a new one.</div>`;
+    el.classList.add('show'); return;
+  }
+  if (tokenData.status === 'archived') {
+    el.innerHTML = `<div style="padding:0.75rem;color:var(--muted);font-size:0.875rem">&#128190; This code has been archived.</div>`;
+    el.classList.add('show'); return;
+  }
+
+  // Redirect to verify page
+  window.location.href = `/verify.html?token=${encodeURIComponent(code)}`;
 };
 
 window.copyText = (text,msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
