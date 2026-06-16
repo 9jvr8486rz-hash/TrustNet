@@ -37,6 +37,27 @@
 .gen-btn{padding:0.6rem 1.2rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.4rem}
 .gen-btn:hover{background:var(--blue-mid);transform:translateY(-1px)}
 .gen-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* Meeting type picker modal */
+.meeting-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.meeting-modal-bg.open{opacity:1;pointer-events:all}
+.meeting-modal{background:#fff;border-radius:var(--radius-lg);padding:2rem;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.18);transform:translateY(12px);transition:transform 0.2s}
+.meeting-modal-bg.open .meeting-modal{transform:translateY(0)}
+.meeting-modal-title{font-weight:800;font-size:1.1rem;margin-bottom:0.25rem}
+.meeting-modal-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.5}
+.meeting-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem}
+.meeting-type-btn{border:2px solid var(--border);border-radius:var(--radius);padding:1.25rem 1rem;text-align:center;cursor:pointer;transition:all 0.15s;background:#fff;font-family:inherit;width:100%}
+.meeting-type-btn:hover{border-color:var(--blue);background:var(--blue-pale)}
+.meeting-type-btn.selected{border-color:var(--blue);background:var(--blue-pale);box-shadow:0 0 0 3px var(--blue-light)}
+.meeting-type-icon{font-size:2rem;display:block;margin-bottom:0.5rem}
+.meeting-type-label{font-weight:700;font-size:0.9rem;color:var(--ink);display:block;margin-bottom:0.2rem}
+.meeting-type-desc{font-size:0.75rem;color:var(--muted);line-height:1.4;display:block}
+.meeting-modal-actions{display:flex;gap:0.75rem}
+.meeting-cancel-btn{flex:1;padding:0.7rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--muted);font-weight:600;font-size:0.875rem;font-family:inherit;cursor:pointer;transition:all 0.15s}
+.meeting-cancel-btn:hover{border-color:var(--ink);color:var(--ink)}
+.meeting-confirm-btn{flex:2;padding:0.7rem;border:none;border-radius:var(--radius-sm);background:var(--blue);color:#fff;font-weight:700;font-size:0.875rem;font-family:inherit;cursor:pointer;transition:all 0.15s}
+.meeting-confirm-btn:hover{background:var(--blue-mid)}
+.meeting-confirm-btn:disabled{opacity:0.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -48,6 +69,30 @@
     <button type="button" class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
+
+<!-- MEETING TYPE PICKER MODAL -->
+<div class="meeting-modal-bg" id="meetingModal">
+  <div class="meeting-modal">
+    <div class="meeting-modal-title">&#128273; Generate verification code</div>
+    <div class="meeting-modal-sub">How will you be meeting this person? This affects how they experience the verification.</div>
+    <div class="meeting-type-grid">
+      <button type="button" class="meeting-type-btn selected" id="meetTypeInPerson" onclick="selectMeetingType('in_person')">
+        <span class="meeting-type-icon">&#129489;</span>
+        <span class="meeting-type-label">In-person</span>
+        <span class="meeting-type-desc">They will see a photo-match prompt to confirm your identity face-to-face</span>
+      </button>
+      <button type="button" class="meeting-type-btn" id="meetTypeOnline" onclick="selectMeetingType('online')">
+        <span class="meeting-type-icon">&#128187;</span>
+        <span class="meeting-type-label">Online</span>
+        <span class="meeting-type-desc">Standard digital verification — no in-person photo check required</span>
+      </button>
+    </div>
+    <div class="meeting-modal-actions">
+      <button type="button" class="meeting-cancel-btn" onclick="closeMeetingModal()">Cancel</button>
+      <button type="button" class="meeting-confirm-btn" id="meetingConfirmBtn" onclick="confirmGenerateCode()">Generate code</button>
+    </div>
+  </div>
+</div>
 
 <div class="dashboard">
   <div class="dash-top">
@@ -165,6 +210,30 @@ window.doLogout = async () => { await supabase.auth.signOut(); window.location.r
 
 let currentProfile = null;
 let currentSession = null;
+let selectedMeetingType = 'in_person';
+
+// ── Meeting type modal ──
+window.openMeetingModal = () => {
+  selectedMeetingType = 'in_person';
+  document.getElementById('meetTypeInPerson').classList.add('selected');
+  document.getElementById('meetTypeOnline').classList.remove('selected');
+  document.getElementById('meetingModal').classList.add('open');
+};
+window.closeMeetingModal = () => {
+  document.getElementById('meetingModal').classList.remove('open');
+};
+window.selectMeetingType = (type) => {
+  selectedMeetingType = type;
+  document.getElementById('meetTypeInPerson').classList.toggle('selected', type === 'in_person');
+  document.getElementById('meetTypeOnline').classList.toggle('selected', type === 'online');
+};
+document.getElementById('meetingModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeMeetingModal();
+});
+window.confirmGenerateCode = async () => {
+  closeMeetingModal();
+  await generateCode(selectedMeetingType);
+};
 
 // ── Generate unique token ──
 function generateToken() {
@@ -173,7 +242,7 @@ function generateToken() {
 }
 
 // ── Generate one-time verification code ──
-window.generateCode = async () => {
+async function generateCode(meetingType) {
   if (!currentProfile || currentProfile.verification_status !== 'verified') {
     showToast('&#10060; You must be verified to generate codes.'); return;
   }
@@ -181,19 +250,19 @@ window.generateCode = async () => {
   if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
 
   let token;
-  // Ensure unique
   while (true) {
     token = generateToken();
     const { data } = await supabase.from('verification_tokens').select('id').eq('token', token).maybeSingle();
     if (!data) break;
   }
 
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days to be used
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const { error } = await supabase.from('verification_tokens').insert({
     provider_id: currentSession.user.id,
     token,
     expires_at: expiresAt.toISOString(),
-    status: 'active'
+    status: 'active',
+    meeting_type: meetingType
   });
 
   if (error) {
@@ -201,12 +270,11 @@ window.generateCode = async () => {
     if (btn) { btn.disabled = false; btn.textContent = '+ Generate new code'; }
     return;
   }
-
   showToast('&#10003; New code generated!');
   await loadTokens();
-};
+}
 
-// ── Load tokens for this provider ──
+// ── Load tokens ──
 async function loadTokens() {
   if (!currentProfile || currentProfile.verification_status !== 'verified') return;
 
@@ -219,16 +287,15 @@ async function loadTokens() {
 
   const body = document.getElementById('tokenBody');
   const verifyBase = `${location.origin}/verify.html?token=`;
-
   const activeTokens = (tokens||[]).filter(t => t.status === 'active');
   const usedTokens = (tokens||[]).filter(t => t.status !== 'active');
 
   let html = `
     <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">
       Each code is <strong>single-use</strong> — once someone verifies your identity with it, the code is consumed.
-      If forwarded to another person, it won't work. Codes expire after <strong>7 days</strong> if unused.
+      Codes expire after <strong>7 days</strong> if unused.
     </p>
-    <button type="button" class="gen-btn" id="genCodeBtn" onclick="generateCode()">&#128273; Generate new code</button>`;
+    <button type="button" class="gen-btn" id="genCodeBtn" onclick="openMeetingModal()">&#128273; Generate new code</button>`;
 
   if (activeTokens.length > 0) {
     html += `<div style="margin-top:1.25rem;margin-bottom:0.5rem;font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Active codes</div>`;
@@ -237,11 +304,17 @@ async function loadTokens() {
       const expires = new Date(t.expires_at);
       const daysLeft = Math.max(0, Math.round((expires - new Date()) / 86400000));
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}`;
+      const meetLabel = t.meeting_type === 'in_person'
+        ? '<span style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px">&#129489; In-person</span>'
+        : '<span style="background:var(--blue-light);color:var(--blue);border:1px solid #bfdbfe;font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px">&#128187; Online</span>';
       return `<div class="token-card" style="flex-direction:column;align-items:flex-start">
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:0.5rem">
           <div>
             <div class="token-code">${t.token}</div>
-            <div class="token-meta">Expires in ${daysLeft} day${daysLeft!==1?'s':''} · Share this code or QR with one specific person</div>
+            <div class="token-meta" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-top:0.3rem">
+              ${meetLabel}
+              <span>Expires in ${daysLeft} day${daysLeft!==1?'s':''}</span>
+            </div>
           </div>
           <span class="token-status-active">&#9679; Active</span>
         </div>
@@ -262,15 +335,16 @@ async function loadTokens() {
     html += usedTokens.slice(0,5).map(t => {
       const usedAt = t.used_at ? new Date(t.used_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : null;
       const archivesAt = t.verification_expires_at ? new Date(t.verification_expires_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : null;
-      const statusEl = t.status === 'used'
+      const statusEl = t.status==='used'
         ? `<span class="token-status-used">&#10003; Used${usedAt?' · '+usedAt:''}</span>`
-        : t.status === 'archived'
+        : t.status==='archived'
         ? `<span class="token-status-archived">Archived</span>`
         : `<span class="token-status-expired">Expired</span>`;
+      const meetLabel = t.meeting_type==='in_person' ? '&#129489; In-person' : t.meeting_type==='online' ? '&#128187; Online' : '';
       return `<div class="token-card" style="opacity:0.7">
         <div>
           <div class="token-code" style="color:var(--muted)">${t.token}</div>
-          <div class="token-meta">${t.used_by_name ? 'Used by: '+t.used_by_name : ''}${archivesAt&&t.status==='used'?' · Archived '+archivesAt:''}</div>
+          <div class="token-meta">${meetLabel?meetLabel+' · ':''}${t.used_by_name?'Used by: '+t.used_by_name:''}${archivesAt&&t.status==='used'?' · Archived '+archivesAt:''}</div>
         </div>
         ${statusEl}
       </div>`;
@@ -332,7 +406,6 @@ async function renderDashboard(session) {
     :`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">&#9201; Your application is under review. We'll email you within 48 hours when approved.</div>`}
   `;
 
-  // Load token section
   if (status === 'verified') {
     await loadTokens();
   } else {
@@ -557,7 +630,6 @@ window.doLookup = async () => {
   if (!code) { showToast('Please enter a code'); return; }
   const el = document.getElementById('lookupResult');
 
-  // Check verification_tokens table
   const { data: tokenData } = await supabase
     .from('verification_tokens')
     .select('*, profiles(name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id)')
@@ -568,13 +640,12 @@ window.doLookup = async () => {
     el.innerHTML = `<div style="padding:0.75rem;color:var(--muted);font-size:0.875rem">&#10060; No provider found with code <strong style="font-family:monospace;color:var(--ink)">${code}</strong>.</div>`;
     el.classList.add('show'); return;
   }
-
   if (tokenData.status === 'used') {
-    el.innerHTML = `<div style="padding:0.75rem;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);font-size:0.875rem;color:var(--red)">&#10060; This code has already been used. Ask the provider to generate a new one.</div>`;
+    el.innerHTML = `<div style="padding:0.75rem;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);font-size:0.875rem;color:var(--red)">&#10060; This code has already been used.</div>`;
     el.classList.add('show'); return;
   }
   if (tokenData.status === 'expired' || new Date() > new Date(tokenData.expires_at)) {
-    el.innerHTML = `<div style="padding:0.75rem;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);font-size:0.875rem;color:var(--amber)">&#9888; This code has expired. Ask the provider to generate a new one.</div>`;
+    el.innerHTML = `<div style="padding:0.75rem;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);font-size:0.875rem;color:var(--amber)">&#9888; This code has expired.</div>`;
     el.classList.add('show'); return;
   }
   if (tokenData.status === 'archived') {
@@ -582,7 +653,6 @@ window.doLookup = async () => {
     el.classList.add('show'); return;
   }
 
-  // Redirect to verify page
   window.location.href = `/verify.html?token=${encodeURIComponent(code)}`;
 };
 
