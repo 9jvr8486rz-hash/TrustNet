@@ -25,11 +25,11 @@
 </head>
 <body>
 <nav><div class="nav-inner">
-  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security" 
+  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"></a>
   <div class="nav-actions">
     <span style="font-size:0.82rem;font-weight:600;color:var(--blue);background:var(--blue-light);padding:0.3rem 0.75rem;border-radius:6px">&#128272; Admin</span>
-    <button class="btn-nav-ghost" onclick="location.href='/'">Home</button>
-    <button class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
+    <button type="button" class="btn-nav-ghost" onclick="location.href='/'">Home</button>
+    <button type="button" class="btn-nav-ghost" onclick="doLogout()" style="color:var(--red);border-color:var(--red-border)">Sign out</button>
   </div>
 </div></nav>
 
@@ -49,12 +49,12 @@
   <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
     <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
       <div style="font-weight:700;font-size:1rem;margin-right:0.5rem">All applications</div>
-      <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
-      <button class="filter-btn" id="filter-pending" onclick="setFilter('pending')">&#8987; Pending</button>
-      <button class="filter-btn" id="filter-verified" onclick="setFilter('verified')">&#10003; Verified</button>
-      <button class="filter-btn" id="filter-rejected" onclick="setFilter('rejected')">&#10007; Rejected</button>
+      <button type="button" class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
+      <button type="button" class="filter-btn" id="filter-pending" onclick="setFilter('pending')">&#8987; Pending</button>
+      <button type="button" class="filter-btn" id="filter-verified" onclick="setFilter('verified')">&#10003; Verified</button>
+      <button type="button" class="filter-btn" id="filter-rejected" onclick="setFilter('rejected')">&#10007; Rejected</button>
     </div>
-    <button class="btn-nav-ghost" onclick="loadProfiles()" style="font-size:0.82rem">&#8635; Refresh</button>
+    <button type="button" class="btn-nav-ghost" onclick="loadProfiles()" style="font-size:0.82rem">&#8635; Refresh</button>
   </div>
   <div class="applications-table">
     <div class="table-header">
@@ -75,7 +75,7 @@
           <div id="pmSub" style="font-size:0.78rem;color:var(--muted)"></div>
         </div>
       </div>
-      <button onclick="document.getElementById('profileModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
+      <button type="button" onclick="document.getElementById('profileModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
     </div>
 
     <!-- ACTION BUTTONS -->
@@ -83,10 +83,10 @@
 
     <!-- TABS -->
     <div class="profile-modal-tabs">
-      <button class="pmt active" onclick="switchTab('overview')">&#128100; Overview</button>
-      <button class="pmt" onclick="switchTab('documents')">&#128196; Documents</button>
-      <button class="pmt" onclick="switchTab('ratings')">&#11088; Ratings</button>
-      <button class="pmt" onclick="switchTab('activity')">&#128065; Activity</button>
+      <button type="button" class="pmt active" onclick="switchTab('overview')">&#128100; Overview</button>
+      <button type="button" class="pmt" onclick="switchTab('documents')">&#128196; Documents</button>
+      <button type="button" class="pmt" onclick="switchTab('ratings')">&#11088; Ratings</button>
+      <button type="button" class="pmt" onclick="switchTab('activity')">&#128065; Activity</button>
     </div>
 
     <!-- OVERVIEW TAB -->
@@ -111,7 +111,7 @@
   </div>
 </div>
 
-<!-- DOCS MODAL (kept for backwards compat) -->
+<!-- DOCS MODAL -->
 <div id="docModal" class="modal-bg">
   <div class="modal" style="max-width:620px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;position:sticky;top:0;background:#fff;padding-bottom:0.75rem;border-bottom:1px solid var(--border)">
@@ -119,7 +119,7 @@
         <h3 style="margin-bottom:0.15rem">&#128272; Documents</h3>
         <p id="docModalName" style="font-weight:600;color:var(--blue);font-size:0.95rem;margin:0"></p>
       </div>
-      <button onclick="document.getElementById('docModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
+      <button type="button" onclick="document.getElementById('docModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
     </div>
     <div id="docModalContent"></div>
   </div>
@@ -127,12 +127,12 @@
 
 <footer>
   <div class="footer-logo">Online Market Security</div>
-  <p>Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</p>
+  <p>Verification confirms identity documents were reviewed by Online Market Security. It does not guarantee behaviour, safety, or service quality.</p>
   <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">
     Online Market Security does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times.
     <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a>
   </p>
-  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Digital Trust Network · Republic of South Africa</p>
+  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Online Market Security · Republic of South Africa</p>
 </footer>
 <div class="toast" id="toast"></div>
 
@@ -189,7 +189,8 @@ function renderRows(data) {
       ? `<img src="${p.selfie_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)">`
       : '<div class="provider-avatar">&#128100;</div>';
     const approveReject = status==='pending'
-      ? `<button class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button><button class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
+      ? `<button type="button" class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button>
+         <button type="button" class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
       : '';
     return `<div class="table-row">
       <div class="provider-info">${avatar}<div>
@@ -202,7 +203,7 @@ function renderRows(data) {
       <div style="font-size:0.82rem;color:var(--muted)">${date}</div>
       <div class="action-btns">
         ${approveReject}
-        <button class="action-btn view" onclick="openProfile('${p.id}')">&#128100; Profile</button>
+        <button type="button" class="action-btn view" onclick="openProfile('${p.id}')">&#128100; Profile</button>
       </div>
     </div>`;
   }).join('');
@@ -232,10 +233,8 @@ window.openProfile = async (id) => {
   if (!p) return;
   currentProfileData = p;
 
-  // Reset tabs
   switchTab('overview');
 
-  // Header
   const avatarEl = document.getElementById('pmAvatar');
   avatarEl.innerHTML = p.selfie_url
     ? `<img src="${p.selfie_url}" style="width:100%;height:100%;object-fit:cover">`
@@ -243,23 +242,19 @@ window.openProfile = async (id) => {
   document.getElementById('pmName').textContent = p.name || '—';
   document.getElementById('pmSub').textContent = `${p.service_category||'Provider'} · ${p.phone||''}`;
 
-  // Status
   const now = new Date();
   const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
     : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
     : p.verification_status;
 
-  // Action buttons
   const actions = document.getElementById('pmActions');
   actions.innerHTML = status==='pending'
-    ? `<button class="action-btn approve" onclick="approveProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10003; Approve</button>
-       <button class="action-btn reject" onclick="rejectProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10007; Reject</button>`
+    ? `<button type="button" class="action-btn approve" onclick="approveProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10003; Approve</button>
+       <button type="button" class="action-btn reject" onclick="rejectProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10007; Reject</button>`
     : `<span class="status-pill ${status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending'}" style="font-size:0.78rem">${status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':'&#10007; Rejected'}</span>`;
 
-  // Open modal
   document.getElementById('profileModal').classList.add('open');
 
-  // Load all tabs in parallel
   renderOverview(p, status);
   renderDocuments(p);
   renderRatings(p.id);
@@ -313,7 +308,8 @@ async function renderDocuments(p) {
 
   let signedUrl = null;
   if (p.id_document_url) {
-    const { data: sd } = await supabase.storage.from('id-documents').createSignedUrl(p.id_document_url, 300);
+    const filename = p.id_document_url.split('/').pop();
+    const { data: sd } = await supabase.storage.from('id-documents').createSignedUrl(filename, 300);
     signedUrl = sd?.signedUrl || null;
   }
 
@@ -340,15 +336,18 @@ async function renderDocuments(p) {
       &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;</a>`;
   }
 
-  // Document history
-  const { data: files } = await supabase.storage.from('id-documents').list(p.id, {sortBy:{column:'created_at',order:'desc'}});
+  // Document history — list files at root level matching userId pattern
+  const { data: files } = await supabase.storage.from('id-documents').list('', {
+    search: p.id,
+    sortBy: { column: 'created_at', order: 'desc' }
+  });
   if (files && files.length > 0) {
     html += `<div style="border-top:1px solid var(--border);padding-top:1rem">
       <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">&#128196; All uploaded versions (${files.length})</div>
       <div style="display:flex;flex-direction:column;gap:0.5rem">`;
     for (let i=0; i<files.length; i++) {
       const f = files[i];
-      const { data: fsd } = await supabase.storage.from('id-documents').createSignedUrl(`${p.id}/${f.name}`, 300);
+      const { data: fsd } = await supabase.storage.from('id-documents').createSignedUrl(f.name, 300);
       const uploadDate = f.created_at ? new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
       html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid ${i===0?'var(--green-border)':'var(--border)'}">
         <div>
@@ -401,7 +400,7 @@ async function renderRatings(userId) {
     <div style="margin-bottom:1.25rem">
       ${[5,4,3,2,1].map(n=>`<div class="rating-bar-row">
         <div class="rating-bar-label">${n} &#11088;</div>
-        <div class="rating-bar-track"><div class="rating-bar-fill" style="height:100%;border-radius:999px;width:${total?Math.round((counts[n]/total)*100):0}%;background:${n>=4?'#16a34a':n===3?'#fbbf24':n===2?'#fb923c':'#ef4444'}"></div></div>
+        <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${total?Math.round((counts[n]/total)*100):0}%;background:${n>=4?'#16a34a':n===3?'#fbbf24':n===2?'#fb923c':'#ef4444'}"></div></div>
         <div style="width:24px;color:var(--muted);font-size:0.75rem">${counts[n]}</div>
       </div>`).join('')}
     </div>
@@ -476,7 +475,8 @@ async function renderActivity(userId) {
 window.approveProvider = async (id) => {
   if (!confirm('Approve this provider?')) return;
   const now = new Date();
-  const expiry = new Date(now); expiry.setDate(expiry.getDate()+30);
+  const expiry = new Date(now);
+  expiry.setFullYear(expiry.getFullYear() + 1); // 1 year validity
   let publicId;
   do {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -485,11 +485,11 @@ window.approveProvider = async (id) => {
     if (!data?.length) break;
   } while(true);
   const { error } = await supabase.from('profiles').update({
-    verification_status:'verified',
-    verification_date:now.toISOString(),
-    expiry_date:expiry.toISOString(),
-    public_id:publicId
-  }).eq('id',id);
+    verification_status: 'verified',
+    verification_date: now.toISOString(),
+    expiry_date: expiry.toISOString(),
+    public_id: publicId
+  }).eq('id', id);
   if (error) { showToast('&#10060; Error: '+error.message); return; }
   await supabase.from('ratings').update({ rater_verified: true }).eq('rater_user_id', id);
   showToast('&#10003; Approved! Badge ID: '+publicId);
@@ -498,22 +498,24 @@ window.approveProvider = async (id) => {
 
 window.rejectProvider = async (id) => {
   if (!confirm('Reject this application?')) return;
-  await supabase.from('profiles').update({verification_status:'rejected'}).eq('id',id);
+  const { error } = await supabase.from('profiles').update({ verification_status: 'rejected' }).eq('id', id);
+  if (error) { showToast('&#10060; Error: '+error.message); return; }
   showToast('Application rejected.');
   loadProfiles();
 };
 
 window.showToast = msg => {
   const t = document.getElementById('toast');
-  t.innerHTML = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
+  t.innerHTML = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
 };
 
 document.getElementById('profileModal').addEventListener('click', e => {
-  if(e.target===e.currentTarget) e.currentTarget.classList.remove('open');
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
 });
 document.getElementById('docModal').addEventListener('click', e => {
-  if(e.target===e.currentTarget) e.currentTarget.classList.remove('open');
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
 });
 
 const { data: { session } } = await supabase.auth.getSession();
