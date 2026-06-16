@@ -58,28 +58,29 @@ textarea.form-input-sm{resize:vertical;min-height:80px}
 .rating-success.show{display:block}
 .show-more-btn{width:100%;padding:0.6rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;font-family:inherit;color:var(--muted);cursor:pointer;margin-top:0.5rem;transition:all .15s}
 .show-more-btn:hover{background:var(--border);color:var(--ink)}
+.one-time-notice{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #16a34a;border-radius:var(--radius);padding:0.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:0.6rem;font-size:0.82rem;color:#166534}
 </style>
 </head>
 <body>
 <nav><div class="nav-inner">
-  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"
+  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"></a>
   <div class="nav-actions">
-    <button class="btn-nav-ghost" onclick="history.back()">&#8592; Back</button>
-    <button class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
+    <button type="button" class="btn-nav-ghost" onclick="history.back()">&#8592; Back</button>
+    <button type="button" class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
   </div>
 </div></nav>
 
 <div class="verify-wrap">
   <div id="loadingState" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
     <div style="font-size:2.5rem;margin-bottom:1rem">&#128269;</div>
-    <p style="font-weight:600">Looking up verification...</p>
+    <p style="font-weight:600">Verifying identity...</p>
   </div>
   <div id="verifyCard" class="verify-card" style="display:none"></div>
-  <div id="notFoundState" style="display:none;text-align:center;padding:4rem 2rem">
-    <div style="font-size:3rem;margin-bottom:1rem">&#10060;</div>
-    <h3 style="font-weight:700;margin-bottom:0.5rem">Not found</h3>
-    <p style="color:var(--muted);margin-bottom:1.5rem">This verification code doesn't exist or has been removed.</p>
-    <button class="btn-primary" onclick="location.href='/'">Go back home</button>
+  <div id="errorState" style="display:none;text-align:center;padding:4rem 2rem">
+    <div style="font-size:3rem;margin-bottom:1rem" id="errorIcon">&#10060;</div>
+    <h3 style="font-weight:700;margin-bottom:0.5rem" id="errorTitle">Code not valid</h3>
+    <p style="color:var(--muted);margin-bottom:1.5rem" id="errorMsg">This verification code is invalid or has already been used.</p>
+    <button type="button" class="btn-primary" onclick="location.href='/'">Go back home</button>
   </div>
 </div>
 
@@ -98,10 +99,13 @@ textarea.form-input-sm{resize:vertical;min-height:80px}
 import { supabase } from '/src/lib/supabase.js';
 
 const params = new URLSearchParams(location.search);
-const publicId = params.get('id');
+const tokenParam = params.get('token');
+const legacyId = params.get('id'); // backwards compat for old public_id links
+
 let providerId = null;
 let currentUser = null;
 let selectedStars = 0;
+let tokenId = null;
 
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
@@ -109,97 +113,169 @@ if (session) {
   if (up) currentUser = up;
 }
 
-if (!publicId) {
-  window.location.replace('/#verify-section');
-} else {
-  const { data, error } = await supabase.from('profiles')
-    .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
-    .eq('public_id', publicId)
-    .maybeSingle();
-
+function showError(icon, title, msg) {
   document.getElementById('loadingState').style.display = 'none';
-
-  if (!data || error) {
-    document.getElementById('notFoundState').style.display = 'block';
-  } else {
-    providerId = data.id;
-    const now = new Date();
-    const expiry = data.expiry_date ? new Date(data.expiry_date) : null;
-    const status = (expiry && now > expiry) ? 'expired' : data.verification_status;
-    const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '—';
-    const firstName = data.name?.split(' ')[0] || 'this person';
-
-    const statusHtml = status==='verified'
-      ? '<div class="verify-status">&#10003;&nbsp; Identity Verified</div>'
-      : status==='expired'
-      ? '<div class="verify-status expired">&#9888;&nbsp; Verification Expired</div>'
-      : '<div class="verify-status pending">&#8987;&nbsp; Pending Review</div>';
-
-    const card = document.getElementById('verifyCard');
-    card.innerHTML = `
-      <div class="verify-avatar">${data.selfie_url?`<img src="${data.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
-      <div class="verify-name">${data.name||'Unknown'}</div>
-      <div class="verify-category">${data.service_category||''}</div>
-      ${statusHtml}
-      ${status==='verified'?'<div class="verify-checks"><div class="check-item"><span class="check-icon">&#10003;</span> ID document checked</div><div class="check-item"><span class="check-icon">&#10003;</span> Selfie checked</div></div>':''}
-      <div class="verify-dates">
-        <div class="verify-date-item"><div class="lbl">Verified on</div><div class="val">${fmt(data.verification_date)}</div></div>
-        <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(data.expiry_date)}</div></div>
-      </div>
-      <div class="verify-id">ID: ${data.public_id}</div>
-
-      <div class="ratings-section">
-        <div class="ratings-header">
-          <div class="ratings-title">&#11088; Trust ratings</div>
-          <div id="ratingCount" style="font-size:0.82rem;color:var(--muted)">Loading...</div>
-        </div>
-        <div id="trustScoreWrap"></div>
-        <div id="ratingBreakdown"></div>
-        <div id="ratingsList"></div>
-        <div id="showMoreWrap"></div>
-      </div>
-
-      <div class="rate-form-wrap">
-        <div class="rate-form-title">&#128221; Rate ${firstName}</div>
-        <div class="rate-form-sub">Had an interaction with ${firstName}? Share your experience to help others in the community.${currentUser?.verification_status==='verified'?' Your rating carries extra weight as a verified user.':''}</div>
-        <div class="star-picker" id="starPicker">
-          <button class="star-btn" onclick="selectStar(1)">&#11088;</button>
-          <button class="star-btn" onclick="selectStar(2)">&#11088;</button>
-          <button class="star-btn" onclick="selectStar(3)">&#11088;</button>
-          <button class="star-btn" onclick="selectStar(4)">&#11088;</button>
-          <button class="star-btn" onclick="selectStar(5)">&#11088;</button>
-        </div>
-        <div class="star-label" id="starLabel">Tap a star to rate</div>
-        <div class="form-field-sm">
-          <label>Your name *</label>
-          <input class="form-input-sm" type="text" id="raterName" placeholder="e.g. Thandi M." value="${currentUser?.name||''}">
-        </div>
-        <div class="form-field-sm">
-          <label>Comment <span id="commentRequired" style="color:var(--red);font-size:0.75rem"></span></label>
-          <div class="comment-required-note" id="commentRequiredNote">&#9888; A comment is required for ratings of 1 or 2 stars. Please explain your experience.</div>
-          <textarea class="form-input-sm" id="raterComment" placeholder="Share your experience with ${firstName}..." rows="3"></textarea>
-        </div>
-        <button class="submit-rating-btn" id="submitRatingBtn" onclick="submitRating()">Submit rating</button>
-        <div class="rating-success" id="ratingSuccess">
-          <div style="font-size:1.75rem;margin-bottom:0.4rem">&#127881;</div>
-          <div style="font-weight:700;color:var(--green)">Thank you for your rating!</div>
-          <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">Your feedback helps build trust in the community.</div>
-        </div>
-      </div>
-
-      <div class="disclaimer" style="margin-top:1.25rem">Verification confirms identity documents were reviewed by Digital Trust Network. It does not guarantee behaviour, safety, or service quality.</div>
-      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center">
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own Digital Trust Network verification?</p>
-        <button class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.4rem" onclick="location.href='/apply.html'">Get verified &rarr;</button>
-      </div>`;
-    card.style.display = 'block';
-    document.title = `${data.name} — Online Market Security`;
-    await loadRatings();
-    await logVerification(data.id, data.name);
-  }
+  document.getElementById('errorIcon').textContent = icon;
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorState').style.display = 'block';
 }
 
-async function logVerification(providerId, providerName) {
+async function init() {
+  if (!tokenParam && !legacyId) {
+    window.location.replace('/#verify-section');
+    return;
+  }
+
+  let profileData = null;
+  let isOneTimeToken = false;
+
+  if (tokenParam) {
+    // ── New one-time token flow ──
+    const { data: tokenData, error: tokenErr } = await supabase
+      .from('verification_tokens')
+      .select('*, profiles(id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id)')
+      .eq('token', tokenParam)
+      .maybeSingle();
+
+    if (tokenErr || !tokenData) {
+      showError('❌', 'Code not found', 'This verification code does not exist. Please ask the provider to share a new code.');
+      return;
+    }
+    if (tokenData.status === 'used') {
+      showError('🔒', 'Code already used', 'This one-time code has already been used. It cannot be used again. Ask the provider to generate a new code.');
+      return;
+    }
+    if (tokenData.status === 'expired' || new Date() > new Date(tokenData.expires_at)) {
+      showError('⏰', 'Code expired', 'This code has expired. Ask the provider to generate a new one-time code.');
+      return;
+    }
+    if (tokenData.status === 'archived') {
+      showError('📦', 'Code archived', 'This code has been archived and is no longer valid.');
+      return;
+    }
+
+    // ── Mark token as used immediately ──
+    const verificationExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const viewerName = currentUser?.name || 'Anonymous';
+    await supabase.from('verification_tokens').update({
+      status: 'used',
+      used_at: new Date().toISOString(),
+      used_by_name: viewerName,
+      verification_expires_at: verificationExpiresAt.toISOString()
+    }).eq('id', tokenData.id);
+
+    tokenId = tokenData.id;
+    profileData = tokenData.profiles;
+    isOneTimeToken = true;
+
+  } else if (legacyId) {
+    // ── Legacy public_id flow (backwards compat) ──
+    const { data, error } = await supabase.from('profiles')
+      .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
+      .eq('public_id', legacyId)
+      .maybeSingle();
+    if (!data || error) {
+      showError('❌', 'Not found', "This verification code doesn't exist or has been removed.");
+      return;
+    }
+    profileData = data;
+  }
+
+  if (!profileData) {
+    showError('❌', 'Not found', 'Could not load provider information.');
+    return;
+  }
+
+  providerId = profileData.id;
+  document.getElementById('loadingState').style.display = 'none';
+
+  const now = new Date();
+  const expiry = profileData.expiry_date ? new Date(profileData.expiry_date) : null;
+  const status = (expiry && now > expiry) ? 'expired' : profileData.verification_status;
+  const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '—';
+  const firstName = profileData.name?.split(' ')[0] || 'this person';
+
+  const statusHtml = status==='verified'
+    ? '<div class="verify-status">&#10003;&nbsp; Identity Verified</div>'
+    : status==='expired'
+    ? '<div class="verify-status expired">&#9888;&nbsp; Verification Expired</div>'
+    : '<div class="verify-status pending">&#8987;&nbsp; Pending Review</div>';
+
+  const oneTimeNotice = isOneTimeToken ? `
+    <div class="one-time-notice">
+      <span style="font-size:1.2rem;flex-shrink:0">&#128273;</span>
+      <div><strong>One-time verification used.</strong> This code has now been consumed and cannot be used by anyone else. Your verification result is valid for 30 days.</div>
+    </div>` : '';
+
+  const card = document.getElementById('verifyCard');
+  card.innerHTML = `
+    ${oneTimeNotice}
+    <div class="verify-avatar">${profileData.selfie_url?`<img src="${profileData.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
+    <div class="verify-name">${profileData.name||'Unknown'}</div>
+    <div class="verify-category">${profileData.service_category||''}</div>
+    ${statusHtml}
+    ${status==='verified'?'<div class="verify-checks"><div class="check-item"><span class="check-icon">&#10003;</span> ID document checked</div><div class="check-item"><span class="check-icon">&#10003;</span> Selfie checked</div></div>':''}
+    <div class="verify-dates">
+      <div class="verify-date-item"><div class="lbl">Verified on</div><div class="val">${fmt(profileData.verification_date)}</div></div>
+      <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(profileData.expiry_date)}</div></div>
+    </div>
+    ${profileData.public_id?`<div class="verify-id">Badge ID: ${profileData.public_id}</div>`:''}
+
+    <div class="ratings-section">
+      <div class="ratings-header">
+        <div class="ratings-title">&#11088; Trust ratings</div>
+        <div id="ratingCount" style="font-size:0.82rem;color:var(--muted)">Loading...</div>
+      </div>
+      <div id="trustScoreWrap"></div>
+      <div id="ratingBreakdown"></div>
+      <div id="ratingsList"></div>
+      <div id="showMoreWrap"></div>
+    </div>
+
+    <div class="rate-form-wrap">
+      <div class="rate-form-title">&#128221; Rate ${firstName}</div>
+      <div class="rate-form-sub">Had an interaction with ${firstName}? Share your experience to help others.${currentUser?.verification_status==='verified'?' Your rating carries extra weight as a verified user.':''}</div>
+      <div class="star-picker" id="starPicker">
+        <button type="button" class="star-btn" onclick="selectStar(1)">&#11088;</button>
+        <button type="button" class="star-btn" onclick="selectStar(2)">&#11088;</button>
+        <button type="button" class="star-btn" onclick="selectStar(3)">&#11088;</button>
+        <button type="button" class="star-btn" onclick="selectStar(4)">&#11088;</button>
+        <button type="button" class="star-btn" onclick="selectStar(5)">&#11088;</button>
+      </div>
+      <div class="star-label" id="starLabel">Tap a star to rate</div>
+      <div class="form-field-sm">
+        <label>Your name *</label>
+        <input class="form-input-sm" type="text" id="raterName" placeholder="e.g. Thandi M." value="${currentUser?.name||''}">
+      </div>
+      <div class="form-field-sm">
+        <label>Comment <span id="commentRequired" style="color:var(--red);font-size:0.75rem"></span></label>
+        <div class="comment-required-note" id="commentRequiredNote">&#9888; A comment is required for 1 or 2 star ratings.</div>
+        <textarea class="form-input-sm" id="raterComment" placeholder="Share your experience with ${firstName}..." rows="3"></textarea>
+      </div>
+      <button type="button" class="submit-rating-btn" id="submitRatingBtn" onclick="submitRating()">Submit rating</button>
+      <div class="rating-success" id="ratingSuccess">
+        <div style="font-size:1.75rem;margin-bottom:0.4rem">&#127881;</div>
+        <div style="font-weight:700;color:var(--green)">Thank you for your rating!</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">Your feedback helps build trust in the community.</div>
+      </div>
+    </div>
+
+    <div class="disclaimer" style="margin-top:1.25rem">Verification confirms identity documents were reviewed by Online Market Security. It does not guarantee behaviour, safety, or service quality.</div>
+    <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center">
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own Online Market Security verification?</p>
+      <button type="button" class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.4rem" onclick="location.href='/apply.html'">Get verified &rarr;</button>
+    </div>`;
+
+  card.style.display = 'block';
+  document.title = `${profileData.name} — Online Market Security`;
+  await loadRatings();
+  await logVerification(profileData.id, profileData.name);
+}
+
+await init();
+
+async function logVerification(provId, provName) {
   let viewerName = 'Anonymous';
   let viewerId = null;
   let viewerVerified = false;
@@ -209,8 +285,8 @@ async function logVerification(providerId, providerName) {
     viewerVerified = currentUser.verification_status === 'verified';
   }
   await supabase.from('verification_logs').insert({
-    provider_id: providerId,
-    provider_name: providerName,
+    provider_id: provId,
+    provider_name: provName,
     viewer_id: viewerId,
     viewer_name: viewerName,
     viewer_verified: viewerVerified,
@@ -297,7 +373,7 @@ async function loadRatings(showAll=false) {
 
   const showMoreWrap = document.getElementById('showMoreWrap');
   if (showMoreWrap) showMoreWrap.innerHTML = total>3&&!showAll
-    ? `<button class="show-more-btn" onclick="loadRatings(true)">Show all ${total} ratings &#8595;</button>`
+    ? `<button type="button" class="show-more-btn" onclick="loadRatings(true)">Show all ${total} ratings &#8595;</button>`
     : '';
 }
 window.loadRatings = loadRatings;
