@@ -473,7 +473,8 @@ async function renderActivity(userId) {
 }
 
 window.approveProvider = async (id) => {
-  if (!confirm('Approve this provider?')) return;
+  const ok = window.confirm('Approve this provider? This will generate their TN- badge ID and set a 1-year validity.');
+  if (!ok) return;
   const now = new Date();
   const expiry = new Date(now);
   expiry.setFullYear(expiry.getFullYear() + 1); // 1 year validity
