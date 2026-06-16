@@ -15,7 +15,6 @@
 .pmt.active{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .profile-section{display:none}
 .profile-section.active{display:block}
-.stat-pill{display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.75rem;border-radius:999px;font-size:0.78rem;font-weight:700}
 .rating-bar-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;font-size:0.8rem}
 .rating-bar-label{width:40px;text-align:right;color:var(--muted);font-weight:600}
 .rating-bar-track{flex:1;height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
@@ -58,7 +57,7 @@
   </div>
   <div class="applications-table">
     <div class="table-header">
-      <div>Provider</div><div>Category</div><div>Status</div><div>Applied</div><div>Actions</div>
+      <div>Provider</div><div>Category</div><div>Status</div><div>Applied / Expiry</div><div>Actions</div>
     </div>
     <div id="adminRows"><div style="padding:2rem;text-align:center;color:var(--muted)">Loading applications...</div></div>
   </div>
@@ -77,37 +76,17 @@
       </div>
       <button type="button" onclick="document.getElementById('profileModal').classList.remove('open')" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0" onmouseover="this.style.background='var(--red-bg)';this.style.borderColor='var(--red-border)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.borderColor='var(--border)';this.style.color='inherit'">&#10005;</button>
     </div>
-
-    <!-- ACTION BUTTONS -->
     <div id="pmActions" style="display:flex;gap:0.5rem;margin-bottom:1.25rem;flex-wrap:wrap"></div>
-
-    <!-- TABS -->
     <div class="profile-modal-tabs">
       <button type="button" class="pmt active" onclick="switchTab('overview')">&#128100; Overview</button>
       <button type="button" class="pmt" onclick="switchTab('documents')">&#128196; Documents</button>
       <button type="button" class="pmt" onclick="switchTab('ratings')">&#11088; Ratings</button>
       <button type="button" class="pmt" onclick="switchTab('activity')">&#128065; Activity</button>
     </div>
-
-    <!-- OVERVIEW TAB -->
-    <div class="profile-section active" id="tab-overview">
-      <div id="pmOverviewContent"></div>
-    </div>
-
-    <!-- DOCUMENTS TAB -->
-    <div class="profile-section" id="tab-documents">
-      <div id="pmDocsContent"></div>
-    </div>
-
-    <!-- RATINGS TAB -->
-    <div class="profile-section" id="tab-ratings">
-      <div id="pmRatingsContent"></div>
-    </div>
-
-    <!-- ACTIVITY TAB -->
-    <div class="profile-section" id="tab-activity">
-      <div id="pmActivityContent"></div>
-    </div>
+    <div class="profile-section active" id="tab-overview"><div id="pmOverviewContent"></div></div>
+    <div class="profile-section" id="tab-documents"><div id="pmDocsContent"></div></div>
+    <div class="profile-section" id="tab-ratings"><div id="pmRatingsContent"></div></div>
+    <div class="profile-section" id="tab-activity"><div id="pmActivityContent"></div></div>
   </div>
 </div>
 
@@ -145,7 +124,6 @@ let currentFilter = 'all';
 let allProfiles = [];
 let currentProfileData = null;
 
-// ── TABS ──
 window.switchTab = (tab) => {
   document.querySelectorAll('.pmt').forEach((b,i) => {
     const tabs = ['overview','documents','ratings','activity'];
@@ -155,7 +133,6 @@ window.switchTab = (tab) => {
   document.getElementById('tab-'+tab).classList.add('active');
 };
 
-// ── FILTER ──
 window.setFilter = (filter) => {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -163,28 +140,30 @@ window.setFilter = (filter) => {
   renderRows(allProfiles);
 };
 
+function getStatus(p) {
+  const now = new Date();
+  if (!p.verification_status || p.verification_status === 'pending') return 'pending';
+  if (p.verification_status === 'rejected') return 'rejected';
+  if (p.expiry_date && now > new Date(p.expiry_date)) return 'expired';
+  return p.verification_status;
+}
+
 function renderRows(data) {
   const rows = document.getElementById('adminRows');
   const filtered = currentFilter === 'all' ? data : data.filter(p => {
-    const now = new Date();
-    const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
-      : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
-      : p.verification_status;
-    if (currentFilter === 'rejected') return status === 'rejected' || status === 'expired';
-    return status === currentFilter;
+    const s = getStatus(p);
+    if (currentFilter === 'rejected') return s === 'rejected' || s === 'expired';
+    return s === currentFilter;
   });
   if (!filtered.length) {
     rows.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--muted)">No ${currentFilter==='all'?'':currentFilter+' '}applications found.</div>`;
     return;
   }
   rows.innerHTML = filtered.map(p => {
-    const now = new Date();
-    const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
-      : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
-      : p.verification_status;
+    const status = getStatus(p);
     const pill = status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending';
     const label = status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':status==='rejected'?'&#10007; Rejected':'&#8987; Pending';
-    const date = new Date(p.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+    const appliedDate = new Date(p.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
     const avatar = p.selfie_url
       ? `<img src="${p.selfie_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)">`
       : '<div class="provider-avatar">&#128100;</div>';
@@ -192,6 +171,17 @@ function renderRows(data) {
       ? `<button type="button" class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button>
          <button type="button" class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
       : '';
+    let expiryHtml = '';
+    if (p.expiry_date) {
+      const now = new Date();
+      const exp = new Date(p.expiry_date);
+      const daysLeft = Math.round((exp - now) / 86400000);
+      const expColor = now > exp ? 'var(--red)' : daysLeft < 90 ? '#d97706' : 'var(--green)';
+      const expLabel = now > exp ? 'Expired' : daysLeft + 'd left';
+      expiryHtml = `<div style="font-size:0.72rem;margin-top:0.25rem;font-weight:600;color:${expColor}">
+        &#9200; Exp: ${exp.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})} &middot; ${expLabel}
+      </div>`;
+    }
     return `<div class="table-row">
       <div class="provider-info">${avatar}<div>
         <div class="provider-name">${p.name||'—'}</div>
@@ -200,7 +190,10 @@ function renderRows(data) {
       </div></div>
       <div style="font-size:0.875rem">${p.service_category||'—'}</div>
       <div><span class="status-pill ${pill}">${label}</span></div>
-      <div style="font-size:0.82rem;color:var(--muted)">${date}</div>
+      <div>
+        <div style="font-size:0.82rem;color:var(--muted)">${appliedDate}</div>
+        ${expiryHtml}
+      </div>
       <div class="action-btns">
         ${approveReject}
         <button type="button" class="action-btn view" onclick="openProfile('${p.id}')">&#128100; Profile</button>
@@ -227,34 +220,22 @@ window.loadProfiles = async () => {
   renderRows(data);
 };
 
-// ── OPEN PROFILE MODAL ──
 window.openProfile = async (id) => {
   const p = allProfiles.find(x => x.id === id);
   if (!p) return;
   currentProfileData = p;
-
   switchTab('overview');
-
   const avatarEl = document.getElementById('pmAvatar');
-  avatarEl.innerHTML = p.selfie_url
-    ? `<img src="${p.selfie_url}" style="width:100%;height:100%;object-fit:cover">`
-    : '&#128100;';
+  avatarEl.innerHTML = p.selfie_url ? `<img src="${p.selfie_url}" style="width:100%;height:100%;object-fit:cover">` : '&#128100;';
   document.getElementById('pmName').textContent = p.name || '—';
   document.getElementById('pmSub').textContent = `${p.service_category||'Provider'} · ${p.phone||''}`;
-
-  const now = new Date();
-  const status = (!p.verification_status||p.verification_status==='pending') ? 'pending'
-    : (p.expiry_date&&now>new Date(p.expiry_date)) ? 'expired'
-    : p.verification_status;
-
+  const status = getStatus(p);
   const actions = document.getElementById('pmActions');
   actions.innerHTML = status==='pending'
     ? `<button type="button" class="action-btn approve" onclick="approveProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10003; Approve</button>
        <button type="button" class="action-btn reject" onclick="rejectProvider('${p.id}');document.getElementById('profileModal').classList.remove('open')">&#10007; Reject</button>`
     : `<span class="status-pill ${status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending'}" style="font-size:0.78rem">${status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':'&#10007; Rejected'}</span>`;
-
   document.getElementById('profileModal').classList.add('open');
-
   renderOverview(p, status);
   renderDocuments(p);
   renderRatings(p.id);
@@ -264,15 +245,11 @@ window.openProfile = async (id) => {
 function fmt(d) { return d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—'; }
 
 function renderOverview(p, status) {
-  const pct = (() => {
-    const now = new Date();
-    const expiry = p.expiry_date ? new Date(p.expiry_date) : null;
-    const start = p.verification_date ? new Date(p.verification_date) : null;
-    if (!expiry||!start) return 0;
-    return Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100)));
-  })();
-  const days = p.expiry_date ? Math.max(0,Math.round((new Date(p.expiry_date)-new Date())/86400000)) : 0;
-
+  const now = new Date();
+  const expiry = p.expiry_date ? new Date(p.expiry_date) : null;
+  const start = p.verification_date ? new Date(p.verification_date) : null;
+  const pct = (expiry&&start) ? Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100))) : 0;
+  const days = expiry ? Math.max(0,Math.round((expiry-now)/86400000)) : 0;
   document.getElementById('pmOverviewContent').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem">
       <div class="info-box"><div class="ib-label">Full name</div><div class="ib-val">${p.name||'—'}</div></div>
@@ -292,7 +269,7 @@ function renderOverview(p, status) {
       <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.4rem">Badge ID: <span style="font-family:monospace;color:var(--ink)">${p.public_id}</span></div>
       <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.35rem">Validity: ${days} days remaining</div>
       <div style="height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)">
-        <div style="height:100%;border-radius:999px;width:${pct}%;background:${days>10?'#16a34a':days>3?'#fbbf24':'#ef4444'}"></div>
+        <div style="height:100%;border-radius:999px;width:${pct}%;background:${days>365?'#16a34a':days>90?'#fbbf24':'#ef4444'}"></div>
       </div>
     </div>
     <a href="/verify.html?id=${p.public_id}" target="_blank" style="display:block;text-align:center;padding:0.6rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;color:var(--blue);text-decoration:none">
@@ -305,21 +282,19 @@ async function renderDocuments(p) {
   let html = '';
   const isPdf = p.id_document_url ? p.id_document_url.toLowerCase().endsWith('.pdf') : false;
   const isImage = p.id_document_url ? /\.(jpg|jpeg|png|webp|gif)$/i.test(p.id_document_url) : false;
-
   let signedUrl = null;
   if (p.id_document_url) {
     const filename = p.id_document_url.split('/').pop();
     const { data: sd } = await supabase.storage.from('id-documents').createSignedUrl(filename, 300);
     signedUrl = sd?.signedUrl || null;
   }
-
   html += `<div style="display:grid;grid-template-columns:${p.selfie_url&&p.id_document_url?'1fr 1fr':'1fr'};gap:1rem;margin-bottom:1rem">`;
   if (p.selfie_url) {
     html += `<div><div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">Selfie photo</div>
       <img src="${p.selfie_url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block"></div>`;
   }
   if (p.id_document_url) {
-    html += `<div><div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document (latest)</div>`;
+    html += `<div><div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem">ID document</div>`;
     if (signedUrl && isImage) {
       html += `<img src="${signedUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);display:block">`;
     } else if (signedUrl && isPdf) {
@@ -330,17 +305,10 @@ async function renderDocuments(p) {
     html += '</div>';
   }
   html += '</div>';
-
   if (signedUrl) {
-    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-bottom:1rem">
-      &#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;</a>`;
+    html += `<a href="${signedUrl}" target="_blank" class="btn-full" style="text-decoration:none;text-align:center;display:block;font-size:0.875rem;padding:0.65rem;margin-bottom:1rem">&#128065; Open ${isPdf?'PDF':'ID document'} full size &rarr;</a>`;
   }
-
-  // Document history — list files at root level matching userId pattern
-  const { data: files } = await supabase.storage.from('id-documents').list('', {
-    search: p.id,
-    sortBy: { column: 'created_at', order: 'desc' }
-  });
+  const { data: files } = await supabase.storage.from('id-documents').list('', { search: p.id, sortBy: { column: 'created_at', order: 'desc' } });
   if (files && files.length > 0) {
     html += `<div style="border-top:1px solid var(--border);padding-top:1rem">
       <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">&#128196; All uploaded versions (${files.length})</div>
@@ -348,7 +316,7 @@ async function renderDocuments(p) {
     for (let i=0; i<files.length; i++) {
       const f = files[i];
       const { data: fsd } = await supabase.storage.from('id-documents').createSignedUrl(f.name, 300);
-      const uploadDate = f.created_at ? new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+      const uploadDate = f.created_at ? new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
       html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid ${i===0?'var(--green-border)':'var(--border)'}">
         <div>
           <div style="font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:0.5rem">${f.name}${i===0?'<span style="background:var(--green-bg);color:var(--green);font-size:0.65rem;padding:0.1rem 0.5rem;border-radius:999px;font-weight:700">Latest</span>':''}</div>
@@ -359,7 +327,6 @@ async function renderDocuments(p) {
     }
     html += '</div></div>';
   }
-
   if (!p.selfie_url && !p.id_document_url) html = '<p style="color:var(--muted);font-size:0.875rem;text-align:center;padding:1rem">No documents uploaded yet.</p>';
   document.getElementById('pmDocsContent').innerHTML = html;
 }
@@ -369,7 +336,6 @@ async function renderRatings(userId) {
   const r = ratings || [];
   const total = r.length;
   const el = document.getElementById('pmRatingsContent');
-
   if (!total) {
     el.innerHTML = `<div style="text-align:center;padding:2rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border)">
       <div style="font-size:1.5rem;margin-bottom:0.4rem">&#11088;</div>
@@ -377,7 +343,6 @@ async function renderRatings(userId) {
     </div>`;
     return;
   }
-
   const verified = r.filter(x=>x.rater_verified).length;
   const unverified = r.filter(x=>!x.rater_verified).length;
   const ws = r.reduce((s,x)=>s+(x.stars*(x.rater_verified?1.5:1)),0);
@@ -386,7 +351,6 @@ async function renderRatings(userId) {
   const counts = {5:0,4:0,3:0,2:0,1:0};
   r.forEach(x=>counts[x.stars]++);
   const badge = score>=4.5?{l:'&#129351; Excellent',c:'tsb-excellent'}:score>=3.5?{l:'&#128077; Good',c:'tsb-good'}:score>=2.5?{l:'&#128522; Average',c:'tsb-average'}:{l:'&#9888; Poor',c:'tsb-poor'};
-
   el.innerHTML = `
     <div style="display:flex;align-items:center;gap:0.75rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem">
       <div style="font-weight:800;font-size:2.5rem;line-height:1;color:var(--blue)">${score.toFixed(1)}</div>
@@ -425,13 +389,7 @@ async function renderRatings(userId) {
 }
 
 async function renderActivity(userId) {
-  const { data: logs } = await supabase
-    .from('verification_logs')
-    .select('*')
-    .eq('provider_id', userId)
-    .order('viewed_at', {ascending: false})
-    .limit(50);
-
+  const { data: logs } = await supabase.from('verification_logs').select('*').eq('provider_id', userId).order('viewed_at',{ascending:false}).limit(50);
   const el = document.getElementById('pmActivityContent');
   if (!logs || !logs.length) {
     el.innerHTML = `<div style="text-align:center;padding:2rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border)">
@@ -441,10 +399,8 @@ async function renderActivity(userId) {
     </div>`;
     return;
   }
-
   const verifiedViewers = logs.filter(l=>l.viewer_verified).length;
   const unverifiedViewers = logs.filter(l=>!l.viewer_verified).length;
-
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.25rem">
       <div class="info-box"><div class="ib-label">Total views</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--blue)">${logs.length}</div></div>
@@ -452,7 +408,7 @@ async function renderActivity(userId) {
       <div class="info-box"><div class="ib-label">Unverified viewers</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--muted)">${unverifiedViewers}</div></div>
     </div>
     <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Verification history</div>
-    ${logs.map(l => {
+    ${logs.map(l=>{
       const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
       const time = new Date(l.viewed_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
       const badge = l.viewer_verified
@@ -473,11 +429,11 @@ async function renderActivity(userId) {
 }
 
 window.approveProvider = async (id) => {
-  const ok = window.confirm('Approve this provider? This will generate their TN- badge ID and set a 1-year validity.');
+  const ok = window.confirm('Approve this provider? This will generate their TN- badge ID and set a 5-year validity.');
   if (!ok) return;
   const now = new Date();
   const expiry = new Date(now);
-  expiry.setFullYear(expiry.getFullYear() + 1); // 1 year validity
+  expiry.setFullYear(expiry.getFullYear() + 5);
   let publicId;
   do {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -486,20 +442,20 @@ window.approveProvider = async (id) => {
     if (!data?.length) break;
   } while(true);
   const { error } = await supabase.from('profiles').update({
-    verification_status: 'verified',
-    verification_date: now.toISOString(),
-    expiry_date: expiry.toISOString(),
-    public_id: publicId
-  }).eq('id', id);
+    verification_status:'verified',
+    verification_date:now.toISOString(),
+    expiry_date:expiry.toISOString(),
+    public_id:publicId
+  }).eq('id',id);
   if (error) { showToast('&#10060; Error: '+error.message); return; }
-  await supabase.from('ratings').update({ rater_verified: true }).eq('rater_user_id', id);
+  await supabase.from('ratings').update({ rater_verified:true }).eq('rater_user_id',id);
   showToast('&#10003; Approved! Badge ID: '+publicId);
   loadProfiles();
 };
 
 window.rejectProvider = async (id) => {
   if (!confirm('Reject this application?')) return;
-  const { error } = await supabase.from('profiles').update({ verification_status: 'rejected' }).eq('id', id);
+  const { error } = await supabase.from('profiles').update({ verification_status:'rejected' }).eq('id',id);
   if (error) { showToast('&#10060; Error: '+error.message); return; }
   showToast('Application rejected.');
   loadProfiles();
@@ -507,17 +463,12 @@ window.rejectProvider = async (id) => {
 
 window.showToast = msg => {
   const t = document.getElementById('toast');
-  t.innerHTML = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  t.innerHTML = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
 };
 
-document.getElementById('profileModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-});
-document.getElementById('docModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-});
+document.getElementById('profileModal').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+document.getElementById('docModal').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 
 const { data: { session } } = await supabase.auth.getSession();
 if (!session) {
