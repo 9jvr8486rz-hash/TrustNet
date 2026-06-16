@@ -59,6 +59,49 @@ textarea.form-input-sm{resize:vertical;min-height:80px}
 .show-more-btn{width:100%;padding:0.6rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;font-family:inherit;color:var(--muted);cursor:pointer;margin-top:0.5rem;transition:all .15s}
 .show-more-btn:hover{background:var(--border);color:var(--ink)}
 .one-time-notice{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #16a34a;border-radius:var(--radius);padding:0.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:0.6rem;font-size:0.82rem;color:#166534}
+
+/* In-person identity confirmation */
+.identity-confirm-section{margin-bottom:1.5rem;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:var(--radius-lg);padding:1.5rem}
+.identity-confirm-title{font-weight:800;font-size:1rem;color:#92400e;margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem}
+.identity-confirm-sub{font-size:0.82rem;color:#78350f;margin-bottom:1.25rem;line-height:1.5}
+.identity-photo-check{display:flex;align-items:center;gap:1rem;background:#fff;border:1px solid #fde68a;border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem}
+.identity-photo-check img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #f59e0b;flex-shrink:0}
+.identity-photo-placeholder{width:80px;height:80px;border-radius:50%;background:#fef3c7;border:3px solid #f59e0b;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:2rem}
+.identity-photo-label strong{display:block;font-size:0.9rem;color:#92400e;margin-bottom:0.2rem}
+.identity-photo-label{font-size:0.82rem;color:#78350f;line-height:1.5}
+.identity-actions{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
+.identity-confirm-btn{padding:0.75rem;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:0.4rem}
+.identity-confirm-btn.match{background:#16a34a;color:#fff}
+.identity-confirm-btn.match:hover{background:#15803d}
+.identity-confirm-btn.mismatch{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-border)}
+.identity-confirm-btn.mismatch:hover{background:var(--red);color:#fff}
+.identity-name-input{width:100%;padding:0.55rem 0.75rem;border:1.5px solid #fde68a;border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;background:#fff;box-sizing:border-box;transition:all 0.2s;margin-bottom:0.75rem}
+.identity-name-input:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15)}
+.identity-name-label{display:block;font-size:0.78rem;font-weight:600;color:#78350f;margin-bottom:0.3rem}
+.identity-comment-textarea{width:100%;padding:0.55rem 0.75rem;border:1.5px solid #fde68a;border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;background:#fff;box-sizing:border-box;resize:vertical;min-height:70px;transition:all 0.2s;display:block}
+.identity-comment-textarea:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15)}
+.identity-comment-label{display:block;font-size:0.78rem;font-weight:600;color:#78350f;margin-bottom:0.3rem}
+.mismatch-extra{display:none;margin-bottom:0.75rem}
+.mismatch-extra.show{display:block}
+.identity-submitted{border-radius:var(--radius-sm);padding:0.85rem 1rem;text-align:center;font-size:0.875rem;display:none;margin-top:0.5rem}
+.identity-submitted.show{display:block}
+
+/* Risk rating */
+.risk-popup-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;border:1.5px solid;transition:all 0.15s}
+.risk-popup-btn.low{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.risk-popup-btn.medium{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.risk-popup-btn.high{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.risk-popup-btn.none{background:var(--bg-soft);color:var(--muted);border-color:var(--border)}
+
+/* Risk flags modal */
+.risk-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.risk-modal-bg.open{opacity:1;pointer-events:all}
+.risk-modal{background:#fff;border-radius:var(--radius-lg);padding:0;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.18);transform:translateY(12px);transition:transform 0.2s;max-height:90vh;overflow-y:auto}
+.risk-modal-bg.open .risk-modal{transform:translateY(0)}
+.risk-modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:5;display:flex;align-items:center;justify-content:space-between}
+.risk-modal-title{font-weight:800;font-size:1rem}
+.risk-modal-body{padding:1.25rem 1.5rem}
+.risk-flag-item{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem;margin-bottom:0.65rem;border-left:3px solid var(--red)}
 </style>
 </head>
 <body>
@@ -69,6 +112,17 @@ textarea.form-input-sm{resize:vertical;min-height:80px}
     <button type="button" class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
   </div>
 </div></nav>
+
+<!-- RISK FLAGS MODAL -->
+<div class="risk-modal-bg" id="riskModal">
+  <div class="risk-modal">
+    <div class="risk-modal-header">
+      <div class="risk-modal-title">&#9888; Risk flags &amp; community reports</div>
+      <button type="button" onclick="document.getElementById('riskModal').classList.remove('open')" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--red-bg)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.color='inherit'">&#10005;</button>
+    </div>
+    <div class="risk-modal-body" id="riskModalBody">Loading...</div>
+  </div>
+</div>
 
 <div class="verify-wrap">
   <div id="loadingState" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
@@ -100,12 +154,13 @@ import { supabase } from '/src/lib/supabase.js';
 
 const params = new URLSearchParams(location.search);
 const tokenParam = params.get('token');
-const legacyId = params.get('id'); // backwards compat for old public_id links
+const legacyId = params.get('id');
 
 let providerId = null;
 let currentUser = null;
 let selectedStars = 0;
 let tokenId = null;
+let isInPerson = false;
 
 const { data: { session } } = await supabase.auth.getSession();
 if (session) {
@@ -131,7 +186,6 @@ async function init() {
   let isOneTimeToken = false;
 
   if (tokenParam) {
-    // ── New one-time token flow ──
     const { data: tokenData, error: tokenErr } = await supabase
       .from('verification_tokens')
       .select('*, profiles(id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id)')
@@ -143,7 +197,7 @@ async function init() {
       return;
     }
     if (tokenData.status === 'used') {
-      showError('🔒', 'Code already used', 'This one-time code has already been used. It cannot be used again. Ask the provider to generate a new code.');
+      showError('🔒', 'Code already used', 'This one-time code has already been used. Ask the provider to generate a new code.');
       return;
     }
     if (tokenData.status === 'expired' || new Date() > new Date(tokenData.expires_at)) {
@@ -155,7 +209,8 @@ async function init() {
       return;
     }
 
-    // ── Mark token as used immediately ──
+    isInPerson = tokenData.meeting_type === 'in_person';
+
     const verificationExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     const viewerName = currentUser?.name || 'Anonymous';
     await supabase.from('verification_tokens').update({
@@ -170,7 +225,6 @@ async function init() {
     isOneTimeToken = true;
 
   } else if (legacyId) {
-    // ── Legacy public_id flow (backwards compat) ──
     const { data, error } = await supabase.from('profiles')
       .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
       .eq('public_id', legacyId)
@@ -208,9 +262,40 @@ async function init() {
       <div><strong>One-time verification used.</strong> This code has now been consumed and cannot be used by anyone else. Your verification result is valid for 30 days.</div>
     </div>` : '';
 
+  const inPersonBlock = (isInPerson && status === 'verified') ? `
+    <div class="identity-confirm-section" id="identityConfirmSection">
+      <div class="identity-confirm-title">&#129489; In-person identity check</div>
+      <div class="identity-confirm-sub">You are meeting this person face-to-face. Please compare the photo below to the person in front of you and confirm whether they match.</div>
+      <div class="identity-photo-check">
+        ${profileData.selfie_url
+          ? `<img src="${profileData.selfie_url}" alt="Provider photo">`
+          : '<div class="identity-photo-placeholder">&#128100;</div>'}
+        <div class="identity-photo-label">
+          <strong>${profileData.name || 'Provider'}</strong>
+          Does the person in front of you match this verified photo?
+        </div>
+      </div>
+      <label class="identity-name-label">Your name (optional)</label>
+      <input type="text" class="identity-name-input" id="identityReporterName" placeholder="e.g. Sipho M." value="${currentUser?.name || ''}">
+      <div id="mismatchExtra" class="mismatch-extra">
+        <label class="identity-comment-label">Describe the mismatch <span style="color:var(--red);font-size:0.75rem">* required</span></label>
+        <textarea id="identityComment" class="identity-comment-textarea" placeholder="e.g. The person's appearance does not match the photo — different hair, height, etc."></textarea>
+      </div>
+      <div class="identity-actions" id="identityActions">
+        <button type="button" class="identity-confirm-btn match" id="identityMatchBtn" onclick="submitIdentityCheck('match')">&#10003; Photo matches</button>
+        <button type="button" class="identity-confirm-btn mismatch" id="identityMismatchBtn" onclick="selectMismatch()">&#9888; Does not match</button>
+      </div>
+      <div id="identitySubmitMismatch" style="display:none;margin-bottom:0.5rem">
+        <button type="button" class="identity-confirm-btn mismatch" style="width:100%;margin-bottom:0.5rem" onclick="submitIdentityCheck('mismatch')">&#9888; Submit mismatch report</button>
+        <button type="button" onclick="cancelMismatch()" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-soft);font-size:0.82rem;font-family:inherit;cursor:pointer;color:var(--muted)">Cancel</button>
+      </div>
+      <div class="identity-submitted" id="identitySubmitted"></div>
+    </div>` : '';
+
   const card = document.getElementById('verifyCard');
   card.innerHTML = `
     ${oneTimeNotice}
+    ${inPersonBlock}
     <div class="verify-avatar">${profileData.selfie_url?`<img src="${profileData.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
     <div class="verify-name">${profileData.name||'Unknown'}</div>
     <div class="verify-category">${profileData.service_category||''}</div>
@@ -221,6 +306,8 @@ async function init() {
       <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(profileData.expiry_date)}</div></div>
     </div>
     ${profileData.public_id?`<div class="verify-id">Badge ID: ${profileData.public_id}</div>`:''}
+
+    <div id="riskRatingWrap" style="margin-top:1rem"></div>
 
     <div class="ratings-section">
       <div class="ratings-header">
@@ -270,30 +357,168 @@ async function init() {
   card.style.display = 'block';
   document.title = `${profileData.name} — Online Market Security`;
   await loadRatings();
+  await loadRiskRating();
   await logVerification(profileData.id, profileData.name);
 }
 
 await init();
 
-async function logVerification(provId, provName) {
-  let viewerName = 'Anonymous';
-  let viewerId = null;
-  let viewerVerified = false;
-  if (currentUser) {
-    viewerId = currentUser.id;
-    viewerName = currentUser.name || 'Unknown';
-    viewerVerified = currentUser.verification_status === 'verified';
+// ── Risk rating ──
+async function loadRiskRating() {
+  if (!providerId) return;
+  const { data: flags } = await supabase
+    .from('risk_flags')
+    .select('*')
+    .eq('provider_id', providerId)
+    .order('created_at', { ascending: false });
+
+  const wrap = document.getElementById('riskRatingWrap');
+  if (!wrap) return;
+  const count = flags?.length || 0;
+  if (count === 0) { wrap.innerHTML = ''; return; }
+
+  const level = count >= 3 ? 'high' : count === 2 ? 'medium' : 'low';
+  const levelLabel = level==='high' ? '&#128308; High risk' : level==='medium' ? '&#128993; Medium risk' : '&#128994; Low risk';
+  const levelDesc = level==='high'
+    ? 'Multiple identity mismatches have been reported by community members.'
+    : level==='medium'
+    ? 'More than one identity mismatch has been reported.'
+    : 'A potential identity mismatch has been reported.';
+
+  wrap.innerHTML = `
+    <div style="background:var(--red-bg);border:1.5px solid var(--red-border);border-radius:var(--radius);padding:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700;font-size:0.875rem;color:var(--red);margin-bottom:0.2rem">&#9888; Community risk reports</div>
+        <div style="font-size:0.78rem;color:var(--muted)">${levelDesc}</div>
+      </div>
+      <button type="button" class="risk-popup-btn ${level}" onclick="openRiskModal()">
+        ${levelLabel} · ${count} flag${count!==1?'s':''}
+      </button>
+    </div>`;
+}
+
+window.openRiskModal = async () => {
+  document.getElementById('riskModal').classList.add('open');
+  const body = document.getElementById('riskModalBody');
+  body.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted)">Loading...</div>';
+
+  const { data: flags } = await supabase
+    .from('risk_flags')
+    .select('*')
+    .eq('provider_id', providerId)
+    .order('created_at', { ascending: false });
+
+  const count = flags?.length || 0;
+  if (!count) { body.innerHTML = '<p style="color:var(--muted);font-size:0.875rem">No risk flags found.</p>'; return; }
+
+  const level = count >= 3 ? 'high' : count === 2 ? 'medium' : 'low';
+  const levelColor = level==='high' ? 'var(--red)' : level==='medium' ? 'var(--amber)' : '#15803d';
+  const levelLabel = level==='high' ? '&#128308; High risk' : level==='medium' ? '&#128993; Medium risk' : '&#128994; Low risk';
+
+  body.innerHTML = `
+    <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+      <div>
+        <div style="font-weight:700;font-size:0.875rem;color:var(--red)">${count} mismatch report${count!==1?'s':''}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.1rem">Community-submitted identity flag${count!==1?'s':''}</div>
+      </div>
+      <span style="font-size:0.78rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;color:${levelColor};background:#fff;border:1.5px solid ${levelColor}">${levelLabel}</span>
+    </div>
+    <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Flag details</div>
+    ${flags.map(f => {
+      const date = new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+      const time = new Date(f.created_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="risk-flag-item">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;flex-wrap:wrap;gap:0.4rem">
+          <div style="font-weight:700;font-size:0.82rem">${f.reporter_name || 'Anonymous'}</div>
+          <div style="font-size:0.72rem;color:var(--muted)">${date} at ${time}</div>
+        </div>
+        ${f.comment ? `<div style="font-size:0.82rem;color:var(--body);line-height:1.5;margin-top:0.25rem">"${f.comment}"</div>` : '<div style="font-size:0.78rem;color:var(--muted);font-style:italic">No comment provided.</div>'}
+      </div>`;
+    }).join('')}
+    <div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.78rem;color:var(--muted);margin-top:0.75rem;line-height:1.5">
+      &#9432; These reports are submitted by community members. Online Market Security does not independently verify flag accuracy. Exercise your own judgment.
+    </div>`;
+};
+
+document.getElementById('riskModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+});
+
+// ── In-person identity check ──
+window.selectMismatch = () => {
+  document.getElementById('mismatchExtra').classList.add('show');
+  document.getElementById('identityActions').style.display = 'none';
+  document.getElementById('identitySubmitMismatch').style.display = 'block';
+};
+
+window.cancelMismatch = () => {
+  document.getElementById('mismatchExtra').classList.remove('show');
+  document.getElementById('identityActions').style.display = 'grid';
+  document.getElementById('identitySubmitMismatch').style.display = 'none';
+};
+
+window.submitIdentityCheck = async (action) => {
+  const reporterName = document.getElementById('identityReporterName')?.value?.trim() || 'Anonymous';
+  const comment = action === 'mismatch' ? (document.getElementById('identityComment')?.value?.trim() || '') : null;
+
+  if (action === 'mismatch' && !comment) {
+    showToast('&#9888; Please describe the mismatch before submitting.');
+    return;
   }
+
+  const submittedEl = document.getElementById('identitySubmitted');
+
+  if (action === 'match') {
+    document.getElementById('identityActions').style.display = 'none';
+    submittedEl.className = 'identity-submitted show';
+    submittedEl.style.cssText = 'display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534';
+    submittedEl.innerHTML = '&#10003; <strong>Thank you!</strong> Identity confirmed — the photo matches the person.';
+    await supabase.from('verification_logs').insert({
+      provider_id: providerId,
+      provider_name: null,
+      viewer_id: currentUser?.id || null,
+      viewer_name: reporterName,
+      viewer_verified: currentUser?.verification_status === 'verified',
+      source: 'in_person_match'
+    });
+    return;
+  }
+
+  // Mismatch — insert risk flag
+  const { error } = await supabase.from('risk_flags').insert({
+    provider_id: providerId,
+    reporter_name: reporterName,
+    reporter_user_id: currentUser?.id || null,
+    reporter_verified: currentUser?.verification_status === 'verified',
+    flag_type: 'photo_mismatch',
+    comment: comment
+  });
+
+  if (error) { showToast('&#10060; Error submitting report: ' + error.message); return; }
+
+  document.getElementById('mismatchExtra').classList.remove('show');
+  document.getElementById('identitySubmitMismatch').style.display = 'none';
+  document.getElementById('identityActions').style.display = 'none';
+  submittedEl.className = 'identity-submitted show';
+  submittedEl.style.cssText = 'display:block;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)';
+  submittedEl.innerHTML = '&#9888; <strong>Mismatch reported.</strong> Thank you — this has been flagged for review.';
+
+  await loadRiskRating();
+};
+
+// ── Verification log ──
+async function logVerification(provId, provName) {
   await supabase.from('verification_logs').insert({
     provider_id: provId,
     provider_name: provName,
-    viewer_id: viewerId,
-    viewer_name: viewerName,
-    viewer_verified: viewerVerified,
+    viewer_id: currentUser?.id || null,
+    viewer_name: currentUser?.name || 'Anonymous',
+    viewer_verified: currentUser?.verification_status === 'verified',
     source: 'verify_page'
   });
 }
 
+// ── Star rating ──
 const starLabels = {
   1:'&#11088; 1 star — Poor experience',
   2:'&#11088;&#11088; 2 stars — Below average',
@@ -329,19 +554,18 @@ async function loadRatings(showAll=false) {
   const scoreWrap = document.getElementById('trustScoreWrap');
   if (total > 0) {
     const {label, cls} = getTrustBadge(score, total);
-    const stars = renderStars(score);
     if (scoreWrap) scoreWrap.innerHTML = `<div class="trust-score-wrap">
       <div class="trust-score-num">${score.toFixed(1)}</div>
       <div class="trust-score-info">
-        <div class="trust-score-stars">${stars}</div>
+        <div class="trust-score-stars">${renderStars(score)}</div>
         <div class="trust-score-label">Trust Score</div>
         <div class="trust-score-sub">${verifiedCount} verified &middot; ${unverifiedCount} unverified raters</div>
       </div>
       <div class="trust-score-badge ${cls}">${label}</div>
     </div>`;
-    const breakdown = document.getElementById('ratingBreakdown');
     const counts = {5:0,4:0,3:0,2:0,1:0};
     ratings.forEach(r => counts[r.stars]++);
+    const breakdown = document.getElementById('ratingBreakdown');
     if (breakdown) breakdown.innerHTML = `<div class="rating-breakdown">${[5,4,3,2,1].map(n=>{
       const pct = total>0?Math.round((counts[n]/total)*100):0;
       return `<div class="rb-row"><div class="rb-label">${n} &#11088;</div><div class="rb-bar-track"><div class="rb-bar-fill rb-fill-${n}" style="width:${pct}%"></div></div><div class="rb-count">${counts[n]}</div></div>`;
@@ -356,7 +580,7 @@ async function loadRatings(showAll=false) {
     if (breakdown) breakdown.innerHTML = '';
   }
 
-  const displayRatings = showAll ? ratings : ratings.slice(0, 3);
+  const displayRatings = showAll ? ratings : ratings.slice(0,3);
   const list = document.getElementById('ratingsList');
   if (list) list.innerHTML = displayRatings.map(r => {
     const ratingStars = '&#11088;'.repeat(r.stars)+'&#10025;'.repeat(5-r.stars);
@@ -386,11 +610,10 @@ window.submitRating = async () => {
   if (selectedStars===0) { showToast('Please select a star rating.'); return; }
   if (selectedStars<=2 && !comment) { showToast('A comment is required for 1 or 2 star ratings.'); document.getElementById('raterComment').focus(); return; }
   btn.textContent='Submitting...'; btn.disabled=true;
-  const isVerified = currentUser?.verification_status==='verified';
   const { error } = await supabase.from('ratings').insert({
     provider_id: providerId,
     rater_name: name,
-    rater_verified: isVerified,
+    rater_verified: currentUser?.verification_status==='verified',
     rater_user_id: currentUser?.id||null,
     stars: selectedStars,
     comment: comment||null
