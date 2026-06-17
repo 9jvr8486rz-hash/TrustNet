@@ -283,39 +283,11 @@ window.bulkAction = async (action) => {
 
 // ── Email notification ──────────────────────────────────────────────
 async function sendApprovalEmail(profile, newStatus) {
-  if (!EMAILJS_ENABLED) return; // EmailJS not configured yet
-  if (!['verified', 'rejected'].includes(newStatus)) return;
-
-  // Get email from Supabase auth — need to fetch it
-  // We stored email in the profile during signup; if not present, skip silently
-  const email = profile.email || null;
-  if (!email) {
-    console.warn('No email on profile for', profile.id, '— skipping email notification');
-    return;
-  }
-
-  const expiryStr = profile.expiry_date
-    ? new Date(profile.expiry_date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '';
-  const statusLabel = newStatus === 'verified' ? 'Approved ✅' : 'Rejected ❌';
-
-  try {
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_name: profile.name || 'Provider',
-      to_email: email,
-      status_label: statusLabel,
-      public_id: profile.public_id || 'N/A',
-      expiry_date: expiryStr,
-      dashboard_url: 'https://trust-net-kappa.vercel.app/dashboard.html',
-      support_email: 'support@onlinemarketsecurity.co.za',
-    });
-    showToast(`&#128231; Email sent to ${profile.name}`);
-  } catch (err) {
-    console.error('EmailJS send failed:', err);
-    // Don't block — email failure is non-critical
-  }
+  // Email notifications: add 'email' column to profiles table and configure
+  // EmailJS credentials above to enable. Currently a no-op.
+  if (!EMAILJS_ENABLED) return;
+  console.log('Email notification: configure EmailJS + add email column to profiles to enable.');
 }
-
 function renderRows(data) {
   const rows = document.getElementById('adminRows');
   let filtered = data;
@@ -401,7 +373,7 @@ window.loadProfiles = async () => {
   const [profilesRes, flagsRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id,name,phone,email,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at,id_number,doc_type')
+      .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at,id_number,doc_type')
       .or('role.eq.provider,role.is.null')
       .order('created_at',{ascending:false}),
     supabase
