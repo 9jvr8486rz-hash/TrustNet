@@ -178,7 +178,30 @@ function showError(icon, title, msg) {
 
 async function init() {
   if (!tokenParam && !legacyId) {
-    window.location.replace('/verify.html');
+    document.getElementById('loadingState').style.display = 'none';
+document.getElementById('verifyCard').style.display = 'block';
+document.getElementById('verifyCard').innerHTML = `
+  <div style="text-align:center;padding:1rem 0 1.5rem">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem">🔍</div>
+    <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.5rem">Verify someone's identity</h2>
+    <p style="color:var(--muted);font-size:0.95rem;margin-bottom:1.75rem">Enter the one-time code shared with you by the provider.</p>
+    <div style="display:flex;gap:0.75rem;max-width:400px;margin:0 auto">
+      <input id="noTokenInput" type="text" class="code-input" placeholder="e.g. OMS-A1B2C3D4"
+        maxlength="12" oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')goVerify()"
+        style="flex:1;padding:0.9rem 1rem;border:1.5px solid var(--border);border-radius:var(--radius);font-size:1.05rem;font-family:monospace;font-weight:700;letter-spacing:0.08em;text-align:center;background:var(--bg-soft);outline:none;transition:border-color 0.2s"
+        onfocus="this.style.borderColor='var(--blue)';this.style.background='#fff'"
+        onblur="this.style.borderColor='var(--border)';this.style.background='var(--bg-soft)'">
+      <button onclick="goVerify()" style="padding:0.9rem 1.4rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:0.95rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap">Check →</button>
+    </div>
+    <div id="noTokenError" style="color:var(--red);font-size:0.82rem;margin-top:0.75rem;display:none">Please enter a valid code (e.g. OMS-A1B2C3D4)</div>
+  </div>`;
+window.goVerify = () => {
+  const code = document.getElementById('noTokenInput').value.trim().toUpperCase();
+  if (!code || code.length < 8) { document.getElementById('noTokenError').style.display='block'; return; }
+  window.location.href = '/verify.html?token=' + encodeURIComponent(code);
+};
+return;
     return;
   }
 
