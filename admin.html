@@ -258,7 +258,7 @@ window.loadProfiles = async () => {
     supabase
       .from('profiles')
       .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at,id_number,doc_type')
-      .neq('role','admin')
+      .or('role.eq.provider,role.is.null')
       .order('created_at',{ascending:false}),
     supabase
       .from('risk_flags')
