@@ -6,6 +6,24 @@
 <title>Admin Dashboard — Online Market Security</title>
 <link rel="stylesheet" href="/styles/main.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- EmailJS — for approval/rejection email notifications -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  // ── EmailJS config ──────────────────────────────────────────────────
+  // 1. Sign up free at https://emailjs.com (200 emails/month free)
+  // 2. Create an Email Service (connect Gmail or any SMTP)
+  // 3. Create a template using the variables listed below
+  // 4. Replace these three values with your own:
+  const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // e.g. 'service_abc123'
+  const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // e.g. 'template_xyz789'
+  const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // e.g. 'AbCdEfGhIjKlMnOp'
+  // Template variables available: {{to_name}}, {{to_email}}, {{status_label}},
+  //   {{public_id}}, {{expiry_date}}, {{dashboard_url}}, {{support_email}}
+  const EMAILJS_ENABLED = EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY';
+  if (EMAILJS_ENABLED) emailjs.init(EMAILJS_PUBLIC_KEY);
+</script>
+
 <style>
 .admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
 @media(max-width:480px){.admin-stats{grid-template-columns:1fr}}
@@ -38,6 +56,21 @@
 
 /* Risk flags in modal */
 .risk-flag-item{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem;margin-bottom:0.65rem;border-left:3px solid var(--red)}
+
+/* Bulk action bar */
+.bulk-bar{display:none;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--blue-pale);border:1.5px solid var(--blue-light);border-radius:var(--radius-sm);margin-bottom:0.75rem;flex-wrap:wrap}
+.bulk-bar.show{display:flex}
+.bulk-bar-label{font-size:0.85rem;font-weight:700;color:var(--blue);flex:1}
+.bulk-btn{padding:0.4rem 1rem;border-radius:var(--radius-sm);font-size:0.82rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all 0.15s}
+.bulk-btn.approve{background:var(--green);color:#fff}
+.bulk-btn.approve:hover{background:#15803d}
+.bulk-btn.reject{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-border)}
+.bulk-btn.reject:hover{background:var(--red);color:#fff}
+.bulk-select-all{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:600;color:var(--blue);cursor:pointer;white-space:nowrap}
+.bulk-select-all input{accent-color:var(--blue);cursor:pointer}
+
+/* Email notification badge */
+.email-sent-badge{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 </style>
 </head>
 <body>
@@ -74,6 +107,17 @@
       <button type="button" class="filter-btn" id="filter-risk" onclick="setFilter('risk')" style="color:var(--red);border-color:var(--red-border)">&#9888; Flagged</button>
       <button type="button" class="btn-nav-ghost" onclick="loadProfiles()" style="font-size:0.82rem">&#8635; Refresh</button>
     </div>
+  </div>
+
+  <!-- BULK ACTION BAR — shown when Pending filter is active -->
+  <div class="bulk-bar" id="bulkBar">
+    <label class="bulk-select-all">
+      <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)">
+      Select all pending
+    </label>
+    <div class="bulk-bar-label" id="bulkBarLabel">0 selected</div>
+    <button type="button" class="bulk-btn approve" onclick="bulkAction('approve')">&#10003; Approve selected</button>
+    <button type="button" class="bulk-btn reject" onclick="bulkAction('reject')">&#10007; Reject selected</button>
   </div>
 
   <div class="applications-table">
@@ -145,6 +189,7 @@ let currentFilter = 'all';
 let allProfiles = [];
 let riskFlagsMap = {};
 let currentProfileData = null;
+let selectedIds = new Set();
 
 window.switchTab = (tab) => {
   document.querySelectorAll('.pmt').forEach((b,i) => {
@@ -157,8 +202,13 @@ window.switchTab = (tab) => {
 
 window.setFilter = (filter) => {
   currentFilter = filter;
+  selectedIds.clear();
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('filter-'+filter).classList.add('active');
+  // Show bulk bar only for pending filter
+  document.getElementById('bulkBar').classList.toggle('show', filter === 'pending');
+  document.getElementById('selectAllCheck').checked = false;
+  updateBulkLabel();
   renderRows(allProfiles);
 };
 
@@ -177,6 +227,93 @@ function getRiskLevel(providerId) {
   if (count >= 3) return 'high';
   if (count === 2) return 'medium';
   return 'low';
+}
+
+function updateBulkLabel() {
+  const n = selectedIds.size;
+  document.getElementById('bulkBarLabel').textContent = n === 0
+    ? 'Select providers to bulk-approve or reject'
+    : `${n} provider${n !== 1 ? 's' : ''} selected`;
+}
+
+window.toggleSelectAll = (checked) => {
+  selectedIds.clear();
+  if (checked) {
+    allProfiles
+      .filter(p => getStatus(p) === 'pending')
+      .forEach(p => selectedIds.add(p.id));
+  }
+  updateBulkLabel();
+  // Re-render to update checkboxes
+  renderRows(allProfiles);
+};
+
+window.toggleSelect = (id, checked) => {
+  if (checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  const allPending = allProfiles.filter(p => getStatus(p) === 'pending');
+  document.getElementById('selectAllCheck').checked = selectedIds.size === allPending.length && allPending.length > 0;
+  updateBulkLabel();
+};
+
+window.bulkAction = async (action) => {
+  if (selectedIds.size === 0) { showToast('&#9888; No providers selected.'); return; }
+  const count = selectedIds.size;
+  const verb = action === 'approve' ? 'approve' : 'reject';
+  if (!confirm(`${verb.charAt(0).toUpperCase() + verb.slice(1)} ${count} provider${count !== 1 ? 's' : ''}?`)) return;
+
+  showToast(`&#8987; Processing ${count} provider${count !== 1 ? 's' : ''}...`);
+
+  let done = 0;
+  for (const id of selectedIds) {
+    if (action === 'approve') {
+      await approveProvider(id, true); // silent=true skips individual confirm
+    } else {
+      await rejectProvider(id, true);
+    }
+    done++;
+  }
+
+  selectedIds.clear();
+  updateBulkLabel();
+  document.getElementById('selectAllCheck').checked = false;
+  showToast(`&#10003; Bulk ${verb}: ${done} provider${done !== 1 ? 's' : ''} processed.`);
+  loadProfiles();
+};
+
+// ── Email notification ──────────────────────────────────────────────
+async function sendApprovalEmail(profile, newStatus) {
+  if (!EMAILJS_ENABLED) return; // EmailJS not configured yet
+  if (!['verified', 'rejected'].includes(newStatus)) return;
+
+  // Get email from Supabase auth — need to fetch it
+  // We stored email in the profile during signup; if not present, skip silently
+  const email = profile.email || null;
+  if (!email) {
+    console.warn('No email on profile for', profile.id, '— skipping email notification');
+    return;
+  }
+
+  const expiryStr = profile.expiry_date
+    ? new Date(profile.expiry_date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '';
+  const statusLabel = newStatus === 'verified' ? 'Approved ✅' : 'Rejected ❌';
+
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_name: profile.name || 'Provider',
+      to_email: email,
+      status_label: statusLabel,
+      public_id: profile.public_id || 'N/A',
+      expiry_date: expiryStr,
+      dashboard_url: 'https://trust-net-kappa.vercel.app/dashboard.html',
+      support_email: 'support@onlinemarketsecurity.co.za',
+    });
+    showToast(`&#128231; Email sent to ${profile.name}`);
+  } catch (err) {
+    console.error('EmailJS send failed:', err);
+    // Don't block — email failure is non-critical
+  }
 }
 
 function renderRows(data) {
@@ -198,6 +335,8 @@ function renderRows(data) {
     return;
   }
 
+  const showCheckboxes = currentFilter === 'pending';
+
   rows.innerHTML = filtered.map(p => {
     const status = getStatus(p);
     const pill = status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending';
@@ -206,6 +345,11 @@ function renderRows(data) {
     const avatar = p.selfie_url
       ? `<img src="${p.selfie_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)">`
       : '<div class="provider-avatar">&#128100;</div>';
+
+    const selectCheckbox = showCheckboxes && status === 'pending'
+      ? `<input type="checkbox" ${selectedIds.has(p.id) ? 'checked' : ''} onchange="toggleSelect('${p.id}', this.checked)" style="margin-right:0.5rem;accent-color:var(--blue);cursor:pointer;width:16px;height:16px;flex-shrink:0">`
+      : '';
+
     const approveReject = status==='pending'
       ? `<button type="button" class="action-btn approve" onclick="approveProvider('${p.id}')">&#10003; Approve</button>
          <button type="button" class="action-btn reject" onclick="rejectProvider('${p.id}')">&#10007; Reject</button>`
@@ -231,7 +375,7 @@ function renderRows(data) {
     const riskRowClass = riskLevel ? `risk-${riskLevel}` : '';
 
     return `<div class="table-row ${riskRowClass}">
-      <div class="provider-info">${avatar}<div>
+      <div class="provider-info">${selectCheckbox}${avatar}<div>
         <div class="provider-name">${p.name||'—'}</div>
         <div class="provider-email">${p.phone||''}</div>
         ${p.id_number?`<div class="provider-email" style="font-size:0.75rem;color:var(--muted)">&#128282; ${p.doc_type||'ID'}: ${p.id_number}</div>`:''}
@@ -257,7 +401,7 @@ window.loadProfiles = async () => {
   const [profilesRes, flagsRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id,name,phone,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at,id_number,doc_type')
+      .select('id,name,phone,email,service_category,selfie_url,id_document_url,verification_status,verification_date,expiry_date,public_id,created_at,id_number,doc_type')
       .or('role.eq.provider,role.is.null')
       .order('created_at',{ascending:false}),
     supabase
@@ -532,9 +676,12 @@ async function renderActivity(userId) {
   `;
 }
 
-window.approveProvider = async (id) => {
-  const ok = window.confirm('Approve this provider? This will generate their TN- badge ID and set a 5-year validity.');
-  if (!ok) return;
+// ── Approve / Reject (silent=true skips confirm dialog for bulk use) ──
+window.approveProvider = async (id, silent = false) => {
+  if (!silent) {
+    const ok = window.confirm('Approve this provider? This will generate their TN- badge ID and set a 5-year validity.');
+    if (!ok) return;
+  }
   const now = new Date();
   const expiry = new Date(now);
   expiry.setFullYear(expiry.getFullYear() + 5);
@@ -551,24 +698,43 @@ window.approveProvider = async (id) => {
     expiry_date:expiry.toISOString(),
     public_id:publicId
   }).eq('id',id);
-  if (error) { showToast('&#10060; Error: '+error.message); return; }
+  if (error) { if (!silent) showToast('&#10060; Error: '+error.message); return; }
   await supabase.from('ratings').update({ rater_verified:true }).eq('rater_user_id',id);
-  showToast('&#10003; Approved! Badge ID: '+publicId);
-  loadProfiles();
+
+  // Email notification
+  const profile = allProfiles.find(p => p.id === id);
+  if (profile) {
+    // Update local copy with new fields for email
+    profile.public_id = publicId;
+    profile.expiry_date = expiry.toISOString();
+    await sendApprovalEmail(profile, 'verified');
+  }
+
+  if (!silent) {
+    showToast('&#10003; Approved! Badge ID: '+publicId);
+    loadProfiles();
+  }
 };
 
-window.rejectProvider = async (id) => {
-  if (!confirm('Reject this application?')) return;
+window.rejectProvider = async (id, silent = false) => {
+  if (!silent && !confirm('Reject this application?')) return;
   const { error } = await supabase.from('profiles').update({ verification_status:'rejected' }).eq('id',id);
-  if (error) { showToast('&#10060; Error: '+error.message); return; }
-  showToast('Application rejected.');
-  loadProfiles();
+  if (error) { if (!silent) showToast('&#10060; Error: '+error.message); return; }
+
+  // Email notification
+  const profile = allProfiles.find(p => p.id === id);
+  if (profile) await sendApprovalEmail(profile, 'rejected');
+
+  if (!silent) {
+    showToast('Application rejected.');
+    loadProfiles();
+  }
 };
 
 window.showToast = msg => {
   const t = document.getElementById('toast');
   t.innerHTML = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3000);
+  setTimeout(()=>t.classList.remove('show'), 3500);
 };
 
 document.getElementById('profileModal').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
