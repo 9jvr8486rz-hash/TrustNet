@@ -58,6 +58,9 @@
 .meeting-confirm-btn{flex:2;padding:0.7rem;border:none;border-radius:var(--radius-sm);background:var(--blue);color:#fff;font-weight:700;font-size:0.875rem;font-family:inherit;cursor:pointer;transition:all 0.15s}
 .meeting-confirm-btn:hover{background:var(--blue-mid)}
 .meeting-confirm-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Risk flags card */
+.risk-flag-row{background:#fff;border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;margin-bottom:0.6rem;border-left:3px solid var(--amber)}
 </style>
 </head>
 <body>
@@ -166,6 +169,15 @@
       <div class="dc-body" id="myRatingsBody">
         <div style="color:var(--muted);font-size:0.875rem">Loading ratings...</div>
       </div>
+    </div>
+
+    <!-- MY RISK FLAGS -->
+    <div class="dash-card span2" id="riskFlagsCard" style="display:none">
+      <div class="dc-head">
+        <div class="dc-title">&#9888;&#65039; My risk flags</div>
+        <span class="dc-badge dcb-red" id="riskFlagsBadge"></span>
+      </div>
+      <div class="dc-body" id="riskFlagsBody"></div>
     </div>
 
     <!-- VERIFY SOMEONE -->
@@ -625,6 +637,75 @@ async function loadMyRatings(userId) {
     </div>`;
 }
 
+// ── My risk flags ──
+async function loadMyRiskFlags(userId) {
+  const card = document.getElementById('riskFlagsCard');
+  const body = document.getElementById('riskFlagsBody');
+  const badge = document.getElementById('riskFlagsBadge');
+  if (!card || !body) return;
+
+  const { data: flags } = await supabase
+    .from('risk_flags')
+    .select('*')
+    .eq('provider_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (!flags || flags.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  const count = flags.length;
+  badge.textContent = count === 1 ? '1 flag' : count + ' flags';
+
+  const riskLevel = count >= 3 ? 'high' : count === 2 ? 'medium' : 'low';
+  const colors = {
+    high:   { bg:'#fff5f5', border:'#fca5a5', text:'#dc2626', label:'High risk' },
+    medium: { bg:'#fffbeb', border:'#fde68a', text:'#d97706', label:'Medium risk' },
+    low:    { bg:'#f0fdf4', border:'#bbf7d0', text:'#16a34a', label:'Low risk' },
+  };
+  const { bg, border, text, label } = colors[riskLevel];
+
+  const flagTypeLabels = {
+    photo_mismatch: '&#128247; Photo mismatch',
+    no_show:        '&#128683; No-show',
+    scam:           '&#9888;&#65039; Scam concern',
+    aggressive:     '&#128545; Aggressive behaviour',
+    fake_id:        '&#129394; Suspected fake ID',
+    other:          '&#128203; Other concern',
+  };
+
+  body.innerHTML = `
+    <div style="background:${bg};border:1px solid ${border};border-radius:var(--radius-sm);padding:1rem 1.1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;flex-wrap:wrap;gap:0.5rem">
+        <div style="font-weight:700;font-size:0.875rem;color:${text}">
+          &#9888;&#65039; ${count} community report${count !== 1 ? 's' : ''} about you
+        </div>
+        <span style="font-size:0.72rem;font-weight:700;padding:0.2rem 0.65rem;border-radius:999px;color:${text};border:1.5px solid ${border};background:#fff">${label}</span>
+      </div>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.55;margin-bottom:0.85rem">
+        These are concerns submitted by other users after interacting with you. They are reviewed by our admin team.
+        If you believe a flag is unfair, please <a href="mailto:support@onlinemarketsecurity.co.za" style="color:var(--blue);font-weight:600">contact support</a>.
+      </p>
+      ${flags.map(f => {
+        const date = new Date(f.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+        const typeLabel = flagTypeLabels[f.flag_type] || f.flag_type || 'Report';
+        return `<div class="risk-flag-row">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;flex-wrap:wrap;gap:0.35rem">
+            <span style="font-weight:700;font-size:0.82rem;color:${text}">${typeLabel}</span>
+            <span style="font-size:0.72rem;color:var(--muted)">${date}</span>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:${f.comment ? '0.4rem' : '0'}">
+            Reported by: <strong style="color:var(--ink)">${f.reporter_name || 'Anonymous'}</strong>
+            ${f.reporter_verified ? '<span style="font-size:0.68rem;background:var(--blue-light);color:var(--blue);padding:0.1rem 0.45rem;border-radius:999px;font-weight:700;border:1px solid #bfdbfe;margin-left:0.3rem">&#10003; Verified user</span>' : ''}
+          </div>
+          ${f.comment ? `<div style="font-size:0.82rem;color:var(--body);line-height:1.5;font-style:italic">"${f.comment}"</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
 window.doLookup = async () => {
   const code = document.getElementById('lookupInput').value.trim().toUpperCase();
   if (!code) { showToast('Please enter a code'); return; }
@@ -661,7 +742,10 @@ window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTM
 
 const { data: { session } } = await supabase.auth.getSession();
 await renderDashboard(session);
-if (session) await loadMyRatings(session.user.id);
+if (session) {
+  await loadMyRatings(session.user.id);
+  await loadMyRiskFlags(session.user.id);
+}
 
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_OUT') window.location.replace('/login.html');
