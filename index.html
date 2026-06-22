@@ -139,9 +139,12 @@
       letter-spacing: 0.1em;
     }
     .hero-inner {
-      max-width: 720px;
+      max-width: 1200px;
       margin: 0 auto;
-      text-align: center;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 3.5rem;
+      align-items: center;
       position: relative;
       z-index: 1;
     }
@@ -178,16 +181,11 @@
       color: var(--gray-500);
       margin-bottom: 2rem;
       max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
     }
 
     /* ── Inline Verify Widget ── */
     .hero-verify-widget {
       margin-bottom: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     .hero-verify-label {
       display: inline-flex;
@@ -203,7 +201,6 @@
     .hero-verify-row {
       display: flex;
       gap: 0.5rem;
-      width: 100%;
       max-width: 420px;
     }
     .hero-verify-input {
@@ -254,6 +251,22 @@
       font-size: 0.82rem;
       font-weight: 600;
       color: #dc2626;
+    }
+
+    /* ── Hero Trust Illustration ── */
+    .hero-image-wrap {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      aspect-ratio: 4 / 5;
+      max-width: 440px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-lg);
+    }
+    .hero-image-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
     .btn-primary {
@@ -533,6 +546,8 @@
       .nav-logo img { height: 56px; }
       .nav-links { display: none; }
       .hero { padding: 3rem 1.25rem; }
+      .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero-image-wrap { order: -1; max-width: 320px; }
       .hero-verify-row { max-width: 100%; }
       .stats-inner { flex-direction: column; gap: 1.5rem; }
       .features-grid { grid-template-columns: 1fr; }
@@ -618,6 +633,34 @@
           <div id="heroVerifyError" class="hero-verify-error" style="display:none">
             Please enter a valid OMS- code (e.g. OMS-A1B2C3D4)
           </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-image-wrap">
+          <svg viewBox="0 0 440 550" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Warm illustration of two clasped hands with a verified checkmark badge, representing trust and safety">
+            <defs>
+              <linearGradient id="heroBg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#fdf1e7"/>
+                <stop offset="100%" stop-color="#fbe0c8"/>
+              </linearGradient>
+              <linearGradient id="heroBadge" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1a4fa8"/>
+                <stop offset="100%" stop-color="#0d9488"/>
+              </linearGradient>
+            </defs>
+            <rect width="440" height="550" fill="url(#heroBg)"/>
+            <circle cx="365" cy="100" r="55" fill="#f7c898" opacity="0.5"/>
+            <circle cx="55" cy="460" r="75" fill="#f3ab78" opacity="0.35"/>
+            <g transform="translate(220,300)">
+              <rect x="-110" y="-30" width="130" height="60" rx="30" fill="#dd8b4a"/>
+              <rect x="-20" y="-30" width="130" height="60" rx="30" fill="#f3c897"/>
+              <circle cx="0" cy="0" r="34" fill="#e8a868"/>
+            </g>
+            <circle cx="220" cy="150" r="50" fill="url(#heroBadge)"/>
+            <path d="M201 151 L216 166 L242 134" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="220" y="430" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="600" fill="#8a5a36">We've got your back</text>
+          </svg>
         </div>
       </div>
     </div>
