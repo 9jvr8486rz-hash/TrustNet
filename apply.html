@@ -77,6 +77,46 @@
     .pw-toggle { position:absolute; right:12px; background:none; border:none; cursor:pointer; color:var(--gray-400); padding:4px; display:flex; align-items:center; }
     .pw-toggle:hover { color:var(--gray-700); }
 
+    /* Phone input with country code picker */
+    .phone-row { display:flex; gap:0.5rem; }
+    .cc-picker { position:relative; flex-shrink:0; }
+    .cc-trigger {
+      display:flex; align-items:center; gap:0.4rem;
+      height:100%; padding:0.75rem 0.6rem;
+      border:1.5px solid var(--gray-200); border-radius:10px;
+      background:var(--white); cursor:pointer; font-family:inherit;
+      font-size:0.95rem; color:var(--gray-900); white-space:nowrap;
+      transition:border-color 0.15s,box-shadow 0.15s;
+    }
+    .cc-trigger:hover { border-color:var(--gray-300); }
+    .cc-trigger.open { border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,79,168,0.1); }
+    .cc-flag { font-size:1.1rem; line-height:1; }
+    .cc-trigger svg.chev { color:var(--gray-400); flex-shrink:0; }
+    .cc-dropdown {
+      position:absolute; top:calc(100% + 6px); left:0; z-index:50;
+      width:280px; max-height:320px; overflow-y:auto;
+      background:var(--white); border:1.5px solid var(--gray-200); border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+      display:none;
+    }
+    .cc-dropdown.open { display:block; }
+    .cc-search-wrap { padding:0.6rem; border-bottom:1px solid var(--gray-100); position:sticky; top:0; background:var(--white); }
+    .cc-search {
+      width:100%; padding:0.5rem 0.75rem; border:1.5px solid var(--gray-200); border-radius:8px;
+      font-family:inherit; font-size:0.85rem; outline:none;
+    }
+    .cc-search:focus { border-color:var(--blue); }
+    .cc-option {
+      display:flex; align-items:center; gap:0.6rem;
+      padding:0.55rem 0.75rem; cursor:pointer; font-size:0.85rem; color:var(--gray-700);
+    }
+    .cc-option:hover, .cc-option.highlight { background:var(--blue-light); }
+    .cc-option .cc-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cc-option .cc-dial { color:var(--gray-400); font-weight:600; flex-shrink:0; }
+    .cc-empty { padding:1rem; text-align:center; font-size:0.82rem; color:var(--gray-400); }
+    .phone-number-input { flex:1; }
+    .phone-number-input input { padding-left:1rem !important; }
+
     .upload-area { border:2px dashed var(--gray-200); border-radius:12px; padding:2rem; text-align:center; cursor:pointer; transition:border-color 0.2s,background 0.2s; position:relative; }
     .upload-area:hover { border-color:var(--blue); background:var(--blue-light); }
     .upload-area.has-file { border-color:var(--green); background:#f0fdf4; }
@@ -128,6 +168,7 @@
       .doc-type-grid { grid-template-columns:1fr 1fr; }
       .card { padding:1.5rem; }
       .page { padding:1.5rem 1rem 3rem; }
+      .cc-dropdown { width:260px; }
     }
     @media (max-width:480px) {
       .step-label { font-size:0.7rem; }
@@ -205,12 +246,26 @@
         </div>
         <div class="field">
           <label>Phone Number <span class="req">*</span></label>
-          <div class="input-wrap">
-            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            <input type="tel" id="phone" placeholder="+27 82 123 4567" autocomplete="tel" />
+          <div class="phone-row">
+            <div class="cc-picker" id="ccPicker">
+              <button type="button" class="cc-trigger" id="ccTrigger">
+                <span class="cc-flag" id="ccFlag">🇿🇦</span>
+                <span id="ccDial">+27</span>
+                <svg class="chev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cc-dropdown" id="ccDropdown">
+                <div class="cc-search-wrap">
+                  <input type="text" class="cc-search" id="ccSearch" placeholder="Search country or code..." autocomplete="off" />
+                </div>
+                <div id="ccList"></div>
+              </div>
+            </div>
+            <div class="input-wrap phone-number-input">
+              <input type="tel" id="phone" placeholder="82 123 4567" autocomplete="tel" inputmode="numeric" />
+            </div>
           </div>
           <span class="field-error" id="phoneErr">Please enter a valid phone number.</span>
-          <span class="field-hint">Include country code e.g. +27 82 123 4567</span>
+          <span class="field-hint">Select your country, then enter your number without the leading 0</span>
         </div>
 
         <!-- ID Document Type selector — moved here from Step 3, drives ID Number validation -->
@@ -416,6 +471,117 @@
   let selfieFileObj = null;
   let idDocFileObj  = null;
   let idCheckTimer  = null;
+  let selectedCountry = null; // { name, dial, flag, iso2 }
+
+  // ── Country dataset (name, ISO2, dial code) — flags rendered via emoji from ISO2 ──
+  const COUNTRIES_RAW = [
+    ["South Africa","ZA","27"],["Afghanistan","AF","93"],["Albania","AL","355"],["Algeria","DZ","213"],
+    ["Andorra","AD","376"],["Angola","AO","244"],["Argentina","AR","54"],["Armenia","AM","374"],
+    ["Australia","AU","61"],["Austria","AT","43"],["Azerbaijan","AZ","994"],["Bahamas","BS","1242"],
+    ["Bahrain","BH","973"],["Bangladesh","BD","880"],["Belarus","BY","375"],["Belgium","BE","32"],
+    ["Belize","BZ","501"],["Benin","BJ","229"],["Bhutan","BT","975"],["Bolivia","BO","591"],
+    ["Botswana","BW","267"],["Brazil","BR","55"],["Brunei","BN","673"],["Bulgaria","BG","359"],
+    ["Burkina Faso","BF","226"],["Burundi","BI","257"],["Cambodia","KH","855"],["Cameroon","CM","237"],
+    ["Canada","CA","1"],["Cape Verde","CV","238"],["Chad","TD","235"],["Chile","CL","56"],
+    ["China","CN","86"],["Colombia","CO","57"],["Comoros","KM","269"],["Congo","CG","242"],
+    ["Costa Rica","CR","506"],["Croatia","HR","385"],["Cuba","CU","53"],["Cyprus","CY","357"],
+    ["Czech Republic","CZ","420"],["Denmark","DK","45"],["Djibouti","DJ","253"],
+    ["Dominican Republic","DO","1849"],["DR Congo","CD","243"],["Ecuador","EC","593"],
+    ["Egypt","EG","20"],["El Salvador","SV","503"],["Eritrea","ER","291"],["Estonia","EE","372"],
+    ["Eswatini","SZ","268"],["Ethiopia","ET","251"],["Fiji","FJ","679"],["Finland","FI","358"],
+    ["France","FR","33"],["Gabon","GA","241"],["Gambia","GM","220"],["Georgia","GE","995"],
+    ["Germany","DE","49"],["Ghana","GH","233"],["Greece","GR","30"],["Guatemala","GT","502"],
+    ["Guinea","GN","224"],["Haiti","HT","509"],["Honduras","HN","504"],["Hong Kong","HK","852"],
+    ["Hungary","HU","36"],["Iceland","IS","354"],["India","IN","91"],["Indonesia","ID","62"],
+    ["Iran","IR","98"],["Iraq","IQ","964"],["Ireland","IE","353"],["Israel","IL","972"],
+    ["Italy","IT","39"],["Ivory Coast","CI","225"],["Jamaica","JM","1876"],["Japan","JP","81"],
+    ["Jordan","JO","962"],["Kazakhstan","KZ","7"],["Kenya","KE","254"],["Kuwait","KW","965"],
+    ["Kyrgyzstan","KG","996"],["Laos","LA","856"],["Latvia","LV","371"],["Lebanon","LB","961"],
+    ["Lesotho","LS","266"],["Liberia","LR","231"],["Libya","LY","218"],["Liechtenstein","LI","423"],
+    ["Lithuania","LT","370"],["Luxembourg","LU","352"],["Madagascar","MG","261"],["Malawi","MW","265"],
+    ["Malaysia","MY","60"],["Maldives","MV","960"],["Mali","ML","223"],["Malta","MT","356"],
+    ["Mauritania","MR","222"],["Mauritius","MU","230"],["Mexico","MX","52"],["Moldova","MD","373"],
+    ["Monaco","MC","377"],["Mongolia","MN","976"],["Montenegro","ME","382"],["Morocco","MA","212"],
+    ["Mozambique","MZ","258"],["Myanmar","MM","95"],["Namibia","NA","264"],["Nepal","NP","977"],
+    ["Netherlands","NL","31"],["New Zealand","NZ","64"],["Nicaragua","NI","505"],["Niger","NE","227"],
+    ["Nigeria","NG","234"],["North Korea","KP","850"],["North Macedonia","MK","389"],["Norway","NO","47"],
+    ["Oman","OM","968"],["Pakistan","PK","92"],["Panama","PA","507"],["Papua New Guinea","PG","675"],
+    ["Paraguay","PY","595"],["Peru","PE","51"],["Philippines","PH","63"],["Poland","PL","48"],
+    ["Portugal","PT","351"],["Qatar","QA","974"],["Romania","RO","40"],["Russia","RU","7"],
+    ["Rwanda","RW","250"],["Saudi Arabia","SA","966"],["Senegal","SN","221"],["Serbia","RS","381"],
+    ["Seychelles","SC","248"],["Sierra Leone","SL","232"],["Singapore","SG","65"],["Slovakia","SK","421"],
+    ["Slovenia","SI","386"],["Somalia","SO","252"],["South Korea","KR","82"],["South Sudan","SS","211"],
+    ["Spain","ES","34"],["Sri Lanka","LK","94"],["Sudan","SD","249"],["Suriname","SR","597"],
+    ["Sweden","SE","46"],["Switzerland","CH","41"],["Syria","SY","963"],["Taiwan","TW","886"],
+    ["Tajikistan","TJ","992"],["Tanzania","TZ","255"],["Thailand","TH","66"],["Togo","TG","228"],
+    ["Tunisia","TN","216"],["Turkey","TR","90"],["Turkmenistan","TM","993"],["Uganda","UG","256"],
+    ["Ukraine","UA","380"],["United Arab Emirates","AE","971"],["United Kingdom","GB","44"],
+    ["United States","US","1"],["Uruguay","UY","598"],["Uzbekistan","UZ","998"],["Venezuela","VE","58"],
+    ["Vietnam","VN","84"],["Yemen","YE","967"],["Zambia","ZM","260"],["Zimbabwe","ZW","263"]
+  ];
+
+  function iso2ToFlag(iso2) {
+    return iso2.toUpperCase().replace(/./g, c =>
+      String.fromCodePoint(127397 + c.charCodeAt(0))
+    );
+  }
+
+  const COUNTRIES = COUNTRIES_RAW.map(([name, iso2, dial]) => ({
+    name, iso2, dial, flag: iso2ToFlag(iso2)
+  }));
+
+  function renderCcList(filter) {
+    const list = document.getElementById('ccList');
+    const q = (filter || '').trim().toLowerCase();
+    const filtered = q
+      ? COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.dial.includes(q.replace('+','')))
+      : COUNTRIES;
+    if (!filtered.length) {
+      list.innerHTML = '<div class="cc-empty">No countries match your search.</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(c => `
+      <div class="cc-option" data-iso2="${c.iso2}">
+        <span class="cc-flag">${c.flag}</span>
+        <span class="cc-name">${c.name}</span>
+        <span class="cc-dial">+${c.dial}</span>
+      </div>`).join('');
+    list.querySelectorAll('.cc-option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        const country = COUNTRIES.find(c => c.iso2 === this.dataset.iso2);
+        if (country) selectCountry(country);
+        closeCcDropdown();
+      });
+    });
+  }
+
+  function selectCountry(country) {
+    selectedCountry = country;
+    document.getElementById('ccFlag').textContent = country.flag;
+    document.getElementById('ccDial').textContent = '+' + country.dial;
+    // Re-validate phone with new country context
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput.value.trim()) validatePhoneField();
+  }
+
+  function openCcDropdown() {
+    document.getElementById('ccDropdown').classList.add('open');
+    document.getElementById('ccTrigger').classList.add('open');
+    const search = document.getElementById('ccSearch');
+    search.value = '';
+    renderCcList('');
+    setTimeout(() => search.focus(), 0);
+  }
+  function closeCcDropdown() {
+    document.getElementById('ccDropdown').classList.remove('open');
+    document.getElementById('ccTrigger').classList.remove('open');
+  }
+
+  function getFullPhoneNumber() {
+    const num = document.getElementById('phone').value.trim().replace(/[\s\-()]/g, '');
+    if (!selectedCountry || !num) return '';
+    return '+' + selectedCountry.dial + num;
+  }
 
   // ── ID document type config ──
   const DOC_TYPE_CONFIG = {
@@ -495,7 +661,15 @@
     el.classList.remove('invalid','valid');
     if (state) el.classList.add(state);
   }
-  function isValidPhone(v) { return /^[+]?[\d\s\-()]{7,15}$/.test(v.trim()); }
+  function isValidPhone(v) { return /^\d{6,12}$/.test(v.trim().replace(/[\s\-()]/g, '')); }
+  function validatePhoneField() {
+    const raw = document.getElementById('phone').value.trim();
+    if (!raw) { markInput('phone',''); fieldError('phoneErr','',false); return false; }
+    const ok = isValidPhone(raw) && !!selectedCountry;
+    markInput('phone', ok?'valid':'invalid');
+    fieldError('phoneErr','Please enter a valid phone number (6–12 digits, no leading 0).',!ok);
+    return ok;
+  }
   function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
 
   function currentDocType() { return document.getElementById('docType').value; }
@@ -552,7 +726,7 @@
     else     { markInput('firstName','valid');   fieldError('firstNameErr','',false); }
     if (!ln) { markInput('lastName','invalid'); fieldError('lastNameErr','Please enter your last name.',true); ok=false; }
     else     { markInput('lastName','valid');   fieldError('lastNameErr','',false); }
-    if (!ph || !isValidPhone(ph)) { markInput('phone','invalid'); fieldError('phoneErr','Please enter a valid phone number e.g. +27 82 123 4567.',true); ok=false; }
+    if (!ph || !selectedCountry || !isValidPhone(ph)) { markInput('phone','invalid'); fieldError('phoneErr','Please select your country and enter a valid phone number.',true); ok=false; }
     else                          { markInput('phone','valid');   fieldError('phoneErr','',false); }
 
     if (!idv) {
@@ -697,7 +871,7 @@
       const { error: profileErr } = await sb.from('profiles').upsert({
         id: userId,
         name: fullName,
-        phone: document.getElementById('phone').value.trim(),
+        phone: getFullPhoneNumber(),
         id_number: document.getElementById('idNumber').value.trim(),
         doc_type: document.getElementById('docType').value,
         service_category: document.getElementById('serviceCategory').value,
@@ -769,6 +943,26 @@
 
   // ── Wire up all events on DOM ready ──
   document.addEventListener('DOMContentLoaded', function() {
+    // Default country: South Africa
+    selectCountry(COUNTRIES.find(c => c.iso2 === 'ZA'));
+
+    document.getElementById('ccTrigger').addEventListener('click', function(e) {
+      e.stopPropagation();
+      const dd = document.getElementById('ccDropdown');
+      if (dd.classList.contains('open')) closeCcDropdown();
+      else openCcDropdown();
+    });
+    document.getElementById('ccSearch').addEventListener('input', function() {
+      renderCcList(this.value);
+    });
+    document.getElementById('ccSearch').addEventListener('click', function(e) { e.stopPropagation(); });
+    document.addEventListener('click', function(e) {
+      if (!document.getElementById('ccPicker').contains(e.target)) closeCcDropdown();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeCcDropdown();
+    });
+
     // ID Document Type buttons (Step 1) — drive ID number validation + Step 3 labels
     document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(btn => {
       btn.addEventListener('click', function() {
@@ -809,10 +1003,9 @@
       fieldError('lastNameErr','Please enter your last name.',!ok);
     });
     document.getElementById('phone').addEventListener('input', function() {
-      if (!this.value.trim()) { markInput('phone',''); fieldError('phoneErr','',false); return; }
-      const ok = isValidPhone(this.value);
-      markInput('phone', ok?'valid':'invalid');
-      fieldError('phoneErr','Please enter a valid phone number e.g. +27 82 123 4567.',!ok);
+      // Strip a leading 0 automatically since the country code replaces it
+      if (this.value.startsWith('0')) this.value = this.value.replace(/^0+/, '');
+      validatePhoneField();
     });
 
     // Real-time ID number validation, including instant rejection of letters/symbols for SA ID
