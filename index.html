@@ -90,7 +90,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-left: 1.5rem;
+      margin-left: auto;
     }
     .btn-signin {
       display: flex;
@@ -197,6 +197,75 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 0.6rem;
+    }
+    .hero-verify-tooltip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 0.15rem;
+    }
+    .hero-verify-tooltip-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gray-200);
+      color: var(--gray-700);
+      border: none;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: inherit;
+      text-transform: none;
+      letter-spacing: normal;
+      padding: 0;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .hero-verify-tooltip-btn:hover,
+    .hero-verify-tooltip-btn:focus-visible,
+    .hero-verify-tooltip.open .hero-verify-tooltip-btn {
+      background: var(--blue);
+      color: var(--white);
+    }
+    .hero-verify-tooltip-bubble {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      width: 260px;
+      background: var(--gray-900);
+      color: var(--white);
+      font-size: 0.78rem;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: normal;
+      line-height: 1.5;
+      padding: 0.75rem 0.9rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+      z-index: 20;
+    }
+    .hero-verify-tooltip-bubble::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 10px;
+      width: 10px;
+      height: 10px;
+      background: var(--gray-900);
+      transform: rotate(45deg);
+    }
+    .hero-verify-tooltip:hover .hero-verify-tooltip-bubble,
+    .hero-verify-tooltip.open .hero-verify-tooltip-bubble {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
     .hero-verify-row {
       display: flex;
@@ -549,6 +618,7 @@
       .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
       .hero-image-wrap { order: -1; max-width: 320px; }
       .hero-verify-row { max-width: 100%; }
+      .hero-verify-tooltip-bubble { width: 220px; }
       .stats-inner { flex-direction: column; gap: 1.5rem; }
       .features-grid { grid-template-columns: 1fr; }
       .steps { grid-template-columns: 1fr; }
@@ -573,14 +643,6 @@
       <a href="/" class="nav-logo">
         <img src="/logo.png" alt="Online Market Security" />
       </a>
-      <ul class="nav-links">
-        <li>
-          <a href="/" class="active">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Home
-          </a>
-        </li>
-      </ul>
       <div class="nav-actions">
         <a href="/login.html" class="btn-signin">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
@@ -612,6 +674,12 @@
           <div class="hero-verify-label">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Verify someone now
+            <span class="hero-verify-tooltip" id="heroVerifyTooltip">
+              <button type="button" class="hero-verify-tooltip-btn" id="heroVerifyTooltipBtn" aria-label="Why do I need a code?">i</button>
+              <span class="hero-verify-tooltip-bubble">
+                The other person needs to apply and get their ID checked by our team first. Once approved, they'll get a one-time code to share with you — ask them for it before you enter one here.
+              </span>
+            </span>
           </div>
           <div class="hero-verify-row">
             <input
@@ -839,6 +907,25 @@
       // Navigate to verify page — verify.html handles the lookup
       window.location.href = '/verify.html?token=' + encodeURIComponent(code);
     }
+
+    // Tap-to-toggle tooltip for touch devices (hover alone doesn't work on mobile)
+    document.addEventListener('DOMContentLoaded', function() {
+      const tooltip = document.getElementById('heroVerifyTooltip');
+      const btn = document.getElementById('heroVerifyTooltipBtn');
+      if (!tooltip || !btn) return;
+
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        tooltip.classList.toggle('open');
+      });
+      document.addEventListener('click', function(e) {
+        if (!tooltip.contains(e.target)) tooltip.classList.remove('open');
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') tooltip.classList.remove('open');
+      });
+    });
   </script>
 
 </body>
