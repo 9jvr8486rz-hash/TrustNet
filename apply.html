@@ -212,17 +212,29 @@
           <span class="field-error" id="phoneErr">Please enter a valid phone number.</span>
           <span class="field-hint">Include country code e.g. +27 82 123 4567</span>
         </div>
+
+        <!-- ID Document Type selector — moved here from Step 3, drives ID Number validation -->
         <div class="field">
-          <label>ID Number <span class="req">*</span></label>
+          <label>ID Document Type <span class="req">*</span></label>
+          <div class="doc-type-grid" id="idTypeGrid">
+            <div class="doc-type-btn selected" data-val="sa_id"><span class="doc-icon">🪪</span>SA ID</div>
+            <div class="doc-type-btn" data-val="passport"><span class="doc-icon">📕</span>Passport</div>
+            <div class="doc-type-btn" data-val="drivers"><span class="doc-icon">🚗</span>Driver's Licence</div>
+          </div>
+          <input type="hidden" id="docType" value="sa_id" />
+        </div>
+
+        <div class="field">
+          <label id="idNumberLabel">SA ID Number <span class="req">*</span></label>
           <div class="input-wrap">
             <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            <input type="text" id="idNumber" placeholder="9001015009087" />
+            <input type="text" id="idNumber" placeholder="9001015009087" inputmode="numeric" maxlength="13" autocomplete="off" />
           </div>
           <span class="field-error" id="idNumberErr">Please enter your ID number.</span>
           <span class="checking" id="idChecking" style="display:none;">
             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Checking...
           </span>
-          <span class="field-hint">SA ID, passport number, or driver's licence number</span>
+          <span class="field-hint" id="idNumberHint">Exactly 13 digits, numbers only</span>
         </div>
       </div>
       <div class="form-nav">
@@ -289,17 +301,8 @@
     <!-- STEP 3 -->
     <div id="step3" style="display:none;">
       <div class="card-title">Upload Documents</div>
-      <div class="card-subtitle">Select your document type, upload your selfie and ID. All files stored securely.</div>
+      <div class="card-subtitle">Upload your selfie and your <span id="step3DocLabel">SA ID</span>. All files stored securely.</div>
       <div class="fields">
-        <div class="field">
-          <label>Document Type <span class="req">*</span></label>
-          <div class="doc-type-grid">
-            <div class="doc-type-btn selected" data-val="sa_id"><span class="doc-icon">🪪</span>SA ID Book / Card</div>
-            <div class="doc-type-btn" data-val="passport"><span class="doc-icon">📕</span>Passport</div>
-            <div class="doc-type-btn" data-val="drivers"><span class="doc-icon">🚗</span>Driver's Licence</div>
-          </div>
-          <input type="hidden" id="docType" value="sa_id" />
-        </div>
         <div class="field">
           <label>Selfie Photo <span class="req">*</span></label>
           <div class="upload-area" id="selfieArea">
@@ -320,7 +323,7 @@
             <input type="file" id="idDocFile" accept="image/*,application/pdf" />
             <div class="upload-default">
               <div class="upload-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-              <h4>Upload your ID / Passport / Licence</h4>
+              <h4 id="idUploadLabel">Upload your SA ID</h4>
               <p>Click to browse · JPG, PNG, PDF · Max 10MB</p>
             </div>
             <div class="file-name" id="idDocName"></div>
@@ -414,6 +417,55 @@
   let idDocFileObj  = null;
   let idCheckTimer  = null;
 
+  // ── ID document type config ──
+  const DOC_TYPE_CONFIG = {
+    sa_id: {
+      label: 'SA ID Number',
+      uploadLabel: 'SA ID',
+      placeholder: '9001015009087',
+      hint: 'Exactly 13 digits, numbers only',
+      maxlength: 13,
+      inputmode: 'numeric',
+      validate: v => /^\d{13}$/.test(v),
+      invalidMsg: 'SA ID number must be exactly 13 digits, numbers only.'
+    },
+    passport: {
+      label: 'Passport Number',
+      uploadLabel: 'Passport',
+      placeholder: 'e.g. A12345678',
+      hint: 'Letters and numbers, 6–12 characters',
+      maxlength: 12,
+      inputmode: 'text',
+      validate: v => /^[A-Za-z0-9]{6,12}$/.test(v),
+      invalidMsg: 'Please enter a valid passport number (6–12 letters/numbers).'
+    },
+    drivers: {
+      label: "Driver's Licence Number",
+      uploadLabel: "Driver's Licence",
+      placeholder: 'e.g. 9001015009087',
+      hint: 'Letters and numbers, 6–13 characters',
+      maxlength: 13,
+      inputmode: 'text',
+      validate: v => /^[A-Za-z0-9]{6,13}$/.test(v),
+      invalidMsg: "Please enter a valid driver's licence number (6–13 letters/numbers)."
+    }
+  };
+
+  function applyDocTypeConfig(type) {
+    const cfg = DOC_TYPE_CONFIG[type];
+    if (!cfg) return;
+    document.getElementById('idNumberLabel').innerHTML = cfg.label + ' <span class="req">*</span>';
+    document.getElementById('idNumber').placeholder = cfg.placeholder;
+    document.getElementById('idNumber').setAttribute('maxlength', cfg.maxlength);
+    document.getElementById('idNumber').setAttribute('inputmode', cfg.inputmode);
+    document.getElementById('idNumberHint').textContent = cfg.hint;
+    document.getElementById('step3DocLabel').textContent = cfg.uploadLabel;
+    document.getElementById('idUploadLabel').textContent = 'Upload your ' + cfg.uploadLabel;
+    // Re-validate whatever is currently typed against the new type
+    const current = document.getElementById('idNumber').value;
+    scheduleIdCheck(current, { skipDebounceMessage:false });
+  }
+
   // ── Direct fetch upload — bypasses Supabase JS client token issue ──
   async function uploadFileDirect(bucket, path, file, token) {
     const fd = new FormData();
@@ -445,7 +497,13 @@
   }
   function isValidPhone(v) { return /^[+]?[\d\s\-()]{7,15}$/.test(v.trim()); }
   function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
-  function isValidId(v)    { return v.trim().length >= 6; }
+
+  function currentDocType() { return document.getElementById('docType').value; }
+
+  function isValidIdForType(v) {
+    const cfg = DOC_TYPE_CONFIG[currentDocType()];
+    return cfg ? cfg.validate(v.trim()) : v.trim().length >= 6;
+  }
 
   function showAlert(msg, type='error') {
     const el = document.getElementById('alertBox');
@@ -487,15 +545,28 @@
     const fn = document.getElementById('firstName').value.trim();
     const ln = document.getElementById('lastName').value.trim();
     const ph = document.getElementById('phone').value.trim();
-    const id = document.getElementById('idNumber').value.trim();
+    const idv = document.getElementById('idNumber').value.trim();
+    const cfg = DOC_TYPE_CONFIG[currentDocType()];
+
     if (!fn) { markInput('firstName','invalid'); fieldError('firstNameErr','Please enter your first name.',true); ok=false; }
     else     { markInput('firstName','valid');   fieldError('firstNameErr','',false); }
     if (!ln) { markInput('lastName','invalid'); fieldError('lastNameErr','Please enter your last name.',true); ok=false; }
     else     { markInput('lastName','valid');   fieldError('lastNameErr','',false); }
     if (!ph || !isValidPhone(ph)) { markInput('phone','invalid'); fieldError('phoneErr','Please enter a valid phone number e.g. +27 82 123 4567.',true); ok=false; }
     else                          { markInput('phone','valid');   fieldError('phoneErr','',false); }
-    if (!id || !isValidId(id)) { markInput('idNumber','invalid'); fieldError('idNumberErr','Please enter your ID number (min 6 characters).',true); ok=false; }
-    else if (document.getElementById('idNumber').classList.contains('invalid')) { ok=false; }
+
+    if (!idv) {
+      markInput('idNumber','invalid');
+      fieldError('idNumberErr', 'Please enter your ' + cfg.label.toLowerCase() + '.', true);
+      ok=false;
+    } else if (!isValidIdForType(idv)) {
+      markInput('idNumber','invalid');
+      fieldError('idNumberErr', cfg.invalidMsg, true);
+      ok=false;
+    } else if (document.getElementById('idNumber').classList.contains('invalid')) {
+      // duplicate-check flagged it invalid (already registered)
+      ok=false;
+    }
     if (!ok) showAlert('Please fix the highlighted fields before continuing.');
     return ok;
   }
@@ -529,13 +600,32 @@
   function scheduleIdCheck(val) {
     clearTimeout(idCheckTimer);
     document.getElementById('idChecking').style.display = 'none';
-    markInput('idNumber','');
+
+    const cfg = DOC_TYPE_CONFIG[currentDocType()];
+    const trimmed = val.trim();
+
+    // Empty: neutral state, no error yet (shown on submit/blur instead)
+    if (!trimmed) {
+      markInput('idNumber','');
+      fieldError('idNumberErr','',false);
+      return;
+    }
+
+    // Real-time format validation — fires instantly, no debounce needed for this part
+    if (!cfg.validate(trimmed)) {
+      markInput('idNumber','invalid');
+      fieldError('idNumberErr', cfg.invalidMsg, true);
+      return; // don't bother checking duplicates until format is valid
+    }
+
+    // Format is valid — clear format error, then debounce the duplicate check
     fieldError('idNumberErr','',false);
-    if (val.trim().length < 6) return;
+    markInput('idNumber','');
+
     idCheckTimer = setTimeout(async () => {
       document.getElementById('idChecking').style.display = 'flex';
       try {
-        const { data } = await sb.from('profiles').select('id').eq('id_number', val.trim()).maybeSingle();
+        const { data } = await sb.from('profiles').select('id').eq('id_number', trimmed).maybeSingle();
         document.getElementById('idChecking').style.display = 'none';
         if (data) {
           markInput('idNumber','invalid');
@@ -679,13 +769,17 @@
 
   // ── Wire up all events on DOM ready ──
   document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.doc-type-btn').forEach(btn => {
+    // ID Document Type buttons (Step 1) — drive ID number validation + Step 3 labels
+    document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(btn => {
       btn.addEventListener('click', function() {
-        document.querySelectorAll('.doc-type-btn').forEach(b => b.classList.remove('selected'));
+        document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(b => b.classList.remove('selected'));
         this.classList.add('selected');
         document.getElementById('docType').value = this.dataset.val;
+        applyDocTypeConfig(this.dataset.val);
       });
     });
+    // Initialize labels/placeholder for the default selection (sa_id)
+    applyDocTypeConfig('sa_id');
 
     document.getElementById('selfieFile').addEventListener('change', function() {
       const file = this.files[0]; if (!file) return;
@@ -720,7 +814,18 @@
       markInput('phone', ok?'valid':'invalid');
       fieldError('phoneErr','Please enter a valid phone number e.g. +27 82 123 4567.',!ok);
     });
-    document.getElementById('idNumber').addEventListener('input', function() { scheduleIdCheck(this.value); });
+
+    // Real-time ID number validation, including instant rejection of letters/symbols for SA ID
+    document.getElementById('idNumber').addEventListener('input', function() {
+      const type = currentDocType();
+      if (type === 'sa_id') {
+        // Strip anything that isn't a digit as the user types — instant feedback
+        const cleaned = this.value.replace(/[^\d]/g, '').slice(0, 13);
+        if (cleaned !== this.value) this.value = cleaned;
+      }
+      scheduleIdCheck(this.value);
+    });
+
     document.getElementById('email').addEventListener('input', function() {
       if (!this.value) { markInput('email',''); fieldError('emailErr','',false); return; }
       const ok = isValidEmail(this.value);
