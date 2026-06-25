@@ -473,15 +473,20 @@
     .footer-copy { font-size: 0.78rem; color: #475569; margin-top: 1rem; }
 
     /* ── Mobile ── */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .nav { height: auto; padding: 0.75rem 1rem; }
-      .nav-logo img { height: 56px; }
+      .nav-inner { flex-wrap: wrap; gap: 0.6rem; }
+      .nav-logo img { height: 44px; }
+      .nav-actions { gap: 0.4rem; flex-wrap: wrap; margin-left: 0; width: 100%; justify-content: flex-end; }
+      .btn-signin { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+      .btn-signin svg { width: 14px; height: 14px; }
+      .btn-get-verified { padding: 0.5rem 0.85rem; font-size: 0.85rem; }
       .page { padding: 2.5rem 1.25rem 1.5rem; }
       .scenario-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: 1fr; }
       .stats-quote { flex-direction: column; }
-      .trust-formula { flex-direction: column; }
-      .trust-formula-op { transform: rotate(90deg); }
+      .trust-formula { flex-direction: column; gap: 0.5rem; }
+      .trust-formula-op { transform: none; font-size: 1.1rem; }
       .closing { padding: 2.25rem 1.5rem; }
       .closing-btns { flex-direction: column; }
     }
