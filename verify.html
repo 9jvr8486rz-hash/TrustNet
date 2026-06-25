@@ -1,668 +1,1055 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Identity — Online Market Security</title>
-<link rel="stylesheet" href="/styles/main.css">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-.ratings-section{margin-top:2rem;border-top:1px solid var(--border);padding-top:1.75rem}
-.ratings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:0.75rem}
-.ratings-title{font-weight:800;font-size:1.05rem}
-.trust-score-wrap{display:flex;align-items:center;gap:0.75rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1.25rem}
-.trust-score-num{font-weight:800;font-size:2.5rem;line-height:1;color:var(--blue)}
-.trust-score-stars{font-size:1.4rem;letter-spacing:2px}
-.trust-score-info{flex:1}
-.trust-score-label{font-weight:700;font-size:0.875rem}
-.trust-score-sub{font-size:0.78rem;color:var(--muted);margin-top:0.1rem}
-.trust-score-badge{font-size:0.72rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;white-space:nowrap}
-.tsb-excellent{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.tsb-good{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
-.tsb-average{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
-.tsb-poor{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
-.tsb-none{background:var(--bg-soft);color:var(--muted);border:1px solid var(--border)}
-.rating-breakdown{margin-bottom:1.25rem}
-.rb-row{display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;font-size:0.8rem}
-.rb-label{width:40px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap}
-.rb-bar-track{flex:1;height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)}
-.rb-bar-fill{height:100%;border-radius:999px;transition:width .6s ease}
-.rb-fill-5{background:#16a34a}.rb-fill-4{background:#4ade80}.rb-fill-3{background:#fbbf24}.rb-fill-2{background:#fb923c}.rb-fill-1{background:#ef4444}
-.rb-count{width:24px;color:var(--muted);font-size:0.75rem;text-align:left}
-.rating-item{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem}
-.rating-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;flex-wrap:wrap;gap:0.5rem}
-.rating-item-name{font-weight:700;font-size:0.875rem}
-.rating-item-stars{font-size:1rem;letter-spacing:1px}
-.rating-item-meta{font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-.verified-rater-badge{display:inline-flex;align-items:center;gap:0.25rem;background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe}
-.unverified-rater-badge{display:inline-flex;align-items:center;gap:0.25rem;background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)}
-.rating-item-comment{font-size:0.82rem;color:var(--body);line-height:1.6}
-.rate-form-wrap{background:var(--blue-pale);border:1.5px solid var(--blue-light);border-radius:var(--radius-lg);padding:1.5rem;margin-top:1.5rem}
-.rate-form-title{font-weight:800;font-size:1rem;margin-bottom:0.35rem}
-.rate-form-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem}
-.star-picker{display:flex;gap:0.35rem;margin-bottom:0.5rem}
-.star-btn{font-size:2rem;cursor:pointer;background:none;border:none;padding:0.1rem;transition:transform .15s;filter:grayscale(1) opacity(.35);line-height:1}
-.star-btn:hover,.star-btn.active{filter:none;transform:scale(1.15)}
-.star-label{font-size:0.82rem;font-weight:600;color:var(--blue);margin-bottom:0.75rem;min-height:1.2rem}
-.form-field-sm{margin-bottom:0.85rem}
-.form-field-sm label{display:block;font-size:0.82rem;font-weight:600;margin-bottom:0.35rem;color:var(--ink)}
-.form-input-sm{width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;color:var(--ink);background:#fff;transition:all .2s;box-sizing:border-box}
-.form-input-sm:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
-textarea.form-input-sm{resize:vertical;min-height:80px}
-.comment-required-note{font-size:0.75rem;color:var(--red);font-weight:600;margin-bottom:0.5rem;display:none}
-.comment-required-note.show{display:block}
-.submit-rating-btn{width:100%;padding:0.85rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:0.95rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s}
-.submit-rating-btn:hover{background:var(--blue-mid);transform:translateY(-1px)}
-.submit-rating-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
-.rating-success{text-align:center;padding:1rem;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);display:none}
-.rating-success.show{display:block}
-.show-more-btn{width:100%;padding:0.6rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;font-weight:600;font-family:inherit;color:var(--muted);cursor:pointer;margin-top:0.5rem;transition:all .15s}
-.show-more-btn:hover{background:var(--border);color:var(--ink)}
-.one-time-notice{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #16a34a;border-radius:var(--radius);padding:0.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:0.6rem;font-size:0.82rem;color:#166534}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apply for Verification — Online Market Security</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:#1a4fa8; --blue-dark:#143d84; --blue-light:#e8f0fd;
+      --teal:#0d9488; --green:#16a34a;
+      --gray-50:#f8fafc; --gray-100:#f1f5f9; --gray-200:#e2e8f0;
+      --gray-300:#cbd5e1; --gray-400:#94a3b8; --gray-500:#64748b;
+      --gray-700:#334155; --gray-900:#0f172a;
+      --dark-navy:#0f172a; --white:#ffffff; --red:#dc2626;
+      --shadow:0 4px 24px rgba(0,0,0,0.08);
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Plus Jakarta Sans',sans-serif; color:var(--gray-900); background:var(--gray-50); min-height:100vh; }
+    a { text-decoration:none; color:inherit; }
 
-/* In-person identity confirmation */
-.identity-confirm-section{margin-bottom:1.5rem;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #f59e0b;border-radius:var(--radius-lg);padding:1.5rem}
-.identity-confirm-title{font-weight:800;font-size:1rem;color:#92400e;margin-bottom:0.25rem;display:flex;align-items:center;gap:0.5rem}
-.identity-confirm-sub{font-size:0.82rem;color:#78350f;margin-bottom:1.25rem;line-height:1.5}
-.identity-photo-check{display:flex;align-items:center;gap:1rem;background:#fff;border:1px solid #fde68a;border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem}
-.identity-photo-check img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #f59e0b;flex-shrink:0}
-.identity-photo-placeholder{width:80px;height:80px;border-radius:50%;background:#fef3c7;border:3px solid #f59e0b;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:2rem}
-.identity-photo-label strong{display:block;font-size:0.9rem;color:#92400e;margin-bottom:0.2rem}
-.identity-photo-label{font-size:0.82rem;color:#78350f;line-height:1.5}
-.identity-actions{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
-.identity-confirm-btn{padding:0.75rem;border:none;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:0.4rem}
-.identity-confirm-btn.match{background:#16a34a;color:#fff}
-.identity-confirm-btn.match:hover{background:#15803d}
-.identity-confirm-btn.mismatch{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-border)}
-.identity-confirm-btn.mismatch:hover{background:var(--red);color:#fff}
-.identity-name-input{width:100%;padding:0.55rem 0.75rem;border:1.5px solid #fde68a;border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;background:#fff;box-sizing:border-box;transition:all 0.2s;margin-bottom:0.75rem}
-.identity-name-input:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15)}
-.identity-name-label{display:block;font-size:0.78rem;font-weight:600;color:#78350f;margin-bottom:0.3rem}
-.identity-comment-textarea{width:100%;padding:0.55rem 0.75rem;border:1.5px solid #fde68a;border-radius:var(--radius-sm);font-size:0.875rem;font-family:inherit;background:#fff;box-sizing:border-box;resize:vertical;min-height:70px;transition:all 0.2s;display:block}
-.identity-comment-textarea:focus{outline:none;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15)}
-.identity-comment-label{display:block;font-size:0.78rem;font-weight:600;color:#78350f;margin-bottom:0.3rem}
-.mismatch-extra{display:none;margin-bottom:0.75rem}
-.mismatch-extra.show{display:block}
-.identity-submitted{border-radius:var(--radius-sm);padding:0.85rem 1rem;text-align:center;font-size:0.875rem;display:none;margin-top:0.5rem}
-.identity-submitted.show{display:block}
+    .nav { background:var(--white); border-bottom:1px solid var(--gray-200); height:100px; display:flex; align-items:center; }
+    .nav-inner { max-width:1200px; width:100%; margin:0 auto; padding:0 2rem; display:flex; align-items:center; gap:2rem; }
+    .nav-logo img { height:88px; display:block; }
+    .nav-links { display:flex; align-items:center; gap:0.25rem; margin-left:auto; list-style:none; }
+    .nav-links li a { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; border-radius:8px; font-size:0.95rem; font-weight:500; color:var(--gray-700); transition:background 0.15s; }
+    .nav-links li a:hover { background:var(--gray-100); }
+    .nav-actions { display:flex; align-items:center; gap:0.75rem; margin-left:1.5rem; }
+    .btn-signin { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; font-size:0.95rem; font-weight:500; color:var(--gray-700); border-radius:8px; transition:background 0.15s; }
+    .btn-signin:hover { background:var(--gray-100); }
+    .btn-get-verified { display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1.25rem; background:linear-gradient(135deg,var(--blue),var(--teal)); color:var(--white); border-radius:8px; font-size:0.95rem; font-weight:600; transition:opacity 0.15s,transform 0.15s; }
+    .btn-get-verified:hover { opacity:0.92; transform:translateY(-1px); }
 
-/* Risk rating */
-.risk-popup-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:999px;font-size:0.8rem;font-weight:700;font-family:inherit;cursor:pointer;border:1.5px solid;transition:all 0.15s}
-.risk-popup-btn.low{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
-.risk-popup-btn.medium{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
-.risk-popup-btn.high{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
-.risk-popup-btn.none{background:var(--bg-soft);color:var(--muted);border-color:var(--border)}
+    .page { max-width:780px; margin:0 auto; padding:3rem 1.5rem 5rem; }
+    .page-header { text-align:center; margin-bottom:2.5rem; }
+    .page-header p { font-size:1rem; color:var(--gray-500); }
 
-/* Risk flags modal */
-.risk-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.2s}
-.risk-modal-bg.open{opacity:1;pointer-events:all}
-.risk-modal{background:#fff;border-radius:var(--radius-lg);padding:0;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.18);transform:translateY(12px);transition:transform 0.2s;max-height:90vh;overflow-y:auto}
-.risk-modal-bg.open .risk-modal{transform:translateY(0)}
-.risk-modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:5;display:flex;align-items:center;justify-content:space-between}
-.risk-modal-title{font-weight:800;font-size:1rem}
-.risk-modal-body{padding:1.25rem 1.5rem}
-.risk-flag-item{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem;margin-bottom:0.65rem;border-left:3px solid var(--red)}
-</style>
+    .stepper { display:flex; align-items:flex-start; justify-content:center; margin-bottom:2.5rem; }
+    .stepper-item { display:flex; flex-direction:column; align-items:center; gap:0.5rem; flex:1; position:relative; }
+    .stepper-item:not(:last-child)::after { content:''; position:absolute; top:22px; left:calc(50% + 22px); right:calc(-50% + 22px); height:2px; background:var(--gray-200); z-index:0; transition:background 0.3s; }
+    .stepper-item.done:not(:last-child)::after { background:linear-gradient(90deg,var(--blue),var(--teal)); }
+    .step-circle { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--gray-100); color:var(--gray-400); border:2px solid var(--gray-200); position:relative; z-index:1; transition:all 0.3s; }
+    .stepper-item.active .step-circle { background:linear-gradient(135deg,var(--blue),var(--teal)); color:var(--white); border-color:transparent; box-shadow:0 0 0 4px rgba(26,79,168,0.15); }
+    .stepper-item.done .step-circle { background:var(--green); color:var(--white); border-color:transparent; }
+    .step-label { font-size:0.8rem; font-weight:600; color:var(--gray-400); text-align:center; transition:color 0.3s; }
+    .stepper-item.active .step-label { color:var(--blue); }
+    .stepper-item.done .step-label { color:var(--green); }
+
+    .card { background:var(--white); border:1px solid var(--gray-200); border-radius:20px; padding:2.5rem; box-shadow:var(--shadow); }
+    .card-title { font-size:1.3rem; font-weight:800; margin-bottom:0.25rem; }
+    .card-subtitle { font-size:0.875rem; color:var(--gray-500); margin-bottom:2rem; }
+    .fields { display:flex; flex-direction:column; gap:1.25rem; }
+    .field-row { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+    .field { display:flex; flex-direction:column; gap:0.4rem; }
+    .field label { font-size:0.875rem; font-weight:600; color:var(--gray-700); }
+    .req { color:var(--red); margin-left:2px; }
+    .input-wrap { position:relative; display:flex; align-items:center; }
+    .ico { position:absolute; left:14px; color:var(--gray-400); pointer-events:none; }
+    .input-wrap input, .input-wrap select {
+      width:100%; padding:0.75rem 1rem 0.75rem 2.75rem;
+      border:1.5px solid var(--gray-200); border-radius:10px;
+      font-family:inherit; font-size:0.95rem; color:var(--gray-900);
+      background:var(--white); outline:none; -webkit-appearance:none;
+      transition:border-color 0.15s,box-shadow 0.15s;
+    }
+    .input-wrap input:focus, .input-wrap select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,79,168,0.1); }
+    .input-wrap input::placeholder { color:var(--gray-400); }
+    .input-wrap input.invalid { border-color:var(--red) !important; }
+    .input-wrap input.valid { border-color:var(--green) !important; }
+    .field-hint { font-size:0.78rem; color:var(--gray-400); }
+    .field-error { font-size:0.78rem; color:var(--red); font-weight:500; display:none; }
+    .field-error.show { display:block; }
+    .pw-toggle { position:absolute; right:12px; background:none; border:none; cursor:pointer; color:var(--gray-400); padding:4px; display:flex; align-items:center; }
+    .pw-toggle:hover { color:var(--gray-700); }
+
+    /* Phone input with country code picker */
+    .phone-row { display:flex; gap:0.5rem; }
+    .cc-picker { position:relative; flex-shrink:0; }
+    .cc-trigger {
+      display:flex; align-items:center; gap:0.4rem;
+      height:100%; padding:0.75rem 0.6rem;
+      border:1.5px solid var(--gray-200); border-radius:10px;
+      background:var(--white); cursor:pointer; font-family:inherit;
+      font-size:0.95rem; color:var(--gray-900); white-space:nowrap;
+      transition:border-color 0.15s,box-shadow 0.15s;
+    }
+    .cc-trigger:hover { border-color:var(--gray-300); }
+    .cc-trigger.open { border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,79,168,0.1); }
+    .cc-flag { font-size:1.1rem; line-height:1; }
+    .cc-trigger svg.chev { color:var(--gray-400); flex-shrink:0; }
+    .cc-dropdown {
+      position:absolute; top:calc(100% + 6px); left:0; z-index:50;
+      width:280px; max-height:320px; overflow-y:auto;
+      background:var(--white); border:1.5px solid var(--gray-200); border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+      display:none;
+    }
+    .cc-dropdown.open { display:block; }
+    .cc-search-wrap { padding:0.6rem; border-bottom:1px solid var(--gray-100); position:sticky; top:0; background:var(--white); }
+    .cc-search {
+      width:100%; padding:0.5rem 0.75rem; border:1.5px solid var(--gray-200); border-radius:8px;
+      font-family:inherit; font-size:0.85rem; outline:none;
+    }
+    .cc-search:focus { border-color:var(--blue); }
+    .cc-option {
+      display:flex; align-items:center; gap:0.6rem;
+      padding:0.55rem 0.75rem; cursor:pointer; font-size:0.85rem; color:var(--gray-700);
+    }
+    .cc-option:hover, .cc-option.highlight { background:var(--blue-light); }
+    .cc-option .cc-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cc-option .cc-dial { color:var(--gray-400); font-weight:600; flex-shrink:0; }
+    .cc-empty { padding:1rem; text-align:center; font-size:0.82rem; color:var(--gray-400); }
+    .phone-number-input { flex:1; }
+    .phone-number-input input { padding-left:1rem !important; }
+
+    .upload-area { border:2px dashed var(--gray-200); border-radius:12px; padding:2rem; text-align:center; cursor:pointer; transition:border-color 0.2s,background 0.2s; position:relative; }
+    .upload-area:hover { border-color:var(--blue); background:var(--blue-light); }
+    .upload-area.has-file { border-color:var(--green); background:#f0fdf4; }
+    .upload-area input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .upload-icon { width:48px; height:48px; border-radius:12px; background:var(--blue-light); display:flex; align-items:center; justify-content:center; margin:0 auto 0.75rem; color:var(--blue); }
+    .upload-area h4 { font-size:0.95rem; font-weight:700; margin-bottom:0.3rem; }
+    .upload-area p { font-size:0.82rem; color:var(--gray-400); }
+    .file-name { margin-top:0.75rem; font-size:0.85rem; font-weight:600; color:var(--green); display:none; }
+    .upload-area.has-file .file-name { display:block; }
+    .upload-area.has-file .upload-default { display:none; }
+
+    .doc-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; }
+    .doc-type-btn { border:1.5px solid var(--gray-200); border-radius:10px; padding:0.75rem 0.5rem; text-align:center; cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--gray-500); background:var(--white); transition:all 0.15s; user-select:none; }
+    .doc-type-btn:hover, .doc-type-btn.selected { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+    .doc-icon { font-size:1.3rem; display:block; margin-bottom:0.3rem; }
+
+    .terms-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:1rem 1.25rem; }
+    .terms-check { display:flex; align-items:flex-start; gap:0.75rem; cursor:pointer; }
+    .terms-check input[type="checkbox"] { width:18px; height:18px; flex-shrink:0; accent-color:var(--blue); margin-top:2px; cursor:pointer; }
+    .terms-check span { font-size:0.875rem; color:var(--gray-700); line-height:1.5; }
+    .terms-check a { color:var(--blue); text-decoration:underline; }
+
+    .form-nav { display:flex; justify-content:space-between; align-items:center; margin-top:2rem; gap:1rem; }
+    .btn-back { display:inline-flex; align-items:center; gap:0.4rem; padding:0.75rem 1.5rem; border:1.5px solid var(--gray-200); border-radius:10px; background:var(--white); color:var(--gray-700); font-weight:600; font-size:0.95rem; cursor:pointer; font-family:inherit; transition:border-color 0.15s,background 0.15s; }
+    .btn-back:hover { border-color:var(--gray-300); background:var(--gray-50); }
+    .btn-next { display:inline-flex; align-items:center; gap:0.5rem; padding:0.75rem 2rem; background:linear-gradient(135deg,var(--blue),var(--teal)); color:var(--white); border:none; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer; font-family:inherit; margin-left:auto; transition:transform 0.15s,opacity 0.15s; }
+    .btn-next:hover { transform:translateY(-1px); opacity:0.93; }
+    .btn-next:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .alert { padding:0.875rem 1.25rem; border-radius:10px; font-size:0.875rem; font-weight:500; margin-bottom:1.5rem; display:none; gap:0.5rem; align-items:flex-start; }
+    .alert.error { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; display:flex; }
+    .alert.warning { background:#fffbeb; color:#92400e; border:1px solid #fde68a; display:flex; }
+    .info-box { border-radius:10px; padding:1rem 1.25rem; font-size:0.82rem; display:flex; gap:0.75rem; align-items:flex-start; }
+    .info-box.blue { background:var(--blue-light); border:1px solid #bfdbfe; color:var(--blue); }
+    .info-box.gray { background:var(--gray-50); border:1px solid var(--gray-200); color:var(--gray-500); }
+
+    .checking { display:inline-flex; align-items:center; gap:0.4rem; font-size:0.75rem; color:var(--gray-400); margin-top:0.25rem; }
+    .checking svg { animation:spin 1s linear infinite; }
+
+    .footer { background:var(--dark-navy); padding:2rem; text-align:center; }
+    .footer p { font-size:0.8rem; color:var(--gray-500); }
+    .footer a { color:var(--gray-400); text-decoration:underline; }
+
+    @media (max-width:768px) {
+      .nav { height:auto; padding:0.75rem 1rem; }
+      .nav-logo img { height:56px; }
+      .nav-links { display:none; }
+      .field-row { grid-template-columns:1fr; }
+      .doc-type-grid { grid-template-columns:1fr 1fr; }
+      .card { padding:1.5rem; }
+      .page { padding:1.5rem 1rem 3rem; }
+      .cc-dropdown { width:260px; }
+    }
+    @media (max-width:480px) {
+      .step-label { font-size:0.7rem; }
+      .step-circle { width:36px; height:36px; }
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
 </head>
 <body>
-<nav><div class="nav-inner">
-  <a class="logo" href="/"><img src="/logo.png" alt="Online Market Security"></a>
-  <div class="nav-actions">
-    <a href="/" class="btn-nav-ghost" style="display:inline-flex;align-items:center;gap:0.4rem;text-decoration:none">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Home
-    </a>
-    <button type="button" class="btn-nav-solid" onclick="location.href='/apply.html'">Get verified</button>
-  </div>
-</div></nav>
 
-<!-- RISK FLAGS MODAL -->
-<div class="risk-modal-bg" id="riskModal">
-  <div class="risk-modal">
-    <div class="risk-modal-header">
-      <div class="risk-modal-title">&#9888; Risk flags &amp; community reports</div>
-      <button type="button" onclick="document.getElementById('riskModal').classList.remove('open')" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-soft);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--red-bg)';this.style.color='var(--red)'" onmouseout="this.style.background='var(--bg-soft)';this.style.color='inherit'">&#10005;</button>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><img src="/logo.png" alt="Online Market Security" /></a>
+    <ul class="nav-links">
+      <li><a href="/"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a></li>
+      <li><a href="/verify.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Verify</a></li>
+      <li><a href="/how-it-works.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>How it works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login.html" class="btn-signin"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Sign In</a>
+      <a href="/apply.html" class="btn-get-verified"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>Get Verified</a>
     </div>
-    <div class="risk-modal-body" id="riskModalBody">Loading...</div>
   </div>
-</div>
+</nav>
 
-<div class="verify-wrap">
-  <div id="loadingState" style="text-align:center;padding:4rem 2rem;color:var(--muted)">
-    <div style="font-size:2.5rem;margin-bottom:1rem">&#128269;</div>
-    <p style="font-weight:600">Verifying identity...</p>
+<div class="page">
+  <div class="page-header" id="pageHeader">
+    <p>Join Online Market Security and start building credibility in your marketplace</p>
   </div>
-  <div id="verifyCard" class="verify-card" style="display:none"></div>
-  <div id="errorState" style="display:none;text-align:center;padding:4rem 2rem">
-    <div style="font-size:3rem;margin-bottom:1rem" id="errorIcon">&#10060;</div>
-    <h3 style="font-weight:700;margin-bottom:0.5rem" id="errorTitle">Code not valid</h3>
-    <p style="color:var(--muted);margin-bottom:1.5rem" id="errorMsg">This verification code is invalid or has already been used.</p>
-    <button type="button" class="btn-primary" onclick="location.href='/'">Go back home</button>
-  </div>
-</div>
 
-<footer>
-  <div class="footer-logo">Online Market Security</div>
-  <p>Verification confirms identity documents were reviewed by Online Market Security. It does not guarantee behaviour, safety, or service quality.</p>
-  <p style="margin-top:0.5rem;font-size:0.78rem;opacity:0.7">
-    Online Market Security does not accept liability for any loss, fraud, or harm arising from interactions between users. Users are advised to exercise independent caution at all times.
-    <a href="/terms.html" style="color:inherit;text-decoration:underline;margin-left:0.35rem">Terms of Use &amp; Disclaimer &rarr;</a>
-  </p>
-  <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.5">© 2026 Online Market Security · Republic of South Africa</p>
+  <div class="stepper" id="stepper">
+    <div class="stepper-item active" data-step="1">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <span class="step-label">Personal Info</span>
+    </div>
+    <div class="stepper-item" data-step="2">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+      <span class="step-label">Service Details</span>
+    </div>
+    <div class="stepper-item" data-step="3">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <span class="step-label">Upload Documents</span>
+    </div>
+    <div class="stepper-item" data-step="4">
+      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <span class="step-label">Create Account</span>
+    </div>
+  </div>
+
+  <div class="alert" id="alertBox"></div>
+
+  <div class="card" id="formCard">
+
+    <!-- STEP 1 -->
+    <div id="step1">
+      <div class="card-title">Personal Information</div>
+      <div class="card-subtitle">Enter your details exactly as they appear on your ID document</div>
+      <div class="fields">
+        <div class="field-row">
+          <div class="field">
+            <label>First Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="firstName" placeholder="John" autocomplete="given-name" />
+            </div>
+            <span class="field-error" id="firstNameErr">Please enter your first name.</span>
+          </div>
+          <div class="field">
+            <label>Last Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name" />
+            </div>
+            <span class="field-error" id="lastNameErr">Please enter your last name.</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Phone Number <span class="req">*</span></label>
+          <div class="phone-row">
+            <div class="cc-picker" id="ccPicker">
+              <button type="button" class="cc-trigger" id="ccTrigger">
+                <span class="cc-flag" id="ccFlag">🇿🇦</span>
+                <span id="ccDial">+27</span>
+                <svg class="chev" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="cc-dropdown" id="ccDropdown">
+                <div class="cc-search-wrap">
+                  <input type="text" class="cc-search" id="ccSearch" placeholder="Search country or code..." autocomplete="off" />
+                </div>
+                <div id="ccList"></div>
+              </div>
+            </div>
+            <div class="input-wrap phone-number-input">
+              <input type="tel" id="phone" placeholder="82 123 4567" autocomplete="tel" inputmode="numeric" />
+            </div>
+          </div>
+          <span class="field-error" id="phoneErr">Please enter a valid phone number.</span>
+          <span class="field-hint">Select your country, then enter your number without the leading 0</span>
+        </div>
+
+        <!-- ID Document Type selector — moved here from Step 3, drives ID Number validation -->
+        <div class="field">
+          <label>ID Document Type <span class="req">*</span></label>
+          <div class="doc-type-grid" id="idTypeGrid">
+            <div class="doc-type-btn selected" data-val="sa_id"><span class="doc-icon">🪪</span>SA ID</div>
+            <div class="doc-type-btn" data-val="passport"><span class="doc-icon">📕</span>Passport</div>
+            <div class="doc-type-btn" data-val="drivers"><span class="doc-icon">🚗</span>Driver's Licence</div>
+          </div>
+          <input type="hidden" id="docType" value="sa_id" />
+        </div>
+
+        <div class="field">
+          <label id="idNumberLabel">SA ID Number <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <input type="text" id="idNumber" placeholder="9001015009087" inputmode="numeric" maxlength="13" autocomplete="off" />
+          </div>
+          <span class="field-error" id="idNumberErr">Please enter your ID number.</span>
+          <span class="checking" id="idChecking" style="display:none;">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Checking...
+          </span>
+          <span class="field-hint" id="idNumberHint">Exactly 13 digits, numbers only</span>
+        </div>
+      </div>
+      <div class="form-nav">
+        <div></div>
+        <button class="btn-next" id="step1Btn">
+          Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" style="display:none;">
+      <div class="card-title">Service Details</div>
+      <div class="card-subtitle">Tell us about the type of service or work you offer</div>
+      <div class="fields">
+        <div class="field">
+          <label>Service Category <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <select id="serviceCategory">
+              <option value="" disabled selected>Select your service type</option>
+              <option>Plumber</option><option>Electrician</option><option>Painter</option>
+              <option>Cleaner</option><option>Carpenter</option><option>Gardener</option>
+              <option value="Builder">Builder / Contractor</option><option>Tiler</option>
+              <option>Welder</option><option value="AC Technician">AC Technician</option>
+              <option value="Domestic Worker">Domestic Worker</option>
+              <option value="Security Guard">Security Guard</option>
+              <option value="Driver">Driver / Chauffeur</option>
+              <option value="Tutor">Tutor / Teacher</option>
+              <option value="IT Support">IT Support</option>
+              <option value="Online Seller">Online Seller</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <span class="field-error" id="catErr">Please select a service category.</span>
+        </div>
+        <div class="field">
+          <label>Describe Your Services <span class="req">*</span></label>
+          <div class="input-wrap" style="align-items:flex-start;">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="top:14px;position:absolute;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <textarea id="serviceDesc" rows="4"
+              style="width:100%;padding:0.75rem 1rem 0.75rem 2.75rem;border:1.5px solid var(--gray-200);border-radius:10px;font-family:inherit;font-size:0.95rem;color:var(--gray-900);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;"
+              placeholder="e.g. Licensed electrician with 10 years experience..."
+              onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,79,168,0.1)'"
+              onblur="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'"></textarea>
+          </div>
+          <span class="field-error" id="descErr">Please describe your services.</span>
+        </div>
+        <div class="field">
+          <label>Area / City You Operate In <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="text" id="location" placeholder="e.g. Johannesburg, Sandton, Soweto" />
+          </div>
+          <span class="field-error" id="locErr">Please enter your operating area.</span>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="step2Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+        <button class="btn-next" id="step2Btn">Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" style="display:none;">
+      <div class="card-title">Upload Documents</div>
+      <div class="card-subtitle">Upload your selfie and your <span id="step3DocLabel">SA ID</span>. All files stored securely.</div>
+      <div class="fields">
+        <div class="field">
+          <label>Selfie Photo <span class="req">*</span></label>
+          <div class="upload-area" id="selfieArea">
+            <input type="file" id="selfieFile" accept="image/*" />
+            <div class="upload-default">
+              <div class="upload-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+              <h4>Upload a clear selfie</h4>
+              <p>Click to browse · JPG, PNG · Max 5MB</p>
+            </div>
+            <div class="file-name" id="selfieName"></div>
+          </div>
+          <span class="field-error" id="selfieErr">Please upload a selfie photo.</span>
+          <span class="field-hint">Face clearly visible, no sunglasses. Good lighting.</span>
+        </div>
+        <div class="field">
+          <label>ID Document <span class="req">*</span></label>
+          <div class="upload-area" id="idDocArea">
+            <input type="file" id="idDocFile" accept="image/*,application/pdf" />
+            <div class="upload-default">
+              <div class="upload-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+              <h4 id="idUploadLabel">Upload your SA ID</h4>
+              <p>Click to browse · JPG, PNG, PDF · Max 10MB</p>
+            </div>
+            <div class="file-name" id="idDocName"></div>
+          </div>
+          <span class="field-error" id="idDocErr">Please upload your ID document.</span>
+          <span class="field-hint">Must be clearly readable. No blurry images.</span>
+        </div>
+        <div class="info-box blue">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Documents stored securely, reviewed only by our team. Never shared publicly.</span>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="step3Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+        <button class="btn-next" id="step3Btn">Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step4" style="display:none;">
+      <div class="card-title">Create Your Account</div>
+      <div class="card-subtitle">Set up your login credentials to manage your verification profile</div>
+      <div class="fields">
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <div class="input-wrap">
+            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="email" placeholder="john@example.com" autocomplete="email" />
+          </div>
+          <span class="field-error" id="emailErr">Please enter a valid email address.</span>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Password <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="pwToggle1"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+            <span class="field-error" id="pwErr">Password must be at least 8 characters.</span>
+          </div>
+          <div class="field">
+            <label>Confirm Password <span class="req">*</span></label>
+            <div class="input-wrap">
+              <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="pwToggle2"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+            <span class="field-error" id="confirmErr">Passwords do not match.</span>
+          </div>
+        </div>
+        <div class="terms-box">
+          <label class="terms-check">
+            <input type="checkbox" id="termsCheck" />
+            <span>I have read and agree to the <a href="/terms.html" target="_blank">Terms of Use &amp; Disclaimer</a>. I understand that Online Market Security verification confirms document review only and does not guarantee behaviour, safety, or service quality. I confirm all information and documents submitted are genuine and belong to me.</span>
+          </label>
+          <span class="field-error" id="termsErr" style="margin-top:0.5rem;">You must agree to the Terms of Use to continue.</span>
+        </div>
+        <div class="info-box gray">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Once submitted, our team will review your application within 48 hours. You'll receive an email when your status is updated.</span>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-back" id="step4Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+        <button class="btn-next" id="submitBtn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          Submit Application
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /page -->
+
+<footer class="footer">
+  <p>Online Market Security verification confirms that documents have been reviewed by our team. It does not guarantee behaviour, safety, or service quality.<br/>
+  <a href="/terms.html">Terms of Use &amp; Disclaimer</a> · © 2026 Online Market Security · Republic of South Africa</p>
 </footer>
-<div class="toast" id="toast"></div>
 
-<script type="module">
-import { supabase } from '/src/lib/supabase.js';
+<script>
+  const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
+  const ANON_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
 
-const params = new URLSearchParams(location.search);
-const tokenParam = params.get('token');
-const legacyId = params.get('id');
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, ANON_KEY);
 
-let providerId = null;
-let currentUser = null;
-let selectedStars = 0;
-let tokenId = null;
-let isInPerson = false;
+  // ── Global state ──
+  let currentStep   = 1;
+  let selfieFileObj = null;
+  let idDocFileObj  = null;
+  let idCheckTimer  = null;
+  let selectedCountry = null; // { name, dial, flag, iso2 }
 
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-  const { data: up } = await supabase.from('profiles').select('id,name,verification_status').eq('id', session.user.id).maybeSingle();
-  if (up) currentUser = up;
-}
+  // ── Country dataset (name, ISO2, dial code) — flags rendered via emoji from ISO2 ──
+  const COUNTRIES_RAW = [
+    ["South Africa","ZA","27"],["Afghanistan","AF","93"],["Albania","AL","355"],["Algeria","DZ","213"],
+    ["Andorra","AD","376"],["Angola","AO","244"],["Argentina","AR","54"],["Armenia","AM","374"],
+    ["Australia","AU","61"],["Austria","AT","43"],["Azerbaijan","AZ","994"],["Bahamas","BS","1242"],
+    ["Bahrain","BH","973"],["Bangladesh","BD","880"],["Belarus","BY","375"],["Belgium","BE","32"],
+    ["Belize","BZ","501"],["Benin","BJ","229"],["Bhutan","BT","975"],["Bolivia","BO","591"],
+    ["Botswana","BW","267"],["Brazil","BR","55"],["Brunei","BN","673"],["Bulgaria","BG","359"],
+    ["Burkina Faso","BF","226"],["Burundi","BI","257"],["Cambodia","KH","855"],["Cameroon","CM","237"],
+    ["Canada","CA","1"],["Cape Verde","CV","238"],["Chad","TD","235"],["Chile","CL","56"],
+    ["China","CN","86"],["Colombia","CO","57"],["Comoros","KM","269"],["Congo","CG","242"],
+    ["Costa Rica","CR","506"],["Croatia","HR","385"],["Cuba","CU","53"],["Cyprus","CY","357"],
+    ["Czech Republic","CZ","420"],["Denmark","DK","45"],["Djibouti","DJ","253"],
+    ["Dominican Republic","DO","1849"],["DR Congo","CD","243"],["Ecuador","EC","593"],
+    ["Egypt","EG","20"],["El Salvador","SV","503"],["Eritrea","ER","291"],["Estonia","EE","372"],
+    ["Eswatini","SZ","268"],["Ethiopia","ET","251"],["Fiji","FJ","679"],["Finland","FI","358"],
+    ["France","FR","33"],["Gabon","GA","241"],["Gambia","GM","220"],["Georgia","GE","995"],
+    ["Germany","DE","49"],["Ghana","GH","233"],["Greece","GR","30"],["Guatemala","GT","502"],
+    ["Guinea","GN","224"],["Haiti","HT","509"],["Honduras","HN","504"],["Hong Kong","HK","852"],
+    ["Hungary","HU","36"],["Iceland","IS","354"],["India","IN","91"],["Indonesia","ID","62"],
+    ["Iran","IR","98"],["Iraq","IQ","964"],["Ireland","IE","353"],["Israel","IL","972"],
+    ["Italy","IT","39"],["Ivory Coast","CI","225"],["Jamaica","JM","1876"],["Japan","JP","81"],
+    ["Jordan","JO","962"],["Kazakhstan","KZ","7"],["Kenya","KE","254"],["Kuwait","KW","965"],
+    ["Kyrgyzstan","KG","996"],["Laos","LA","856"],["Latvia","LV","371"],["Lebanon","LB","961"],
+    ["Lesotho","LS","266"],["Liberia","LR","231"],["Libya","LY","218"],["Liechtenstein","LI","423"],
+    ["Lithuania","LT","370"],["Luxembourg","LU","352"],["Madagascar","MG","261"],["Malawi","MW","265"],
+    ["Malaysia","MY","60"],["Maldives","MV","960"],["Mali","ML","223"],["Malta","MT","356"],
+    ["Mauritania","MR","222"],["Mauritius","MU","230"],["Mexico","MX","52"],["Moldova","MD","373"],
+    ["Monaco","MC","377"],["Mongolia","MN","976"],["Montenegro","ME","382"],["Morocco","MA","212"],
+    ["Mozambique","MZ","258"],["Myanmar","MM","95"],["Namibia","NA","264"],["Nepal","NP","977"],
+    ["Netherlands","NL","31"],["New Zealand","NZ","64"],["Nicaragua","NI","505"],["Niger","NE","227"],
+    ["Nigeria","NG","234"],["North Korea","KP","850"],["North Macedonia","MK","389"],["Norway","NO","47"],
+    ["Oman","OM","968"],["Pakistan","PK","92"],["Panama","PA","507"],["Papua New Guinea","PG","675"],
+    ["Paraguay","PY","595"],["Peru","PE","51"],["Philippines","PH","63"],["Poland","PL","48"],
+    ["Portugal","PT","351"],["Qatar","QA","974"],["Romania","RO","40"],["Russia","RU","7"],
+    ["Rwanda","RW","250"],["Saudi Arabia","SA","966"],["Senegal","SN","221"],["Serbia","RS","381"],
+    ["Seychelles","SC","248"],["Sierra Leone","SL","232"],["Singapore","SG","65"],["Slovakia","SK","421"],
+    ["Slovenia","SI","386"],["Somalia","SO","252"],["South Korea","KR","82"],["South Sudan","SS","211"],
+    ["Spain","ES","34"],["Sri Lanka","LK","94"],["Sudan","SD","249"],["Suriname","SR","597"],
+    ["Sweden","SE","46"],["Switzerland","CH","41"],["Syria","SY","963"],["Taiwan","TW","886"],
+    ["Tajikistan","TJ","992"],["Tanzania","TZ","255"],["Thailand","TH","66"],["Togo","TG","228"],
+    ["Tunisia","TN","216"],["Turkey","TR","90"],["Turkmenistan","TM","993"],["Uganda","UG","256"],
+    ["Ukraine","UA","380"],["United Arab Emirates","AE","971"],["United Kingdom","GB","44"],
+    ["United States","US","1"],["Uruguay","UY","598"],["Uzbekistan","UZ","998"],["Venezuela","VE","58"],
+    ["Vietnam","VN","84"],["Yemen","YE","967"],["Zambia","ZM","260"],["Zimbabwe","ZW","263"]
+  ];
 
-function showError(icon, title, msg) {
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('errorIcon').textContent = icon;
-  document.getElementById('errorTitle').textContent = title;
-  document.getElementById('errorMsg').textContent = msg;
-  document.getElementById('errorState').style.display = 'block';
-}
-
-async function init() {
-  if (!tokenParam && !legacyId) {
-    document.getElementById('loadingState').style.display = 'none';
-document.getElementById('verifyCard').style.display = 'block';
-document.getElementById('verifyCard').innerHTML = `
-  <div style="text-align:center;padding:1rem 0 1.5rem">
-    <div style="font-size:2.5rem;margin-bottom:0.75rem">🔍</div>
-    <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:0.5rem">Verify someone's identity</h2>
-    <p style="color:var(--muted);font-size:0.95rem;margin-bottom:1.75rem">Enter the one-time code shared with you by the provider.</p>
-    <div style="display:flex;gap:0.75rem;max-width:400px;margin:0 auto">
-      <input id="noTokenInput" type="text" class="code-input" placeholder="e.g. OMS-A1B2C3D4"
-        maxlength="12" oninput="this.value=this.value.toUpperCase()"
-        onkeydown="if(event.key==='Enter')goVerify()"
-        style="flex:1;padding:0.9rem 1rem;border:1.5px solid var(--border);border-radius:var(--radius);font-size:1.05rem;font-family:monospace;font-weight:700;letter-spacing:0.08em;text-align:center;background:var(--bg-soft);outline:none;transition:border-color 0.2s"
-        onfocus="this.style.borderColor='var(--blue)';this.style.background='#fff'"
-        onblur="this.style.borderColor='var(--border)';this.style.background='var(--bg-soft)'">
-      <button onclick="goVerify()" style="padding:0.9rem 1.4rem;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:0.95rem;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap">Check →</button>
-    </div>
-    <div id="noTokenError" style="color:var(--red);font-size:0.82rem;margin-top:0.75rem;display:none">Please enter a valid code (e.g. OMS-A1B2C3D4)</div>
-  </div>`;
-window.goVerify = () => {
-  const code = document.getElementById('noTokenInput').value.trim().toUpperCase();
-  if (!code || code.length < 8) { document.getElementById('noTokenError').style.display='block'; return; }
-  window.location.href = '/verify.html?token=' + encodeURIComponent(code);
-};
-return;
-    return;
+  function iso2ToFlag(iso2) {
+    return iso2.toUpperCase().replace(/./g, c =>
+      String.fromCodePoint(127397 + c.charCodeAt(0))
+    );
   }
 
-  let profileData = null;
-  let isOneTimeToken = false;
+  const COUNTRIES = COUNTRIES_RAW.map(([name, iso2, dial]) => ({
+    name, iso2, dial, flag: iso2ToFlag(iso2)
+  }));
 
-  if (tokenParam) {
-    const { data: tokenData, error: tokenErr } = await supabase
-      .from('verification_tokens')
-      .select('*, profiles(id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id)')
-      .eq('token', tokenParam)
-      .maybeSingle();
-
-    if (tokenErr || !tokenData) {
-      showError('❌', 'Code not found', 'This verification code does not exist. Please ask the provider to share a new code.');
+  function renderCcList(filter) {
+    const list = document.getElementById('ccList');
+    const q = (filter || '').trim().toLowerCase();
+    const filtered = q
+      ? COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.dial.includes(q.replace('+','')))
+      : COUNTRIES;
+    if (!filtered.length) {
+      list.innerHTML = '<div class="cc-empty">No countries match your search.</div>';
       return;
     }
-    if (tokenData.status === 'used') {
-      showError('🔒', 'Code already used', 'This one-time code has already been used. Ask the provider to generate a new code.');
-      return;
-    }
-    if (tokenData.status === 'expired' || new Date() > new Date(tokenData.expires_at)) {
-      showError('⏰', 'Code expired', 'This code has expired. Ask the provider to generate a new one-time code.');
-      return;
-    }
-    if (tokenData.status === 'archived') {
-      showError('📦', 'Code archived', 'This code has been archived and is no longer valid.');
-      return;
-    }
-
-    isInPerson = tokenData.meeting_type === 'in_person';
-
-    const verificationExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    const viewerName = currentUser?.name || 'Anonymous';
-    await supabase.from('verification_tokens').update({
-      status: 'used',
-      used_at: new Date().toISOString(),
-      used_by_name: viewerName,
-      verification_expires_at: verificationExpiresAt.toISOString()
-    }).eq('id', tokenData.id);
-
-    tokenId = tokenData.id;
-    profileData = tokenData.profiles;
-    isOneTimeToken = true;
-
-  } else if (legacyId) {
-    const { data, error } = await supabase.from('profiles')
-      .select('id,name,service_category,selfie_url,verification_status,verification_date,expiry_date,public_id')
-      .eq('public_id', legacyId)
-      .maybeSingle();
-    if (!data || error) {
-      showError('❌', 'Not found', "This verification code doesn't exist or has been removed.");
-      return;
-    }
-    profileData = data;
-  }
-
-  if (!profileData) {
-    showError('❌', 'Not found', 'Could not load provider information.');
-    return;
-  }
-
-  providerId = profileData.id;
-  document.getElementById('loadingState').style.display = 'none';
-
-  const now = new Date();
-  const expiry = profileData.expiry_date ? new Date(profileData.expiry_date) : null;
-  const status = (expiry && now > expiry) ? 'expired' : profileData.verification_status;
-  const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '—';
-  const firstName = profileData.name?.split(' ')[0] || 'this person';
-
-  const statusHtml = status==='verified'
-    ? '<div class="verify-status">&#10003;&nbsp; Identity Verified</div>'
-    : status==='expired'
-    ? '<div class="verify-status expired">&#9888;&nbsp; Verification Expired</div>'
-    : '<div class="verify-status pending">&#8987;&nbsp; Pending Review</div>';
-
-  const oneTimeNotice = isOneTimeToken ? `
-    <div class="one-time-notice">
-      <span style="font-size:1.2rem;flex-shrink:0">&#128273;</span>
-      <div><strong>One-time verification used.</strong> This code has now been consumed and cannot be used by anyone else. Your verification result is valid for 30 days.</div>
-    </div>` : '';
-
-  const inPersonBlock = (isInPerson && status === 'verified') ? `
-    <div class="identity-confirm-section" id="identityConfirmSection">
-      <div class="identity-confirm-title">&#129489; In-person identity check</div>
-      <div class="identity-confirm-sub">You are meeting this person face-to-face. Please compare the photo below to the person in front of you and confirm whether they match.</div>
-      <div class="identity-photo-check">
-        ${profileData.selfie_url
-          ? `<img src="${profileData.selfie_url}" alt="Provider photo">`
-          : '<div class="identity-photo-placeholder">&#128100;</div>'}
-        <div class="identity-photo-label">
-          <strong>${profileData.name || 'Provider'}</strong>
-          Does the person in front of you match this verified photo?
-        </div>
-      </div>
-      <label class="identity-name-label">Your name (optional)</label>
-      <input type="text" class="identity-name-input" id="identityReporterName" placeholder="e.g. Sipho M." value="${currentUser?.name || ''}">
-      <div id="mismatchExtra" class="mismatch-extra">
-        <label class="identity-comment-label">Describe the mismatch <span style="color:var(--red);font-size:0.75rem">* required</span></label>
-        <textarea id="identityComment" class="identity-comment-textarea" placeholder="e.g. The person's appearance does not match the photo — different hair, height, etc."></textarea>
-      </div>
-      <div class="identity-actions" id="identityActions">
-        <button type="button" class="identity-confirm-btn match" id="identityMatchBtn" onclick="submitIdentityCheck('match')">&#10003; Photo matches</button>
-        <button type="button" class="identity-confirm-btn mismatch" id="identityMismatchBtn" onclick="selectMismatch()">&#9888; Does not match</button>
-      </div>
-      <div id="identitySubmitMismatch" style="display:none;margin-bottom:0.5rem">
-        <button type="button" class="identity-confirm-btn mismatch" style="width:100%;margin-bottom:0.5rem" onclick="submitIdentityCheck('mismatch')">&#9888; Submit mismatch report</button>
-        <button type="button" onclick="cancelMismatch()" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-soft);font-size:0.82rem;font-family:inherit;cursor:pointer;color:var(--muted)">Cancel</button>
-      </div>
-      <div class="identity-submitted" id="identitySubmitted"></div>
-    </div>` : '';
-
-  const card = document.getElementById('verifyCard');
-  card.innerHTML = `
-    ${oneTimeNotice}
-    ${inPersonBlock}
-    <div class="verify-avatar">${profileData.selfie_url?`<img src="${profileData.selfie_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'&#128100;'}</div>
-    <div class="verify-name">${profileData.name||'Unknown'}</div>
-    <div class="verify-category">${profileData.service_category||''}</div>
-    ${statusHtml}
-    ${status==='verified'?'<div class="verify-checks"><div class="check-item"><span class="check-icon">&#10003;</span> ID document checked</div><div class="check-item"><span class="check-icon">&#10003;</span> Selfie checked</div></div>':''}
-    <div class="verify-dates">
-      <div class="verify-date-item"><div class="lbl">Verified on</div><div class="val">${fmt(profileData.verification_date)}</div></div>
-      <div class="verify-date-item"><div class="lbl">Expires on</div><div class="val">${fmt(profileData.expiry_date)}</div></div>
-    </div>
-    ${profileData.public_id?`<div class="verify-id">Badge ID: ${profileData.public_id}</div>`:''}
-
-    <div id="riskRatingWrap" style="margin-top:1rem"></div>
-
-    <div class="ratings-section">
-      <div class="ratings-header">
-        <div class="ratings-title">&#11088; Trust ratings</div>
-        <div id="ratingCount" style="font-size:0.82rem;color:var(--muted)">Loading...</div>
-      </div>
-      <div id="trustScoreWrap"></div>
-      <div id="ratingBreakdown"></div>
-      <div id="ratingsList"></div>
-      <div id="showMoreWrap"></div>
-    </div>
-
-    <div class="rate-form-wrap">
-      <div class="rate-form-title">&#128221; Rate ${firstName}</div>
-      <div class="rate-form-sub">Had an interaction with ${firstName}? Share your experience to help others.${currentUser?.verification_status==='verified'?' Your rating carries extra weight as a verified user.':''}</div>
-      <div class="star-picker" id="starPicker">
-        <button type="button" class="star-btn" onclick="selectStar(1)">&#11088;</button>
-        <button type="button" class="star-btn" onclick="selectStar(2)">&#11088;</button>
-        <button type="button" class="star-btn" onclick="selectStar(3)">&#11088;</button>
-        <button type="button" class="star-btn" onclick="selectStar(4)">&#11088;</button>
-        <button type="button" class="star-btn" onclick="selectStar(5)">&#11088;</button>
-      </div>
-      <div class="star-label" id="starLabel">Tap a star to rate</div>
-      <div class="form-field-sm">
-        <label>Your name *</label>
-        <input class="form-input-sm" type="text" id="raterName" placeholder="e.g. Thandi M." value="${currentUser?.name||''}">
-      </div>
-      <div class="form-field-sm">
-        <label>Comment <span id="commentRequired" style="color:var(--red);font-size:0.75rem"></span></label>
-        <div class="comment-required-note" id="commentRequiredNote">&#9888; A comment is required for 1 or 2 star ratings.</div>
-        <textarea class="form-input-sm" id="raterComment" placeholder="Share your experience with ${firstName}..." rows="3"></textarea>
-      </div>
-      <button type="button" class="submit-rating-btn" id="submitRatingBtn" onclick="submitRating()">Submit rating</button>
-      <div class="rating-success" id="ratingSuccess">
-        <div style="font-size:1.75rem;margin-bottom:0.4rem">&#127881;</div>
-        <div style="font-weight:700;color:var(--green)">Thank you for your rating!</div>
-        <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">Your feedback helps build trust in the community.</div>
-      </div>
-    </div>
-
-    <div class="disclaimer" style="margin-top:1.25rem">Verification confirms identity documents were reviewed by Online Market Security. It does not guarantee behaviour, safety, or service quality.</div>
-    <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);text-align:center">
-      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:0.75rem">Want your own Online Market Security verification?</p>
-      <button type="button" class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.4rem" onclick="location.href='/apply.html'">Get verified &rarr;</button>
-    </div>`;
-
-  card.style.display = 'block';
-  document.title = `${profileData.name} — Online Market Security`;
-  await loadRatings();
-  await loadRiskRating();
-  await logVerification(profileData.id, profileData.name);
-}
-
-await init();
-
-// ── Risk rating ──
-async function loadRiskRating() {
-  if (!providerId) return;
-  const { data: flags } = await supabase
-    .from('risk_flags')
-    .select('*')
-    .eq('provider_id', providerId)
-    .order('created_at', { ascending: false });
-
-  const wrap = document.getElementById('riskRatingWrap');
-  if (!wrap) return;
-  const count = flags?.length || 0;
-  if (count === 0) { wrap.innerHTML = ''; return; }
-
-  const level = count >= 3 ? 'high' : count === 2 ? 'medium' : 'low';
-  const levelLabel = level==='high' ? '&#128308; High risk' : level==='medium' ? '&#128993; Medium risk' : '&#128994; Low risk';
-  const levelDesc = level==='high'
-    ? 'Multiple identity mismatches have been reported by community members.'
-    : level==='medium'
-    ? 'More than one identity mismatch has been reported.'
-    : 'A potential identity mismatch has been reported.';
-
-  wrap.innerHTML = `
-    <div style="background:var(--red-bg);border:1.5px solid var(--red-border);border-radius:var(--radius);padding:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
-      <div>
-        <div style="font-weight:700;font-size:0.875rem;color:var(--red);margin-bottom:0.2rem">&#9888; Community risk reports</div>
-        <div style="font-size:0.78rem;color:var(--muted)">${levelDesc}</div>
-      </div>
-      <button type="button" class="risk-popup-btn ${level}" onclick="openRiskModal()">
-        ${levelLabel} · ${count} flag${count!==1?'s':''}
-      </button>
-    </div>`;
-}
-
-window.openRiskModal = async () => {
-  document.getElementById('riskModal').classList.add('open');
-  const body = document.getElementById('riskModalBody');
-  body.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted)">Loading...</div>';
-
-  const { data: flags } = await supabase
-    .from('risk_flags')
-    .select('*')
-    .eq('provider_id', providerId)
-    .order('created_at', { ascending: false });
-
-  const count = flags?.length || 0;
-  if (!count) { body.innerHTML = '<p style="color:var(--muted);font-size:0.875rem">No risk flags found.</p>'; return; }
-
-  const level = count >= 3 ? 'high' : count === 2 ? 'medium' : 'low';
-  const levelColor = level==='high' ? 'var(--red)' : level==='medium' ? 'var(--amber)' : '#15803d';
-  const levelLabel = level==='high' ? '&#128308; High risk' : level==='medium' ? '&#128993; Medium risk' : '&#128994; Low risk';
-
-  body.innerHTML = `
-    <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-      <div>
-        <div style="font-weight:700;font-size:0.875rem;color:var(--red)">${count} mismatch report${count!==1?'s':''}</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-top:0.1rem">Community-submitted identity flag${count!==1?'s':''}</div>
-      </div>
-      <span style="font-size:0.78rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;color:${levelColor};background:#fff;border:1.5px solid ${levelColor}">${levelLabel}</span>
-    </div>
-    <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Flag details</div>
-    ${flags.map(f => {
-      const date = new Date(f.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-      const time = new Date(f.created_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
-      return `<div class="risk-flag-item">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;flex-wrap:wrap;gap:0.4rem">
-          <div style="font-weight:700;font-size:0.82rem">${f.reporter_name || 'Anonymous'}</div>
-          <div style="font-size:0.72rem;color:var(--muted)">${date} at ${time}</div>
-        </div>
-        ${f.comment ? `<div style="font-size:0.82rem;color:var(--body);line-height:1.5;margin-top:0.25rem">"${f.comment}"</div>` : '<div style="font-size:0.78rem;color:var(--muted);font-style:italic">No comment provided.</div>'}
-      </div>`;
-    }).join('')}
-    <div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.78rem;color:var(--muted);margin-top:0.75rem;line-height:1.5">
-      &#9432; These reports are submitted by community members. Online Market Security does not independently verify flag accuracy. Exercise your own judgment.
-    </div>`;
-};
-
-document.getElementById('riskModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-});
-
-// ── In-person identity check ──
-window.selectMismatch = () => {
-  document.getElementById('mismatchExtra').classList.add('show');
-  document.getElementById('identityActions').style.display = 'none';
-  document.getElementById('identitySubmitMismatch').style.display = 'block';
-};
-
-window.cancelMismatch = () => {
-  document.getElementById('mismatchExtra').classList.remove('show');
-  document.getElementById('identityActions').style.display = 'grid';
-  document.getElementById('identitySubmitMismatch').style.display = 'none';
-};
-
-window.submitIdentityCheck = async (action) => {
-  const reporterName = document.getElementById('identityReporterName')?.value?.trim() || 'Anonymous';
-  const comment = action === 'mismatch' ? (document.getElementById('identityComment')?.value?.trim() || '') : null;
-
-  if (action === 'mismatch' && !comment) {
-    showToast('&#9888; Please describe the mismatch before submitting.');
-    return;
-  }
-
-  const submittedEl = document.getElementById('identitySubmitted');
-
-  if (action === 'match') {
-    document.getElementById('identityActions').style.display = 'none';
-    submittedEl.className = 'identity-submitted show';
-    submittedEl.style.cssText = 'display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534';
-    submittedEl.innerHTML = '&#10003; <strong>Thank you!</strong> Identity confirmed — the photo matches the person.';
-    await supabase.from('verification_logs').insert({
-      provider_id: providerId,
-      provider_name: null,
-      viewer_id: currentUser?.id || null,
-      viewer_name: reporterName,
-      viewer_verified: currentUser?.verification_status === 'verified',
-      source: 'in_person_match'
+    list.innerHTML = filtered.map(c => `
+      <div class="cc-option" data-iso2="${c.iso2}">
+        <span class="cc-flag">${c.flag}</span>
+        <span class="cc-name">${c.name}</span>
+        <span class="cc-dial">+${c.dial}</span>
+      </div>`).join('');
+    list.querySelectorAll('.cc-option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        const country = COUNTRIES.find(c => c.iso2 === this.dataset.iso2);
+        if (country) selectCountry(country);
+        closeCcDropdown();
+      });
     });
-    return;
   }
 
-  // Mismatch — insert risk flag
-  const { error } = await supabase.from('risk_flags').insert({
-    provider_id: providerId,
-    reporter_name: reporterName,
-    reporter_user_id: currentUser?.id || null,
-    reporter_verified: currentUser?.verification_status === 'verified',
-    flag_type: 'photo_mismatch',
-    comment: comment
-  });
-
-  if (error) { showToast('&#10060; Error submitting report: ' + error.message); return; }
-
-  document.getElementById('mismatchExtra').classList.remove('show');
-  document.getElementById('identitySubmitMismatch').style.display = 'none';
-  document.getElementById('identityActions').style.display = 'none';
-  submittedEl.className = 'identity-submitted show';
-  submittedEl.style.cssText = 'display:block;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)';
-  submittedEl.innerHTML = '&#9888; <strong>Mismatch reported.</strong> Thank you — this has been flagged for review.';
-
-  await loadRiskRating();
-};
-
-// ── Verification log ──
-async function logVerification(provId, provName) {
-  await supabase.from('verification_logs').insert({
-    provider_id: provId,
-    provider_name: provName,
-    viewer_id: currentUser?.id || null,
-    viewer_name: currentUser?.name || 'Anonymous',
-    viewer_verified: currentUser?.verification_status === 'verified',
-    source: 'verify_page'
-  });
-}
-
-// ── Star rating ──
-const starLabels = {
-  1:'&#11088; 1 star — Poor experience',
-  2:'&#11088;&#11088; 2 stars — Below average',
-  3:'&#11088;&#11088;&#11088; 3 stars — Average',
-  4:'&#11088;&#11088;&#11088;&#11088; 4 stars — Good experience',
-  5:'&#11088;&#11088;&#11088;&#11088;&#11088; 5 stars — Excellent experience'
-};
-
-window.selectStar = (n) => {
-  selectedStars = n;
-  document.querySelectorAll('.star-btn').forEach((btn,i) => btn.classList.toggle('active', i < n));
-  document.getElementById('starLabel').innerHTML = starLabels[n];
-  const note = document.getElementById('commentRequiredNote');
-  const req = document.getElementById('commentRequired');
-  if (n <= 2) { note.classList.add('show'); req.textContent = '* Required'; }
-  else { note.classList.remove('show'); req.textContent = '(optional)'; }
-};
-
-async function loadRatings(showAll=false) {
-  if (!providerId) return;
-  const { data: ratingsData } = await supabase.from('ratings').select('*').eq('provider_id', providerId).order('created_at',{ascending:false});
-  const ratings = ratingsData || [];
-  const total = ratings.length;
-  const verifiedCount = ratings.filter(r=>r.rater_verified).length;
-  const unverifiedCount = ratings.filter(r=>!r.rater_verified).length;
-  const weightedSum = ratings.reduce((s,r)=>s+(r.stars*(r.rater_verified?1.5:1)),0);
-  const weightedTotal = ratings.reduce((s,r)=>s+(r.rater_verified?1.5:1),0);
-  const score = weightedTotal>0 ? weightedSum/weightedTotal : 0;
-
-  const countEl = document.getElementById('ratingCount');
-  if (countEl) countEl.textContent = total > 0 ? `${total} rating${total!==1?'s':''}` : 'No ratings yet';
-
-  const scoreWrap = document.getElementById('trustScoreWrap');
-  if (total > 0) {
-    const {label, cls} = getTrustBadge(score, total);
-    if (scoreWrap) scoreWrap.innerHTML = `<div class="trust-score-wrap">
-      <div class="trust-score-num">${score.toFixed(1)}</div>
-      <div class="trust-score-info">
-        <div class="trust-score-stars">${renderStars(score)}</div>
-        <div class="trust-score-label">Trust Score</div>
-        <div class="trust-score-sub">${verifiedCount} verified &middot; ${unverifiedCount} unverified raters</div>
-      </div>
-      <div class="trust-score-badge ${cls}">${label}</div>
-    </div>`;
-    const counts = {5:0,4:0,3:0,2:0,1:0};
-    ratings.forEach(r => counts[r.stars]++);
-    const breakdown = document.getElementById('ratingBreakdown');
-    if (breakdown) breakdown.innerHTML = `<div class="rating-breakdown">${[5,4,3,2,1].map(n=>{
-      const pct = total>0?Math.round((counts[n]/total)*100):0;
-      return `<div class="rb-row"><div class="rb-label">${n} &#11088;</div><div class="rb-bar-track"><div class="rb-bar-fill rb-fill-${n}" style="width:${pct}%"></div></div><div class="rb-count">${counts[n]}</div></div>`;
-    }).join('')}</div>`;
-  } else {
-    if (scoreWrap) scoreWrap.innerHTML = `<div style="text-align:center;padding:1rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:1rem">
-      <div style="font-size:1.5rem;margin-bottom:0.4rem">&#11088;</div>
-      <div style="font-weight:600;font-size:0.875rem">No ratings yet</div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">Be the first to rate this person</div>
-    </div>`;
-    const breakdown = document.getElementById('ratingBreakdown');
-    if (breakdown) breakdown.innerHTML = '';
+  function selectCountry(country) {
+    selectedCountry = country;
+    document.getElementById('ccFlag').textContent = country.flag;
+    document.getElementById('ccDial').textContent = '+' + country.dial;
+    // Re-validate phone with new country context
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput.value.trim()) validatePhoneField();
   }
 
-  const displayRatings = showAll ? ratings : ratings.slice(0,3);
-  const list = document.getElementById('ratingsList');
-  if (list) list.innerHTML = displayRatings.map(r => {
-    const ratingStars = '&#11088;'.repeat(r.stars)+'&#10025;'.repeat(5-r.stars);
-    const date = new Date(r.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-    const badge = r.rater_verified
-      ? `<span class="verified-rater-badge">&#10003; Verified user</span>`
-      : `<span class="unverified-rater-badge">Unverified user</span>`;
-    return `<div class="rating-item">
-      <div class="rating-item-header"><div class="rating-item-name">${r.rater_name}</div><div class="rating-item-stars">${ratingStars}</div></div>
-      <div class="rating-item-meta">${badge} <span>${date}</span></div>
-      ${r.comment?`<div class="rating-item-comment">"${r.comment}"</div>`:''}
-    </div>`;
-  }).join('');
+  function openCcDropdown() {
+    document.getElementById('ccDropdown').classList.add('open');
+    document.getElementById('ccTrigger').classList.add('open');
+    const search = document.getElementById('ccSearch');
+    search.value = '';
+    renderCcList('');
+    setTimeout(() => search.focus(), 0);
+  }
+  function closeCcDropdown() {
+    document.getElementById('ccDropdown').classList.remove('open');
+    document.getElementById('ccTrigger').classList.remove('open');
+  }
 
-  const showMoreWrap = document.getElementById('showMoreWrap');
-  if (showMoreWrap) showMoreWrap.innerHTML = total>3&&!showAll
-    ? `<button type="button" class="show-more-btn" onclick="loadRatings(true)">Show all ${total} ratings &#8595;</button>`
-    : '';
-}
-window.loadRatings = loadRatings;
+  function getFullPhoneNumber() {
+    const num = document.getElementById('phone').value.trim().replace(/[\s\-()]/g, '');
+    if (!selectedCountry || !num) return '';
+    return '+' + selectedCountry.dial + num;
+  }
 
-window.submitRating = async () => {
-  const name = document.getElementById('raterName').value.trim();
-  const comment = document.getElementById('raterComment').value.trim();
-  const btn = document.getElementById('submitRatingBtn');
-  if (!name) { showToast('Please enter your name.'); return; }
-  if (selectedStars===0) { showToast('Please select a star rating.'); return; }
-  if (selectedStars<=2 && !comment) { showToast('A comment is required for 1 or 2 star ratings.'); document.getElementById('raterComment').focus(); return; }
-  btn.textContent='Submitting...'; btn.disabled=true;
-  const { error } = await supabase.from('ratings').insert({
-    provider_id: providerId,
-    rater_name: name,
-    rater_verified: currentUser?.verification_status==='verified',
-    rater_user_id: currentUser?.id||null,
-    stars: selectedStars,
-    comment: comment||null
+  // ── ID document type config ──
+  const DOC_TYPE_CONFIG = {
+    sa_id: {
+      label: 'SA ID Number',
+      uploadLabel: 'SA ID',
+      placeholder: '9001015009087',
+      hint: 'Exactly 13 digits, numbers only',
+      maxlength: 13,
+      inputmode: 'numeric',
+      validate: v => /^\d{13}$/.test(v),
+      invalidMsg: 'SA ID number must be exactly 13 digits, numbers only.'
+    },
+    passport: {
+      label: 'Passport Number',
+      uploadLabel: 'Passport',
+      placeholder: 'e.g. A12345678',
+      hint: 'Letters and numbers, 6–12 characters',
+      maxlength: 12,
+      inputmode: 'text',
+      validate: v => /^[A-Za-z0-9]{6,12}$/.test(v),
+      invalidMsg: 'Please enter a valid passport number (6–12 letters/numbers).'
+    },
+    drivers: {
+      label: "Driver's Licence Number",
+      uploadLabel: "Driver's Licence",
+      placeholder: 'e.g. 9001015009087',
+      hint: 'Letters and numbers, 6–13 characters',
+      maxlength: 13,
+      inputmode: 'text',
+      validate: v => /^[A-Za-z0-9]{6,13}$/.test(v),
+      invalidMsg: "Please enter a valid driver's licence number (6–13 letters/numbers)."
+    }
+  };
+
+  function applyDocTypeConfig(type) {
+    const cfg = DOC_TYPE_CONFIG[type];
+    if (!cfg) return;
+    document.getElementById('idNumberLabel').innerHTML = cfg.label + ' <span class="req">*</span>';
+    document.getElementById('idNumber').placeholder = cfg.placeholder;
+    document.getElementById('idNumber').setAttribute('maxlength', cfg.maxlength);
+    document.getElementById('idNumber').setAttribute('inputmode', cfg.inputmode);
+    document.getElementById('idNumberHint').textContent = cfg.hint;
+    document.getElementById('step3DocLabel').textContent = cfg.uploadLabel;
+    document.getElementById('idUploadLabel').textContent = 'Upload your ' + cfg.uploadLabel;
+    // Re-validate whatever is currently typed against the new type
+    const current = document.getElementById('idNumber').value;
+    scheduleIdCheck(current, { skipDebounceMessage:false });
+  }
+
+  // ── Direct fetch upload — bypasses Supabase JS client token issue ──
+  async function uploadFileDirect(bucket, path, file, token) {
+    const fd = new FormData();
+    fd.append('', file, file.name);
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY },
+      body: fd
+    });
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error || e.message || 'Upload failed');
+    }
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
+  }
+
+  // ── Helpers ──
+  function fieldError(id, msg, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (msg) el.textContent = msg;
+    el.classList.toggle('show', show);
+  }
+  function markInput(id, state) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('invalid','valid');
+    if (state) el.classList.add(state);
+  }
+  function isValidPhone(v) { return /^\d{6,12}$/.test(v.trim().replace(/[\s\-()]/g, '')); }
+  function validatePhoneField() {
+    const raw = document.getElementById('phone').value.trim();
+    if (!raw) { markInput('phone',''); fieldError('phoneErr','',false); return false; }
+    const ok = isValidPhone(raw) && !!selectedCountry;
+    markInput('phone', ok?'valid':'invalid');
+    fieldError('phoneErr','Please enter a valid phone number (6–12 digits, no leading 0).',!ok);
+    return ok;
+  }
+  function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+
+  function currentDocType() { return document.getElementById('docType').value; }
+
+  function isValidIdForType(v) {
+    const cfg = DOC_TYPE_CONFIG[currentDocType()];
+    return cfg ? cfg.validate(v.trim()) : v.trim().length >= 6;
+  }
+
+  function showAlert(msg, type='error') {
+    const el = document.getElementById('alertBox');
+    el.className = 'alert ' + type;
+    el.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${msg}`;
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  function clearAlert() {
+    const el = document.getElementById('alertBox');
+    el.className = 'alert';
+    el.style.display = 'none';
+  }
+
+  function updateStepper(n) {
+    document.querySelectorAll('.stepper-item').forEach((item, idx) => {
+      const s = idx + 1;
+      item.classList.remove('active','done');
+      if (s < n) item.classList.add('done');
+      else if (s === n) item.classList.add('active');
+    });
+  }
+
+  function goToStep(n) {
+    clearAlert();
+    if (n > currentStep) {
+      if (currentStep === 1 && !validateStep1()) return;
+      if (currentStep === 2 && !validateStep2()) return;
+      if (currentStep === 3 && !validateStep3()) return;
+    }
+    document.getElementById('step' + currentStep).style.display = 'none';
+    currentStep = n;
+    document.getElementById('step' + n).style.display = 'block';
+    updateStepper(n);
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function validateStep1() {
+    let ok = true;
+    const fn = document.getElementById('firstName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    const ph = document.getElementById('phone').value.trim();
+    const idv = document.getElementById('idNumber').value.trim();
+    const cfg = DOC_TYPE_CONFIG[currentDocType()];
+
+    if (!fn) { markInput('firstName','invalid'); fieldError('firstNameErr','Please enter your first name.',true); ok=false; }
+    else     { markInput('firstName','valid');   fieldError('firstNameErr','',false); }
+    if (!ln) { markInput('lastName','invalid'); fieldError('lastNameErr','Please enter your last name.',true); ok=false; }
+    else     { markInput('lastName','valid');   fieldError('lastNameErr','',false); }
+    if (!ph || !selectedCountry || !isValidPhone(ph)) { markInput('phone','invalid'); fieldError('phoneErr','Please select your country and enter a valid phone number.',true); ok=false; }
+    else                          { markInput('phone','valid');   fieldError('phoneErr','',false); }
+
+    if (!idv) {
+      markInput('idNumber','invalid');
+      fieldError('idNumberErr', 'Please enter your ' + cfg.label.toLowerCase() + '.', true);
+      ok=false;
+    } else if (!isValidIdForType(idv)) {
+      markInput('idNumber','invalid');
+      fieldError('idNumberErr', cfg.invalidMsg, true);
+      ok=false;
+    } else if (document.getElementById('idNumber').classList.contains('invalid')) {
+      // duplicate-check flagged it invalid (already registered)
+      ok=false;
+    }
+    if (!ok) showAlert('Please fix the highlighted fields before continuing.');
+    return ok;
+  }
+
+  function validateStep2() {
+    let ok = true;
+    if (!document.getElementById('serviceCategory').value)    { fieldError('catErr','Please select a service category.',true);  ok=false; } else fieldError('catErr','',false);
+    if (!document.getElementById('serviceDesc').value.trim()) { fieldError('descErr','Please describe your services.',true);    ok=false; } else fieldError('descErr','',false);
+    if (!document.getElementById('location').value.trim())    { fieldError('locErr','Please enter your operating area.',true);  ok=false; } else fieldError('locErr','',false);
+    if (!ok) showAlert('Please fill in all required fields.');
+    return ok;
+  }
+
+  function validateStep3() {
+    let ok = true;
+    if (!selfieFileObj) { fieldError('selfieErr','Please upload a selfie photo.',true);  ok=false; } else fieldError('selfieErr','',false);
+    if (!idDocFileObj)  { fieldError('idDocErr','Please upload your ID document.',true); ok=false; } else fieldError('idDocErr','',false);
+    if (!ok) showAlert('Please upload both your selfie and ID document.');
+    return ok;
+  }
+
+  function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.innerHTML = show
+      ? `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+      : `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  function scheduleIdCheck(val) {
+    clearTimeout(idCheckTimer);
+    document.getElementById('idChecking').style.display = 'none';
+
+    const cfg = DOC_TYPE_CONFIG[currentDocType()];
+    const trimmed = val.trim();
+
+    // Empty: neutral state, no error yet (shown on submit/blur instead)
+    if (!trimmed) {
+      markInput('idNumber','');
+      fieldError('idNumberErr','',false);
+      return;
+    }
+
+    // Real-time format validation — fires instantly, no debounce needed for this part
+    if (!cfg.validate(trimmed)) {
+      markInput('idNumber','invalid');
+      fieldError('idNumberErr', cfg.invalidMsg, true);
+      return; // don't bother checking duplicates until format is valid
+    }
+
+    // Format is valid — clear format error, then debounce the duplicate check
+    fieldError('idNumberErr','',false);
+    markInput('idNumber','');
+
+    idCheckTimer = setTimeout(async () => {
+      document.getElementById('idChecking').style.display = 'flex';
+      try {
+        const { data } = await sb.from('profiles').select('id').eq('id_number', trimmed).maybeSingle();
+        document.getElementById('idChecking').style.display = 'none';
+        if (data) {
+          markInput('idNumber','invalid');
+          fieldError('idNumberErr','This ID number is already registered. Please sign in instead.',true);
+        } else {
+          markInput('idNumber','valid');
+          fieldError('idNumberErr','',false);
+        }
+      } catch(e) {
+        document.getElementById('idChecking').style.display = 'none';
+      }
+    }, 700);
+  }
+
+  async function submitApplication() {
+    clearAlert();
+    let ok = true;
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirmPassword').value;
+    const terms    = document.getElementById('termsCheck').checked;
+
+    if (!isValidEmail(email)) { markInput('email','invalid'); fieldError('emailErr','Please enter a valid email address.',true); ok=false; }
+    else { markInput('email','valid'); fieldError('emailErr','',false); }
+    if (!password || password.length < 8) { markInput('password','invalid'); fieldError('pwErr','Password must be at least 8 characters.',true); ok=false; }
+    else { markInput('password','valid'); fieldError('pwErr','',false); }
+    if (password !== confirm) { markInput('confirmPassword','invalid'); fieldError('confirmErr','Passwords do not match.',true); ok=false; }
+    else if (confirm) { markInput('confirmPassword','valid'); fieldError('confirmErr','',false); }
+    if (!terms) { fieldError('termsErr','You must agree to the Terms of Use to continue.',true); ok=false; }
+    else fieldError('termsErr','',false);
+    if (!ok) { showAlert('Please fix the highlighted fields before submitting.'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting...`;
+
+    try {
+      // 1. Sign up
+      const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
+      if (authError) {
+        if (authError.message.toLowerCase().includes('already registered') || authError.message.toLowerCase().includes('already exists')) {
+          markInput('email','invalid');
+          fieldError('emailErr','This email is already registered.',true);
+          showAlert('This email is already registered. <a href="/login.html" style="color:#991b1b;font-weight:700;text-decoration:underline;">Sign in here →</a>');
+          throw new Error('__handled__');
+        }
+        throw new Error(authError.message);
+      }
+      const userId = authData?.user?.id;
+      if (!userId) throw new Error('Could not create account. Please try again.');
+
+      // 2. Sign in to get active session token
+      const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password });
+      if (signInErr) throw new Error('Sign in failed: ' + signInErr.message);
+      const token = signInData.session.access_token;
+
+      // 3. Upload selfie via direct fetch (bypasses JS client RLS token issue)
+      const selfieExt  = selfieFileObj.name.split('.').pop().toLowerCase();
+      const selfiePath = `${userId}_${Date.now()}_selfie.${selfieExt}`;
+      const selfieUrl  = await uploadFileDirect('selfies', selfiePath, selfieFileObj, token);
+
+      // 4. Upload ID doc via direct fetch
+      const idExt  = idDocFileObj.name.split('.').pop().toLowerCase();
+      const idPath = `${userId}_${Date.now()}_id.${idExt}`;
+      const idUrl  = await uploadFileDirect('id-documents', idPath, idDocFileObj, token);
+
+      // 5. Save profile
+      const fullName = document.getElementById('firstName').value.trim() + ' ' + document.getElementById('lastName').value.trim();
+      const { error: profileErr } = await sb.from('profiles').upsert({
+        id: userId,
+        name: fullName,
+        phone: getFullPhoneNumber(),
+        id_number: document.getElementById('idNumber').value.trim(),
+        doc_type: document.getElementById('docType').value,
+        service_category: document.getElementById('serviceCategory').value,
+        selfie_url: selfieUrl,
+        id_document_url: idUrl,
+        verification_status: 'pending',
+        role: 'provider'
+      }, { onConflict:'id' });
+      if (profileErr) throw new Error('Profile save failed: ' + profileErr.message);
+
+      // 6. Success screen
+      document.getElementById('stepper').style.display = 'none';
+      document.getElementById('pageHeader').style.display = 'none';
+      document.getElementById('formCard').innerHTML = `
+        <div style="text-align:center;padding:3rem 1rem;">
+          <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#15803d);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;color:white;font-size:2.5rem;box-shadow:0 0 0 12px rgba(22,163,74,0.12);">✓</div>
+          <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:0.75rem;color:#0f172a;">Application Submitted!</h2>
+          <p style="color:#64748b;font-size:1rem;margin-bottom:0.25rem;">Thank you, <strong style="color:#0f172a;">${fullName}</strong>.</p>
+          <p style="color:#64748b;font-size:0.95rem;margin-bottom:2rem;">Your application is with our team. We'll review your documents within <strong>48 hours</strong>.</p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:1.5rem;margin-bottom:2rem;text-align:left;">
+            <p style="font-size:0.85rem;font-weight:700;color:#166534;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>What happens next
+            </p>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:0.65rem;">
+              ${[
+                'A confirmation email has been sent to <strong>' + email + '</strong>',
+                'Our team will manually review your selfie and ID document',
+                "Once approved you'll receive your unique TN- verification code",
+                'Share your badge on WhatsApp, invoices, Facebook and more'
+              ].map((t,i) => `
+              <li style="display:flex;gap:0.75rem;align-items:flex-start;font-size:0.875rem;color:#374151;">
+                <span style="width:22px;height:22px;border-radius:50%;background:#16a34a;color:white;font-size:0.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</span>${t}
+              </li>`).join('')}
+            </ul>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin-bottom:2rem;font-size:0.85rem;color:#92400e;display:flex;gap:0.75rem;align-items:flex-start;text-align:left;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>While you wait, you can sign in to track your application status and upload additional documents if needed.</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+            <a href="/" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.9rem 2.5rem;background:linear-gradient(135deg,#1a4fa8,#0d9488);color:white;border-radius:10px;font-weight:700;font-size:1rem;text-decoration:none;width:100%;max-width:340px;justify-content:center;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Go to Home &amp; Sign In
+            </a>
+            <p style="font-size:0.82rem;color:#94a3b8;">Redirecting to home in <strong id="countdownNum">10</strong> seconds...</p>
+          </div>
+        </div>`;
+
+      let secs = 10;
+      const ticker = setInterval(() => {
+        secs--;
+        const el = document.getElementById('countdownNum');
+        if (el) el.textContent = secs;
+        if (secs <= 0) { clearInterval(ticker); window.location.href = '/'; }
+      }, 1000);
+
+    } catch(err) {
+      if (err.message !== '__handled__') {
+        console.error('Submit error:', err);
+        showAlert(err.message || 'Something went wrong. Please try again.');
+      }
+      const btn = document.getElementById('submitBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> Submit Application`;
+      }
+    }
+  }
+
+  // ── Wire up all events on DOM ready ──
+  document.addEventListener('DOMContentLoaded', function() {
+    // Default country: South Africa
+    selectCountry(COUNTRIES.find(c => c.iso2 === 'ZA'));
+
+    document.getElementById('ccTrigger').addEventListener('click', function(e) {
+      e.stopPropagation();
+      const dd = document.getElementById('ccDropdown');
+      if (dd.classList.contains('open')) closeCcDropdown();
+      else openCcDropdown();
+    });
+    document.getElementById('ccSearch').addEventListener('input', function() {
+      renderCcList(this.value);
+    });
+    document.getElementById('ccSearch').addEventListener('click', function(e) { e.stopPropagation(); });
+    document.addEventListener('click', function(e) {
+      if (!document.getElementById('ccPicker').contains(e.target)) closeCcDropdown();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeCcDropdown();
+    });
+
+    // ID Document Type buttons (Step 1) — drive ID number validation + Step 3 labels
+    document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('docType').value = this.dataset.val;
+        applyDocTypeConfig(this.dataset.val);
+      });
+    });
+    // Initialize labels/placeholder for the default selection (sa_id)
+    applyDocTypeConfig('sa_id');
+
+    document.getElementById('selfieFile').addEventListener('change', function() {
+      const file = this.files[0]; if (!file) return;
+      if (file.size > 5*1024*1024) { fieldError('selfieErr','File too large. Max 5MB.',true); return; }
+      selfieFileObj = file;
+      document.getElementById('selfieArea').classList.add('has-file');
+      document.getElementById('selfieName').textContent = '✓ ' + file.name;
+      fieldError('selfieErr','',false);
+    });
+    document.getElementById('idDocFile').addEventListener('change', function() {
+      const file = this.files[0]; if (!file) return;
+      if (file.size > 10*1024*1024) { fieldError('idDocErr','File too large. Max 10MB.',true); return; }
+      idDocFileObj = file;
+      document.getElementById('idDocArea').classList.add('has-file');
+      document.getElementById('idDocName').textContent = '✓ ' + file.name;
+      fieldError('idDocErr','',false);
+    });
+
+    document.getElementById('firstName').addEventListener('blur', function() {
+      const ok = this.value.trim().length > 0;
+      markInput('firstName', ok?'valid':'invalid');
+      fieldError('firstNameErr','Please enter your first name.',!ok);
+    });
+    document.getElementById('lastName').addEventListener('blur', function() {
+      const ok = this.value.trim().length > 0;
+      markInput('lastName', ok?'valid':'invalid');
+      fieldError('lastNameErr','Please enter your last name.',!ok);
+    });
+    document.getElementById('phone').addEventListener('input', function() {
+      // Strip a leading 0 automatically since the country code replaces it
+      if (this.value.startsWith('0')) this.value = this.value.replace(/^0+/, '');
+      validatePhoneField();
+    });
+
+    // Real-time ID number validation, including instant rejection of letters/symbols for SA ID
+    document.getElementById('idNumber').addEventListener('input', function() {
+      const type = currentDocType();
+      if (type === 'sa_id') {
+        // Strip anything that isn't a digit as the user types — instant feedback
+        const cleaned = this.value.replace(/[^\d]/g, '').slice(0, 13);
+        if (cleaned !== this.value) this.value = cleaned;
+      }
+      scheduleIdCheck(this.value);
+    });
+
+    document.getElementById('email').addEventListener('input', function() {
+      if (!this.value) { markInput('email',''); fieldError('emailErr','',false); return; }
+      const ok = isValidEmail(this.value);
+      markInput('email', ok?'valid':'invalid');
+      fieldError('emailErr','Please enter a valid email address.',!ok);
+    });
+    document.getElementById('password').addEventListener('input', function() {
+      const ok = this.value.length >= 8;
+      markInput('password', this.value?(ok?'valid':'invalid'):'');
+      fieldError('pwErr','Password must be at least 8 characters.',!ok&&!!this.value);
+      const cv = document.getElementById('confirmPassword').value;
+      if (cv) { markInput('confirmPassword',cv===this.value?'valid':'invalid'); fieldError('confirmErr','Passwords do not match.',cv!==this.value); }
+    });
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      const pw = document.getElementById('password').value;
+      const ok = this.value === pw && this.value.length > 0;
+      markInput('confirmPassword', this.value?(ok?'valid':'invalid'):'');
+      fieldError('confirmErr','Passwords do not match.',!ok&&!!this.value);
+    });
+
+    document.getElementById('pwToggle1').addEventListener('click', function() { togglePw('password',this); });
+    document.getElementById('pwToggle2').addEventListener('click', function() { togglePw('confirmPassword',this); });
+    document.getElementById('step1Btn').addEventListener('click',  function() { goToStep(2); });
+    document.getElementById('step2Back').addEventListener('click', function() { goToStep(1); });
+    document.getElementById('step2Btn').addEventListener('click',  function() { goToStep(3); });
+    document.getElementById('step3Back').addEventListener('click', function() { goToStep(2); });
+    document.getElementById('step3Btn').addEventListener('click',  function() { goToStep(4); });
+    document.getElementById('step4Back').addEventListener('click', function() { goToStep(3); });
+    document.getElementById('submitBtn').addEventListener('click', submitApplication);
   });
-  if (error) { showToast('Error: '+error.message); btn.textContent='Submit rating'; btn.disabled=false; return; }
-  document.getElementById('submitRatingBtn').style.display='none';
-  document.getElementById('ratingSuccess').classList.add('show');
-  document.getElementById('starPicker').style.pointerEvents='none';
-  await loadRatings();
-};
-
-function renderStars(score) {
-  const full=Math.floor(score), half=score-full>=0.5?1:0, empty=5-full-half;
-  return '&#11088;'.repeat(full)+(half?'&#10027;':'')+'&#10025;'.repeat(empty);
-}
-function getTrustBadge(score, total) {
-  if (total===0) return {label:'No ratings',cls:'tsb-none'};
-  if (score>=4.5) return {label:'&#129351; Excellent',cls:'tsb-excellent'};
-  if (score>=3.5) return {label:'&#128077; Good',cls:'tsb-good'};
-  if (score>=2.5) return {label:'&#128522; Average',cls:'tsb-average'};
-  return {label:'&#9888; Poor',cls:'tsb-poor'};
-}
-window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); };
 </script>
 </body>
 </html>
