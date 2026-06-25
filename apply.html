@@ -205,14 +205,10 @@
       <span class="step-label">Personal Info</span>
     </div>
     <div class="stepper-item" data-step="2">
-      <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
-      <span class="step-label">Service Details</span>
-    </div>
-    <div class="stepper-item" data-step="3">
       <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
       <span class="step-label">Upload Documents</span>
     </div>
-    <div class="stepper-item" data-step="4">
+    <div class="stepper-item" data-step="3">
       <div class="step-circle"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <span class="step-label">Create Account</span>
     </div>
@@ -301,61 +297,8 @@
       </div>
     </div>
 
-    <!-- STEP 2 -->
+    <!-- STEP 2 (was Step 3) -->
     <div id="step2" style="display:none;">
-      <div class="card-title">Service Details</div>
-      <div class="card-subtitle">Tell us about the type of service or work you offer</div>
-      <div class="fields">
-        <div class="field">
-          <label>Service Category <span class="req">*</span></label>
-          <div class="input-wrap">
-            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            <select id="serviceCategory">
-              <option value="" disabled selected>Select your service type</option>
-              <option>Plumber</option><option>Electrician</option><option>Painter</option>
-              <option>Cleaner</option><option>Carpenter</option><option>Gardener</option>
-              <option value="Builder">Builder / Contractor</option><option>Tiler</option>
-              <option>Welder</option><option value="AC Technician">AC Technician</option>
-              <option value="Domestic Worker">Domestic Worker</option>
-              <option value="Security Guard">Security Guard</option>
-              <option value="Driver">Driver / Chauffeur</option>
-              <option value="Tutor">Tutor / Teacher</option>
-              <option value="IT Support">IT Support</option>
-              <option value="Online Seller">Online Seller</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <span class="field-error" id="catErr">Please select a service category.</span>
-        </div>
-        <div class="field">
-          <label>Describe Your Services <span class="req">*</span></label>
-          <div class="input-wrap" style="align-items:flex-start;">
-            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="top:14px;position:absolute;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <textarea id="serviceDesc" rows="4"
-              style="width:100%;padding:0.75rem 1rem 0.75rem 2.75rem;border:1.5px solid var(--gray-200);border-radius:10px;font-family:inherit;font-size:0.95rem;color:var(--gray-900);resize:vertical;outline:none;transition:border-color 0.15s,box-shadow 0.15s;"
-              placeholder="e.g. Licensed electrician with 10 years experience..."
-              onfocus="this.style.borderColor='var(--blue)';this.style.boxShadow='0 0 0 3px rgba(26,79,168,0.1)'"
-              onblur="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'"></textarea>
-          </div>
-          <span class="field-error" id="descErr">Please describe your services.</span>
-        </div>
-        <div class="field">
-          <label>Area / City You Operate In <span class="req">*</span></label>
-          <div class="input-wrap">
-            <svg class="ico" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <input type="text" id="location" placeholder="e.g. Johannesburg, Sandton, Soweto" />
-          </div>
-          <span class="field-error" id="locErr">Please enter your operating area.</span>
-        </div>
-      </div>
-      <div class="form-nav">
-        <button class="btn-back" id="step2Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
-        <button class="btn-next" id="step2Btn">Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-      </div>
-    </div>
-
-    <!-- STEP 3 -->
-    <div id="step3" style="display:none;">
       <div class="card-title">Upload Documents</div>
       <div class="card-subtitle">Upload your selfie and your <span id="step3DocLabel">SA ID</span>. All files stored securely.</div>
       <div class="fields">
@@ -393,13 +336,13 @@
         </div>
       </div>
       <div class="form-nav">
-        <button class="btn-back" id="step3Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
-        <button class="btn-next" id="step3Btn">Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="btn-back" id="step2Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+        <button class="btn-next" id="step2Btn">Continue <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>
     </div>
 
-    <!-- STEP 4 -->
-    <div id="step4" style="display:none;">
+    <!-- STEP 3 (was Step 4) -->
+    <div id="step3" style="display:none;">
       <div class="card-title">Create Your Account</div>
       <div class="card-subtitle">Set up your login credentials to manage your verification profile</div>
       <div class="fields">
@@ -444,7 +387,7 @@
         </div>
       </div>
       <div class="form-nav">
-        <button class="btn-back" id="step4Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+        <button class="btn-back" id="step3Back"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
         <button class="btn-next" id="submitBtn">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
           Submit Application
@@ -706,7 +649,6 @@
     if (n > currentStep) {
       if (currentStep === 1 && !validateStep1()) return;
       if (currentStep === 2 && !validateStep2()) return;
-      if (currentStep === 3 && !validateStep3()) return;
     }
     document.getElementById('step' + currentStep).style.display = 'none';
     currentStep = n;
@@ -747,15 +689,6 @@
   }
 
   function validateStep2() {
-    let ok = true;
-    if (!document.getElementById('serviceCategory').value)    { fieldError('catErr','Please select a service category.',true);  ok=false; } else fieldError('catErr','',false);
-    if (!document.getElementById('serviceDesc').value.trim()) { fieldError('descErr','Please describe your services.',true);    ok=false; } else fieldError('descErr','',false);
-    if (!document.getElementById('location').value.trim())    { fieldError('locErr','Please enter your operating area.',true);  ok=false; } else fieldError('locErr','',false);
-    if (!ok) showAlert('Please fill in all required fields.');
-    return ok;
-  }
-
-  function validateStep3() {
     let ok = true;
     if (!selfieFileObj) { fieldError('selfieErr','Please upload a selfie photo.',true);  ok=false; } else fieldError('selfieErr','',false);
     if (!idDocFileObj)  { fieldError('idDocErr','Please upload your ID document.',true); ok=false; } else fieldError('idDocErr','',false);
@@ -875,7 +808,6 @@
         phone: getFullPhoneNumber(),
         id_number: document.getElementById('idNumber').value.trim(),
         doc_type: document.getElementById('docType').value,
-        service_category: document.getElementById('serviceCategory').value,
         selfie_url: selfieUrl,
         id_document_url: idUrl,
         verification_status: 'pending',
@@ -1046,8 +978,6 @@
     document.getElementById('step2Back').addEventListener('click', function() { goToStep(1); });
     document.getElementById('step2Btn').addEventListener('click',  function() { goToStep(3); });
     document.getElementById('step3Back').addEventListener('click', function() { goToStep(2); });
-    document.getElementById('step3Btn').addEventListener('click',  function() { goToStep(4); });
-    document.getElementById('step4Back').addEventListener('click', function() { goToStep(3); });
     document.getElementById('submitBtn').addEventListener('click', submitApplication);
   });
 </script>
