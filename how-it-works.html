@@ -182,6 +182,70 @@
     }
     .scenario-card svg { color: var(--teal); flex-shrink: 0; margin-top: 2px; }
 
+    /* ── Stats section ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem;
+      margin-top: 1.5rem;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.3rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .stat-card:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .stat-card p {
+      font-size: 0.9rem;
+      color: var(--gray-700);
+      margin: 0 0 0.5rem;
+    }
+    .stat-source {
+      font-size: 0.74rem;
+      color: var(--gray-400);
+      font-weight: 500;
+    }
+    .stats-quote {
+      background: var(--gray-900);
+      color: var(--white);
+      border-radius: 16px;
+      padding: 1.5rem 1.75rem;
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .stats-quote svg { color: #fbbf24; flex-shrink: 0; margin-top: 2px; }
+    .stats-quote p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0;
+      color: #e2e8f0;
+    }
+    .stats-quote .quote-source {
+      display: block;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 0.5rem;
+      font-style: normal;
+    }
+    .stats-footnote {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+      margin-top: 1.25rem;
+      line-height: 1.6;
+    }
+
     /* ── Trust score explainer card ── */
     .trust-card {
       background: linear-gradient(135deg, var(--blue-light) 0%, #f0f9ff 100%);
@@ -414,6 +478,8 @@
       .nav-logo img { height: 56px; }
       .page { padding: 2.5rem 1.25rem 1.5rem; }
       .scenario-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .stats-quote { flex-direction: column; }
       .trust-formula { flex-direction: column; }
       .trust-formula-op { transform: rotate(90deg); }
       .closing { padding: 2.25rem 1.5rem; }
@@ -475,6 +541,48 @@
           Letting a tradesperson or domestic worker into your home
         </div>
       </div>
+    </div>
+
+    <!-- ── Section 1b: The stats ── -->
+    <div class="section">
+      <div class="section-eyebrow">The numbers</div>
+      <h2>This isn't a hypothetical risk — it's happening every day</h2>
+      <p>We're not going to scare you with made-up numbers. Here's what's actually been reported by South African police, security researchers, and journalists.</p>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-number">1 in 6</span>
+          <p>People who've used Facebook Marketplace say they've personally been defrauded on the platform.</p>
+          <span class="stat-source">Global survey, cited by ESET Southern Africa</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">27 / day</span>
+          <p>Kidnappings reported in Gauteng alone in early 2025 — more than half of all kidnapping cases in South Africa.</p>
+          <span class="stat-source">SAPS crime stats, via EWN &amp; ISS Africa</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">264%</span>
+          <p>Rise in kidnapping cases in South Africa over the last decade, mostly linked to armed robbery.</p>
+          <span class="stat-source">ISS Africa, citing SAPS Crime Registrar</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">R100m+</span>
+          <p>Stolen from victims across several countries by a single online dating scam syndicate arrested in Cape Town.</p>
+          <span class="stat-source">ESET Southern Africa</span>
+        </div>
+      </div>
+
+      <div class="stats-quote">
+        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm9-.005C12.553 16.222 12 14.995 12 13.006c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 0 1-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/></svg>
+        <p>
+          "We are dealing with a syndicate that's kidnapping three or four people per night." A senior security director described findings from a six-month study into kidnapping syndicates specifically operating through South African dating apps.
+          <span class="quote-source">Vision Tactical, via TechCentral / Reuters</span>
+        </p>
+      </div>
+
+      <p style="margin-top:1.25rem">Police have also confirmed that syndicates <strong>specifically use dating apps to lure victims</strong>, and that the typical pattern is the same one this site is built to interrupt: a stranger online, a meeting arranged in person, and no way to confirm who's actually showing up.</p>
+
+      <p class="stats-footnote">Sources: ESET Southern Africa · EWN (26 May 2026) · Institute for Security Studies Africa · TechCentral / Reuters. Figures reflect publicly reported South African and global data current at the time of writing and may change as new statistics are released.</p>
     </div>
 
     <!-- ── Section 2: Trust scores ── -->
