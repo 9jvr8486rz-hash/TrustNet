@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Why Verification Matters — Online Market Security</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles/main.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:       #1a4fa8;
+      --blue-dark:  #143d84;
+      --blue-light: #e8f0fd;
+      --green:      #16a34a;
+      --green-bg:   #f0fdf4;
+      --teal:       #0d9488;
+      --amber:      #b45309;
+      --amber-bg:   #fffbeb;
+      --amber-border: #fde68a;
+      --gray-50:    #f8fafc;
+      --gray-100:   #f1f5f9;
+      --gray-200:   #e2e8f0;
+      --gray-400:   #94a3b8;
+      --gray-500:   #64748b;
+      --gray-700:   #334155;
+      --gray-900:   #0f172a;
+      --dark-navy:  #0f172a;
+      --white:      #ffffff;
+      --radius:     14px;
+      --shadow:     0 4px 24px rgba(0,0,0,0.06);
+      --shadow-lg:  0 8px 40px rgba(0,0,0,0.10);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--gray-900);
+      background: var(--white);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Nav (matches site) ── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      height: 100px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .nav-logo img { height: 88px; display: block; }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-left: auto;
+    }
+    .btn-signin {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--gray-700);
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    .btn-signin:hover { background: var(--gray-100); }
+    .btn-get-verified {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      color: var(--white);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn-get-verified:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* ── Page shell ── */
+    .page {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem 2rem;
+    }
+
+    /* ── Intro ── */
+    .intro-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      background: var(--blue-light);
+      color: var(--blue);
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .page h1 {
+      font-size: clamp(2rem, 4.5vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--gray-900);
+      margin-bottom: 1.1rem;
+    }
+    .page .lede {
+      font-size: 1.15rem;
+      color: var(--gray-700);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    .page .lede-sub {
+      font-size: 1rem;
+      color: var(--gray-500);
+      margin-bottom: 3rem;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 3.25rem;
+    }
+    .section-eyebrow {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.6rem;
+    }
+    .section h2 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+    .section p {
+      font-size: 1.02rem;
+      color: var(--gray-700);
+      margin-bottom: 1rem;
+    }
+    .section p:last-child { margin-bottom: 0; }
+    .section strong { color: var(--gray-900); font-weight: 700; }
+
+    /* ── Scenario list (why check) ── */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.9rem;
+      margin-top: 1.5rem;
+    }
+    .scenario-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      font-size: 0.92rem;
+      color: var(--gray-700);
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+    }
+    .scenario-card svg { color: var(--teal); flex-shrink: 0; margin-top: 2px; }
+
+    /* ── Trust score explainer card ── */
+    .trust-card {
+      background: linear-gradient(135deg, var(--blue-light) 0%, #f0f9ff 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 18px;
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+    }
+    .trust-formula {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #bfdbfe;
+    }
+    .trust-formula-item {
+      background: var(--white);
+      border: 1.5px solid var(--blue);
+      border-radius: 12px;
+      padding: 0.75rem 1.1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--blue-dark);
+      min-width: 130px;
+    }
+    .trust-formula-item span {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      margin-top: 0.2rem;
+    }
+    .trust-formula-op {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--blue);
+    }
+    .trust-card-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .trust-card-row:last-child { margin-bottom: 0; }
+    .trust-card-row svg { color: var(--blue); flex-shrink: 0; margin-top: 3px; }
+    .trust-card-row p { font-size: 0.92rem; color: var(--gray-700); margin: 0; }
+
+    /* ── Rating benefits ── */
+    .benefit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .benefit-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .benefit-item:hover { border-color: var(--teal); box-shadow: var(--shadow); }
+    .benefit-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: var(--green-bg);
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .benefit-item h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--gray-900);
+    }
+    .benefit-item p {
+      font-size: 0.92rem;
+      color: var(--gray-500);
+      margin: 0;
+    }
+
+    /* ── Honest limits callout ── */
+    .limits-card {
+      background: var(--amber-bg);
+      border: 1.5px solid var(--amber-border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+    }
+    .limits-card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #92400e;
+      margin-bottom: 0.85rem;
+    }
+    .limits-card p {
+      font-size: 0.95rem;
+      color: #78350f;
+      margin-bottom: 0.85rem;
+    }
+    .limits-card p:last-child { margin-bottom: 0; }
+    .limits-checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin: 1rem 0;
+    }
+    .limits-checklist li {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+      font-size: 0.92rem;
+      color: #78350f;
+    }
+    .limits-checklist svg { flex-shrink: 0; margin-top: 2px; color: #b45309; }
+
+    /* ── Investigations note ── */
+    .records-card {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .records-card .icon-wrap {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: var(--blue-light);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .records-card p { font-size: 0.95rem; color: var(--gray-700); margin: 0; }
+
+    /* ── Closing CTA ── */
+    .closing {
+      text-align: center;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+      border-radius: 20px;
+      padding: 2.75rem 2rem;
+      margin-top: 3.5rem;
+      color: var(--white);
+    }
+    .closing h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.6rem;
+    }
+    .closing p {
+      font-size: 0.98rem;
+      opacity: 0.92;
+      margin-bottom: 1.5rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .closing-btns { display: flex; gap: 0.85rem; justify-content: center; flex-wrap: wrap; }
+    .btn-closing-primary {
+      padding: 0.8rem 1.6rem;
+      background: var(--white);
+      color: var(--blue-dark);
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-closing-primary:hover { transform: translateY(-2px); opacity: 0.95; }
+    .btn-closing-secondary {
+      padding: 0.8rem 1.6rem;
+      background: rgba(255,255,255,0.12);
+      color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.15s;
+    }
+    .btn-closing-secondary:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── Footer ── */
+    .footer {
+      background: var(--dark-navy);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 3rem 2rem 2rem;
+      text-align: center;
+      margin-top: 3.5rem;
+    }
+    .footer-inner { max-width: 800px; margin: 0 auto; }
+    .footer-logo { height: 64px; margin-bottom: 1.75rem; }
+    .footer-legal {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .footer-terms a {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.15s;
+    }
+    .footer-terms a:hover { color: var(--white); }
+    .footer-copy { font-size: 0.78rem; color: #475569; margin-top: 1rem; }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .nav { height: auto; padding: 0.75rem 1rem; }
+      .nav-logo img { height: 56px; }
+      .page { padding: 2.5rem 1.25rem 1.5rem; }
+      .scenario-grid { grid-template-columns: 1fr; }
+      .trust-formula { flex-direction: column; }
+      .trust-formula-op { transform: rotate(90deg); }
+      .closing { padding: 2.25rem 1.5rem; }
+      .closing-btns { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ── -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/logo.png" alt="Online Market Security" />
+      </a>
+      <div class="nav-actions">
+        <a href="/login.html" class="btn-signin">Sign In</a>
+        <a href="/apply.html" class="btn-get-verified">Get Verified</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- ── Intro ── -->
+    <div class="intro-eyebrow">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      How Online Market Security works
+    </div>
+    <h1>Why checking someone first actually matters</h1>
+    <p class="lede">You're about to meet someone you only know from a chat. Maybe you're buying a phone from Facebook Marketplace, going on a first date, or agreeing to pay someone off in instalments.</p>
+    <p class="lede-sub">Here's what we do, why it helps, and — just as importantly — what we can't promise.</p>
+
+    <!-- ── Section 1: Why check ── -->
+    <div class="section">
+      <div class="section-eyebrow">The risk</div>
+      <h2>You're trusting a stranger with very little to go on</h2>
+      <p>A profile photo and a friendly chat don't tell you who someone really is. Most of the time, people are exactly who they say they are. But it only takes one bad experience — a no-show, a scam, or something worse — to turn a simple deal into a serious problem.</p>
+      <p>Checking someone's identity before you meet, pay, or sign anything takes less than a minute. It won't guarantee a good outcome, but it removes one of the biggest unknowns: <strong>are they even who they claim to be?</strong></p>
+      <div class="scenario-grid">
+        <div class="scenario-card">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Meeting a Marketplace or Gumtree buyer for the first time
+        </div>
+        <div class="scenario-card">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Going on a date with someone you matched with online
+        </div>
+        <div class="scenario-card">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Agreeing to pay someone in instalments before they've delivered
+        </div>
+        <div class="scenario-card">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Letting a tradesperson or domestic worker into your home
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 2: Trust scores ── -->
+    <div class="section">
+      <div class="section-eyebrow">How trust is measured</div>
+      <h2>Everything here is built around one number: the Trust Score</h2>
+      <p>A Trust Score is our way of turning "do other people trust this person?" into something you can see at a glance. It isn't a guess — it's built from two real things:</p>
+
+      <div class="trust-card">
+        <div class="trust-formula">
+          <div class="trust-formula-item">
+            ID Verified
+            <span>Documents checked by our team</span>
+          </div>
+          <div class="trust-formula-op">+</div>
+          <div class="trust-formula-item">
+            Ratings
+            <span>From real people they've dealt with</span>
+          </div>
+          <div class="trust-formula-op">=</div>
+          <div class="trust-formula-item" style="background:var(--blue);color:#fff;border-color:var(--blue)">
+            Trust Score
+            <span style="color:#dbeafe">What you see on their profile</span>
+          </div>
+        </div>
+        <div class="trust-card-row">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <p><strong>Verification</strong> confirms someone's ID and selfie were reviewed and matched by our team. It's a one-time check, done before they ever get a badge.</p>
+        </div>
+        <div class="trust-card-row">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 0 0 .95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 0 0-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 0 0-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 0 0-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 0 0 .951-.69z"/></svg>
+          <p><strong>Ratings</strong> come from the people who've actually met or dealt with this person — confirmed in person, after a real interaction, not a random review left online.</p>
+        </div>
+        <div class="trust-card-row">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <p>Ratings from <strong>verified users</strong> count for more than ratings from people who haven't verified themselves — because we know exactly who left them.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Section 3: Why rate ── -->
+    <div class="section">
+      <div class="section-eyebrow">Why your rating matters</div>
+      <h2>Rating someone isn't optional small talk — it protects the next person</h2>
+      <p>When you rate someone after meeting them, you're not just leaving feedback. You're building a record that helps everyone who comes after you make a safer decision.</p>
+
+      <div class="benefit-list">
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <h3>It can stop a repeat problem before it happens</h3>
+            <p>If someone has behaved badly before, an honest rating or a flagged mismatch warns the next person — before they hand over money or open their door.</p>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div>
+            <h3>It rewards people who do right by others</h3>
+            <p>A good rating gives credit where it's due. Reliable sellers, fair buyers, and trustworthy tradespeople build a Trust Score that opens doors — because their track record speaks for them.</p>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <h3>It makes the whole community safer over time</h3>
+            <p>Every rating adds to a shared pool of real experience. The more people rate honestly, the more reliable everyone's Trust Score becomes — for every transaction after yours.</p>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:1.5rem"><strong>So please — after you meet, trade, or hire someone, take 30 seconds to rate them.</strong> Whether the experience was great or went wrong, your honest rating helps build something bigger than your one interaction.</p>
+    </div>
+
+    <!-- ── Section 4: Honest limits ── -->
+    <div class="section">
+      <div class="section-eyebrow">What we can — and can't — promise</div>
+      <h2>Verification confirms documents. It doesn't confirm character.</h2>
+      <p>We want to be completely upfront about what "verified" actually means here, so you know exactly how much weight to give it.</p>
+
+      <div class="limits-card">
+        <div class="limits-card-title">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          What "verified" really means
+        </div>
+        <p>Our team checks that the ID document and the selfie belong to the same real person, and that the document looks genuine. That's it. We do not run background checks, criminal record checks, or confirm anything about someone's character, intentions, or honesty.</p>
+        <p><strong>A verified badge means: this is a real person who exists and matches their documents.</strong> It does not mean they will behave well in your transaction.</p>
+        <ul class="limits-checklist">
+          <li>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Still meet in a safe, public place for the first time if you can
+          </li>
+          <li>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Still use secure payment methods, not upfront bank transfers to strangers
+          </li>
+          <li>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Still trust your own instincts — if something feels wrong, it's okay to walk away
+          </li>
+          <li>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Still tell someone where you're going if you're meeting in person
+          </li>
+        </ul>
+        <p>Think of verification as one good layer of protection — not the only one you need.</p>
+      </div>
+    </div>
+
+    <!-- ── Section 5: Records help investigations ── -->
+    <div class="section">
+      <div class="section-eyebrow">If things go wrong</div>
+      <h2>The records we keep can support a real investigation</h2>
+      <div class="records-card">
+        <div class="icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <p>Every verification, every code that's checked, and every rating or mismatch report is logged with a timestamp. If something does go wrong — a deal turns into fraud, or someone isn't who they claimed to be — these records can help police or investigators establish who was involved and when. We can't prevent every bad outcome, but we make sure there's a trail if one happens.</p>
+      </div>
+    </div>
+
+    <!-- ── Closing ── -->
+    <div class="closing">
+      <h2>Check before you meet. Rate after you do.</h2>
+      <p>Both halves matter. Checking protects you today — rating protects everyone who comes after you.</p>
+      <div class="closing-btns">
+        <a href="/" class="btn-closing-primary">Verify someone now</a>
+        <a href="/apply.html" class="btn-closing-secondary">Get verified yourself</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <img src="/logo.png" alt="Online Market Security" class="footer-logo" />
+      <p class="footer-legal">
+        Online Market Security verification confirms that documents have been reviewed by our team.
+        It does not guarantee behaviour, safety, or service quality.
+        Online Market Security does not accept liability for any loss, fraud, or harm arising from
+        interactions between users. Users are advised to exercise independent caution at all times.
+      </p>
+      <p class="footer-terms">
+        <a href="/terms.html">Terms of Use &amp; Disclaimer →</a>
+      </p>
+      <p class="footer-copy">© 2026 Online Market Security · Republic of South Africa</p>
+    </div>
+  </footer>
+
+</body>
+</html>
