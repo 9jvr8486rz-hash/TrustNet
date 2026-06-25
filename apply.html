@@ -129,8 +129,34 @@
     .upload-area.has-file .upload-default { display:none; }
 
     .doc-type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; }
-    .doc-type-btn { border:1.5px solid var(--gray-200); border-radius:10px; padding:0.75rem 0.5rem; text-align:center; cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--gray-500); background:var(--white); transition:all 0.15s; user-select:none; }
-    .doc-type-btn:hover, .doc-type-btn.selected { border-color:var(--blue); color:var(--blue); background:var(--blue-light); }
+    .doc-type-option { position:relative; }
+    .doc-type-option input[type="radio"] {
+      position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; top:0; left:0;
+    }
+    .doc-type-btn {
+      border:1.5px solid var(--gray-200); border-radius:10px; padding:0.75rem 0.5rem 0.85rem;
+      text-align:center; cursor:pointer; font-size:0.82rem; font-weight:600; color:var(--gray-500);
+      background:var(--white); transition:all 0.15s; user-select:none; position:relative;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .doc-type-option input[type="radio"]:focus-visible ~ .doc-type-btn {
+      outline:2px solid var(--blue); outline-offset:2px;
+    }
+    .doc-type-btn:hover { border-color:var(--blue); background:var(--blue-light); }
+    .doc-type-option input[type="radio"]:checked ~ .doc-type-btn {
+      border-color:var(--blue); color:var(--blue); background:var(--blue-light);
+    }
+    .doc-radio-dot {
+      width:16px; height:16px; border-radius:50%; border:2px solid var(--gray-300);
+      background:var(--white); margin-bottom:0.5rem; position:relative; flex-shrink:0;
+      transition:border-color 0.15s;
+    }
+    .doc-type-option input[type="radio"]:checked ~ .doc-type-btn .doc-radio-dot {
+      border-color:var(--blue);
+    }
+    .doc-type-option input[type="radio"]:checked ~ .doc-type-btn .doc-radio-dot::after {
+      content:''; position:absolute; inset:2px; border-radius:50%; background:var(--blue);
+    }
     .doc-icon { font-size:1.3rem; display:block; margin-bottom:0.3rem; }
 
     .terms-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:1rem 1.25rem; }
@@ -268,12 +294,30 @@
         <!-- ID Document Type selector — moved here from Step 3, drives ID Number validation -->
         <div class="field">
           <label>ID Document Type <span class="req">*</span></label>
-          <div class="doc-type-grid" id="idTypeGrid">
-            <div class="doc-type-btn selected" data-val="sa_id"><span class="doc-icon">🪪</span>SA ID</div>
-            <div class="doc-type-btn" data-val="passport"><span class="doc-icon">📕</span>Passport</div>
-            <div class="doc-type-btn" data-val="drivers"><span class="doc-icon">🚗</span>Driver's Licence</div>
-          </div>
-          <input type="hidden" id="docType" value="sa_id" />
+          <fieldset class="doc-type-grid" id="idTypeGrid" style="border:none;padding:0;">
+            <legend class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;">ID Document Type</legend>
+            <div class="doc-type-option">
+              <input type="radio" name="docType" id="docType_sa_id" value="sa_id" checked />
+              <label for="docType_sa_id" class="doc-type-btn">
+                <span class="doc-radio-dot"></span>
+                <span class="doc-icon">🪪</span>SA ID
+              </label>
+            </div>
+            <div class="doc-type-option">
+              <input type="radio" name="docType" id="docType_passport" value="passport" />
+              <label for="docType_passport" class="doc-type-btn">
+                <span class="doc-radio-dot"></span>
+                <span class="doc-icon">📕</span>Passport
+              </label>
+            </div>
+            <div class="doc-type-option">
+              <input type="radio" name="docType" id="docType_drivers" value="drivers" />
+              <label for="docType_drivers" class="doc-type-btn">
+                <span class="doc-radio-dot"></span>
+                <span class="doc-icon">🚗</span>Driver's Licence
+              </label>
+            </div>
+          </fieldset>
         </div>
 
         <div class="field">
@@ -616,7 +660,10 @@
   }
   function isValidEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
 
-  function currentDocType() { return document.getElementById('docType').value; }
+  function currentDocType() {
+    const checked = document.querySelector('input[name="docType"]:checked');
+    return checked ? checked.value : 'sa_id';
+  }
 
   function isValidIdForType(v) {
     const cfg = DOC_TYPE_CONFIG[currentDocType()];
@@ -807,7 +854,7 @@
         name: fullName,
         phone: getFullPhoneNumber(),
         id_number: document.getElementById('idNumber').value.trim(),
-        doc_type: document.getElementById('docType').value,
+        doc_type: currentDocType(),
         selfie_url: selfieUrl,
         id_document_url: idUrl,
         verification_status: 'pending',
@@ -896,13 +943,10 @@
       if (e.key === 'Escape') closeCcDropdown();
     });
 
-    // ID Document Type buttons (Step 1) — drive ID number validation + Step 3 labels
-    document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('#idTypeGrid .doc-type-btn').forEach(b => b.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('docType').value = this.dataset.val;
-        applyDocTypeConfig(this.dataset.val);
+    // ID Document Type radios (Step 1) — drive ID number validation + Step 2 labels
+    document.querySelectorAll('input[name="docType"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        if (this.checked) applyDocTypeConfig(this.value);
       });
     });
     // Initialize labels/placeholder for the default selection (sa_id)
