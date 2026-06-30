@@ -695,7 +695,7 @@ window.approveProvider = async (id, silent = false) => {
     const omsToken = await generateUniqueOmsCode();
     const { error: tokenError } = await supabase.from('verification_tokens').insert({
       token: omsToken,
-      profile_id: id,
+      provider_id: id,
       status: 'active',
       expires_at: expiry.toISOString()
     });
