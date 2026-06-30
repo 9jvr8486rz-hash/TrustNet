@@ -10,16 +10,9 @@
 <!-- EmailJS — for approval/rejection email notifications -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-  // ── EmailJS config ──────────────────────────────────────────────────
-  // 1. Sign up free at https://emailjs.com (200 emails/month free)
-  // 2. Create an Email Service (connect Gmail or any SMTP)
-  // 3. Create a template using the variables listed below
-  // 4. Replace these three values with your own:
-  const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // e.g. 'service_abc123'
-  const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // e.g. 'template_xyz789'
-  const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // e.g. 'AbCdEfGhIjKlMnOp'
-  // Template variables available: {{to_name}}, {{to_email}}, {{status_label}},
-  //   {{public_id}}, {{expiry_date}}, {{dashboard_url}}, {{support_email}}
+  const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+  const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+  const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
   const EMAILJS_ENABLED = EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY';
   if (EMAILJS_ENABLED) emailjs.init(EMAILJS_PUBLIC_KEY);
 </script>
@@ -45,7 +38,6 @@
 .rating-bar-fill{height:100%;border-radius:999px}
 .log-row{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--bg-soft);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:0.5rem}
 
-/* Risk row highlighting */
 .table-row.risk-high{background:#fff5f5;border-left:3px solid var(--red)}
 .table-row.risk-medium{background:#fffbeb;border-left:3px solid #f59e0b}
 .table-row.risk-low{background:#f0fdf4;border-left:3px solid #16a34a}
@@ -54,10 +46,8 @@
 .risk-row-badge.medium{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
 .risk-row-badge.low{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
 
-/* Risk flags in modal */
 .risk-flag-item{background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.85rem;margin-bottom:0.65rem;border-left:3px solid var(--red)}
 
-/* Bulk action bar */
 .bulk-bar{display:none;align-items:center;gap:0.75rem;padding:0.75rem 1rem;background:var(--blue-pale);border:1.5px solid var(--blue-light);border-radius:var(--radius-sm);margin-bottom:0.75rem;flex-wrap:wrap}
 .bulk-bar.show{display:flex}
 .bulk-bar-label{font-size:0.85rem;font-weight:700;color:var(--blue);flex:1}
@@ -69,7 +59,6 @@
 .bulk-select-all{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:600;color:var(--blue);cursor:pointer;white-space:nowrap}
 .bulk-select-all input{accent-color:var(--blue);cursor:pointer}
 
-/* Email notification badge */
 .email-sent-badge{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 </style>
 </head>
@@ -109,7 +98,6 @@
     </div>
   </div>
 
-  <!-- BULK ACTION BAR — shown when Pending filter is active -->
   <div class="bulk-bar" id="bulkBar">
     <label class="bulk-select-all">
       <input type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this.checked)">
@@ -191,6 +179,21 @@ let riskFlagsMap = {};
 let currentProfileData = null;
 let selectedIds = new Set();
 
+// ── Helper: generate a unique OMS- one-time code ────────────────────
+async function generateUniqueOmsCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let token;
+  let attempts = 0;
+  do {
+    token = 'OMS-' + Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const { data } = await supabase.from('verification_tokens').select('id').eq('token', token).maybeSingle();
+    if (!data) break; // token is unique
+    attempts++;
+    if (attempts > 20) throw new Error('Could not generate a unique OMS code after 20 attempts.');
+  } while (true);
+  return token;
+}
+
 window.switchTab = (tab) => {
   document.querySelectorAll('.pmt').forEach((b,i) => {
     const tabs = ['overview','documents','ratings','activity'];
@@ -205,7 +208,6 @@ window.setFilter = (filter) => {
   selectedIds.clear();
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('filter-'+filter).classList.add('active');
-  // Show bulk bar only for pending filter
   document.getElementById('bulkBar').classList.toggle('show', filter === 'pending');
   document.getElementById('selectAllCheck').checked = false;
   updateBulkLabel();
@@ -244,7 +246,6 @@ window.toggleSelectAll = (checked) => {
       .forEach(p => selectedIds.add(p.id));
   }
   updateBulkLabel();
-  // Re-render to update checkboxes
   renderRows(allProfiles);
 };
 
@@ -267,7 +268,7 @@ window.bulkAction = async (action) => {
   let done = 0;
   for (const id of selectedIds) {
     if (action === 'approve') {
-      await approveProvider(id, true); // silent=true skips individual confirm
+      await approveProvider(id, true);
     } else {
       await rejectProvider(id, true);
     }
@@ -283,11 +284,10 @@ window.bulkAction = async (action) => {
 
 // ── Email notification ──────────────────────────────────────────────
 async function sendApprovalEmail(profile, newStatus) {
-  // Email notifications: add 'email' column to profiles table and configure
-  // EmailJS credentials above to enable. Currently a no-op.
   if (!EMAILJS_ENABLED) return;
   console.log('Email notification: configure EmailJS + add email column to profiles to enable.');
 }
+
 function renderRows(data) {
   const rows = document.getElementById('adminRows');
   let filtered = data;
@@ -609,7 +609,14 @@ async function renderRatings(userId) {
 }
 
 async function renderActivity(userId) {
-  const { data: logs } = await supabase.from('verification_logs').select('*').eq('provider_id', userId).order('viewed_at',{ascending:false}).limit(50);
+  // ── FIX: order by created_at (verified column name in verification_logs) ──
+  const { data: logs } = await supabase
+    .from('verification_logs')
+    .select('*')
+    .eq('provider_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
   const el = document.getElementById('pmActivityContent');
   if (!logs || !logs.length) {
     el.innerHTML = `<div style="text-align:center;padding:2rem;background:var(--bg-soft);border-radius:var(--radius);border:1px solid var(--border)">
@@ -629,8 +636,9 @@ async function renderActivity(userId) {
     </div>
     <div style="font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Verification history</div>
     ${logs.map(l=>{
-      const date = new Date(l.viewed_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-      const time = new Date(l.viewed_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+      const ts = l.created_at || l.viewed_at;
+      const date = new Date(ts).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+      const time = new Date(ts).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
       const badge = l.viewer_verified
         ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified</span>`
         : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified</span>`;
@@ -648,52 +656,82 @@ async function renderActivity(userId) {
   `;
 }
 
-// ── Approve / Reject (silent=true skips confirm dialog for bulk use) ──
+// ── Approve ──────────────────────────────────────────────────────────
+// FIX: now also issues an OMS- one-time code into verification_tokens
 window.approveProvider = async (id, silent = false) => {
   if (!silent) {
-    const ok = window.confirm('Approve this provider? This will generate their TN- badge ID and set a 5-year validity.');
+    const ok = window.confirm('Approve this provider? This will generate their TN- badge ID, set a 5-year validity, and issue their first OMS- verification code.');
     if (!ok) return;
   }
+
   const now = new Date();
   const expiry = new Date(now);
   expiry.setFullYear(expiry.getFullYear() + 5);
+
+  // Generate unique TN- public badge ID
   let publicId;
+  const badgeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   do {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    publicId = 'TN-'+Array.from({length:8},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
-    const { data } = await supabase.from('profiles').select('id').eq('public_id',publicId);
-    if (!data?.length) break;
-  } while(true);
-  const { error } = await supabase.from('profiles').update({
-    verification_status:'verified',
-    verification_date:now.toISOString(),
-    expiry_date:expiry.toISOString(),
-    public_id:publicId
-  }).eq('id',id);
-  if (error) { if (!silent) showToast('&#10060; Error: '+error.message); return; }
-  await supabase.from('ratings').update({ rater_verified:true }).eq('rater_user_id',id);
+    publicId = 'TN-' + Array.from({ length: 8 }, () => badgeChars[Math.floor(Math.random() * badgeChars.length)]).join('');
+    const { data } = await supabase.from('profiles').select('id').eq('public_id', publicId).maybeSingle();
+    if (!data) break;
+  } while (true);
+
+  // Update profile
+  const { error: profileError } = await supabase.from('profiles').update({
+    verification_status: 'verified',
+    verification_date: now.toISOString(),
+    expiry_date: expiry.toISOString(),
+    public_id: publicId
+  }).eq('id', id);
+
+  if (profileError) {
+    if (!silent) showToast('&#10060; Error updating profile: ' + profileError.message);
+    return;
+  }
+
+  // ── FIX: Issue first OMS- one-time verification code ────────────────
+  try {
+    const omsToken = await generateUniqueOmsCode();
+    const { error: tokenError } = await supabase.from('verification_tokens').insert({
+      token: omsToken,
+      profile_id: id,
+      status: 'active',
+      expires_at: expiry.toISOString()
+    });
+    if (tokenError) {
+      // Token insert failed — profile is already approved so just warn, don't roll back
+      console.error('Token insert error:', tokenError.message);
+      if (!silent) showToast(`&#9888; Approved (TN: ${publicId}) but OMS code failed to generate — check verification_tokens table. Error: ${tokenError.message}`);
+    } else {
+      if (!silent) showToast(`&#10003; Approved! Badge: ${publicId} · Code: ${omsToken}`);
+    }
+  } catch (tokenErr) {
+    console.error('Token generation error:', tokenErr.message);
+    if (!silent) showToast(`&#9888; Approved (TN: ${publicId}) but OMS code failed: ${tokenErr.message}`);
+  }
+  // ── End fix ─────────────────────────────────────────────────────────
+
+  // Mark any ratings this provider left as verified-rater
+  await supabase.from('ratings').update({ rater_verified: true }).eq('rater_user_id', id);
 
   // Email notification
   const profile = allProfiles.find(p => p.id === id);
   if (profile) {
-    // Update local copy with new fields for email
     profile.public_id = publicId;
     profile.expiry_date = expiry.toISOString();
     await sendApprovalEmail(profile, 'verified');
   }
 
-  if (!silent) {
-    showToast('&#10003; Approved! Badge ID: '+publicId);
-    loadProfiles();
-  }
+  if (!silent) loadProfiles();
 };
 
+// ── Reject ───────────────────────────────────────────────────────────
 window.rejectProvider = async (id, silent = false) => {
   if (!silent && !confirm('Reject this application?')) return;
-  const { error } = await supabase.from('profiles').update({ verification_status:'rejected' }).eq('id',id);
-  if (error) { if (!silent) showToast('&#10060; Error: '+error.message); return; }
+  const { error } = await supabase.from('profiles').update({ verification_status: 'rejected' }).eq('id', id);
+  if (error) { if (!silent) showToast('&#10060; Error: ' + error.message); return; }
 
-  // Email notification
   const profile = allProfiles.find(p => p.id === id);
   if (profile) await sendApprovalEmail(profile, 'rejected');
 
@@ -706,12 +744,13 @@ window.rejectProvider = async (id, silent = false) => {
 window.showToast = msg => {
   const t = document.getElementById('toast');
   t.innerHTML = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3500);
+  setTimeout(() => t.classList.remove('show'), 3500);
 };
 
-document.getElementById('profileModal').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
-document.getElementById('docModal').addEventListener('click', e => { if (e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+document.getElementById('profileModal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+document.getElementById('docModal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
 
+// ── Auth gate ────────────────────────────────────────────────────────
 const { data: { session } } = await supabase.auth.getSession();
 if (!session) {
   window.location.replace('/login.html');
