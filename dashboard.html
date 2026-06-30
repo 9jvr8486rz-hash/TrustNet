@@ -59,8 +59,12 @@
 .meeting-confirm-btn:hover{background:var(--blue-mid)}
 .meeting-confirm-btn:disabled{opacity:0.5;cursor:not-allowed}
 
-/* Risk flags card */
+/* Risk flags */
 .risk-flag-row{background:#fff;border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;margin-bottom:0.6rem;border-left:3px solid var(--amber)}
+
+/* Activity log */
+.activity-row{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 0.85rem;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:0.5rem}
+.activity-row:last-child{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -171,13 +175,22 @@
       </div>
     </div>
 
-    <!-- MY RISK FLAGS -->
+    <!-- MY RISK FLAGS — hidden until flags exist -->
     <div class="dash-card span2" id="riskFlagsCard" style="display:none">
       <div class="dc-head">
         <div class="dc-title">&#9888;&#65039; My risk flags</div>
         <span class="dc-badge dcb-red" id="riskFlagsBadge"></span>
       </div>
       <div class="dc-body" id="riskFlagsBody"></div>
+    </div>
+
+    <!-- VERIFICATION ACTIVITY — who has looked me up -->
+    <div class="dash-card span2" id="activityCard" style="display:none">
+      <div class="dc-head">
+        <div class="dc-title">&#128065; Who has verified me</div>
+        <span class="dc-badge dcb-blue" id="activityBadge"></span>
+      </div>
+      <div class="dc-body" id="activityBody"></div>
     </div>
 
     <!-- VERIFY SOMEONE -->
@@ -224,7 +237,7 @@ let currentProfile = null;
 let currentSession = null;
 let selectedMeetingType = 'in_person';
 
-// ── Meeting type modal ──
+// ── Meeting type modal ────────────────────────────────────────────────
 window.openMeetingModal = () => {
   selectedMeetingType = 'in_person';
   document.getElementById('meetTypeInPerson').classList.add('selected');
@@ -247,46 +260,50 @@ window.confirmGenerateCode = async () => {
   await generateCode(selectedMeetingType);
 };
 
-// ── Generate unique token ──
-function generateToken() {
+// ── Generate unique OMS- token ────────────────────────────────────────
+async function generateUniqueToken() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return 'OMS-' + Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  let token;
+  let attempts = 0;
+  do {
+    token = 'OMS-' + Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    const { data } = await supabase.from('verification_tokens').select('id').eq('token', token).maybeSingle();
+    if (!data) break;
+    attempts++;
+    if (attempts > 20) throw new Error('Could not generate a unique code — please try again.');
+  } while (true);
+  return token;
 }
 
-// ── Generate one-time verification code ──
+// ── Generate one-time verification code ──────────────────────────────
 async function generateCode(meetingType) {
   if (!currentProfile || currentProfile.verification_status !== 'verified') {
     showToast('&#10060; You must be verified to generate codes.'); return;
   }
   const btn = document.getElementById('genCodeBtn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '&#8987; Generating...'; }
 
-  let token;
-  while (true) {
-    token = generateToken();
-    const { data } = await supabase.from('verification_tokens').select('id').eq('token', token).maybeSingle();
-    if (!data) break;
+  try {
+    const token = await generateUniqueToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const { error } = await supabase.from('verification_tokens').insert({
+      provider_id: currentSession.user.id,
+      token,
+      expires_at: expiresAt.toISOString(),
+      status: 'active',
+      meeting_type: meetingType
+    });
+    if (error) { showToast('&#10060; Error: ' + error.message); return; }
+    showToast('&#10003; New code generated!');
+    await loadTokens();
+  } catch (err) {
+    showToast('&#10060; ' + err.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '&#128273; Generate new code'; }
   }
-
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const { error } = await supabase.from('verification_tokens').insert({
-    provider_id: currentSession.user.id,
-    token,
-    expires_at: expiresAt.toISOString(),
-    status: 'active',
-    meeting_type: meetingType
-  });
-
-  if (error) {
-    showToast('&#10060; Error: ' + error.message);
-    if (btn) { btn.disabled = false; btn.textContent = '+ Generate new code'; }
-    return;
-  }
-  showToast('&#10003; New code generated!');
-  await loadTokens();
 }
 
-// ── Load tokens ──
+// ── Load and render tokens ────────────────────────────────────────────
 async function loadTokens() {
   if (!currentProfile || currentProfile.verification_status !== 'verified') return;
 
@@ -299,8 +316,8 @@ async function loadTokens() {
 
   const body = document.getElementById('tokenBody');
   const verifyBase = `${location.origin}/verify.html?token=`;
-  const activeTokens = (tokens||[]).filter(t => t.status === 'active');
-  const usedTokens = (tokens||[]).filter(t => t.status !== 'active');
+  const activeTokens = (tokens || []).filter(t => t.status === 'active' && new Date() < new Date(t.expires_at));
+  const oldTokens    = (tokens || []).filter(t => t.status !== 'active' || new Date() >= new Date(t.expires_at));
 
   let html = `
     <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.5">
@@ -319,13 +336,14 @@ async function loadTokens() {
       const meetLabel = t.meeting_type === 'in_person'
         ? '<span style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px">&#129489; In-person</span>'
         : '<span style="background:var(--blue-light);color:var(--blue);border:1px solid #bfdbfe;font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px">&#128187; Online</span>';
+      const waText = encodeURIComponent(`Please verify my identity using this one-time code: ${t.token}\n\nOr scan the QR at: ${url}`);
       return `<div class="token-card" style="flex-direction:column;align-items:flex-start">
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;flex-wrap:wrap;gap:0.5rem">
           <div>
             <div class="token-code">${t.token}</div>
             <div class="token-meta" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-top:0.3rem">
               ${meetLabel}
-              <span>Expires in ${daysLeft} day${daysLeft!==1?'s':''}</span>
+              <span>Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}</span>
             </div>
           </div>
           <span class="token-status-active">&#9679; Active</span>
@@ -333,7 +351,7 @@ async function loadTokens() {
         <div style="display:flex;align-items:center;gap:1rem;margin-top:0.75rem;flex-wrap:wrap">
           <img src="${qrUrl}" width="80" height="80" alt="QR Code" style="border-radius:8px;border:1px solid var(--border)">
           <div style="display:flex;flex-direction:column;gap:0.5rem">
-            <button type="button" class="share-btn sb-wa" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="window.open('https://api.whatsapp.com/send?text=Please verify my identity using this one-time code: ${t.token} or scan the QR at ${encodeURIComponent(url)}','_blank')">&#128242; WhatsApp</button>
+            <button type="button" class="share-btn sb-wa" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="window.open('https://api.whatsapp.com/send?text=${waText}','_blank')">&#128242; WhatsApp</button>
             <button type="button" class="share-btn sb-link" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="copyText('${url}','Link copied!')">&#128279; Copy link</button>
             <button type="button" class="share-btn sb-code" style="font-size:0.8rem;padding:0.4rem 0.85rem" onclick="copyText('${t.token}','Code copied!')">&#128203; Copy code</button>
           </div>
@@ -342,21 +360,25 @@ async function loadTokens() {
     }).join('');
   }
 
-  if (usedTokens.length > 0) {
+  if (oldTokens.length > 0) {
     html += `<div style="margin-top:1.25rem;margin-bottom:0.5rem;font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em">Previous codes</div>`;
-    html += usedTokens.slice(0,5).map(t => {
-      const usedAt = t.used_at ? new Date(t.used_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : null;
-      const archivesAt = t.verification_expires_at ? new Date(t.verification_expires_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : null;
-      const statusEl = t.status==='used'
-        ? `<span class="token-status-used">&#10003; Used${usedAt?' · '+usedAt:''}</span>`
-        : t.status==='archived'
+    html += oldTokens.slice(0, 5).map(t => {
+      const usedAt    = t.used_at ? new Date(t.used_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' }) : null;
+      const archiveAt = t.verification_expires_at ? new Date(t.verification_expires_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' }) : null;
+      const statusEl  = t.status === 'used'
+        ? `<span class="token-status-used">&#10003; Used${usedAt ? ' · ' + usedAt : ''}</span>`
+        : t.status === 'archived'
         ? `<span class="token-status-archived">Archived</span>`
         : `<span class="token-status-expired">Expired</span>`;
-      const meetLabel = t.meeting_type==='in_person' ? '&#129489; In-person' : t.meeting_type==='online' ? '&#128187; Online' : '';
+      const meetLabel = t.meeting_type === 'in_person' ? '&#129489; In-person' : t.meeting_type === 'online' ? '&#128187; Online' : '';
       return `<div class="token-card" style="opacity:0.7">
         <div>
           <div class="token-code" style="color:var(--muted)">${t.token}</div>
-          <div class="token-meta">${meetLabel?meetLabel+' · ':''}${t.used_by_name?'Used by: '+t.used_by_name:''}${archivesAt&&t.status==='used'?' · Archived '+archivesAt:''}</div>
+          <div class="token-meta">
+            ${meetLabel ? meetLabel + ' · ' : ''}
+            ${t.used_by_name ? 'Used by: ' + t.used_by_name : ''}
+            ${archiveAt && t.status === 'used' ? ' · Archived ' + archiveAt : ''}
+          </div>
         </div>
         ${statusEl}
       </div>`;
@@ -366,56 +388,80 @@ async function loadTokens() {
   body.innerHTML = html;
 }
 
+// ── Main dashboard render ─────────────────────────────────────────────
 async function renderDashboard(session) {
   if (!session) { window.location.replace('/login.html'); return; }
   currentSession = session;
+
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
   if (!profile) { window.location.replace('/login.html'); return; }
   if (profile.role === 'admin') { window.location.replace('/admin.html'); return; }
   currentProfile = profile;
 
   const h = new Date().getHours();
-  document.getElementById('timeTag').textContent = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('timeTag').textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   document.getElementById('greetName').textContent = profile.name?.split(' ')[0] || 'there';
   document.getElementById('navName').textContent = profile.name || session.user.email;
 
-  const now = new Date();
+  // Status
+  const now    = new Date();
   const expiry = profile.expiry_date ? new Date(profile.expiry_date) : null;
-  const status = (!profile.verification_status||profile.verification_status==='pending') ? 'pending'
-    : profile.verification_status==='rejected' ? 'rejected'
-    : (expiry&&now>expiry) ? 'expired'
+  const status = (!profile.verification_status || profile.verification_status === 'pending') ? 'pending'
+    : profile.verification_status === 'rejected' ? 'rejected'
+    : (expiry && now > expiry) ? 'expired'
     : profile.verification_status;
 
-  const badgeMap = {verified:'dcb-green',pending:'dcb-amber',expired:'dcb-red',rejected:'dcb-red'};
-  const badgeLabel = {verified:'&#9679; Verified',pending:'&#9679; Pending review',expired:'&#9679; Expired',rejected:'&#9679; Rejected'};
+  const badgeMap   = { verified:'dcb-green', pending:'dcb-amber', expired:'dcb-red', rejected:'dcb-red' };
+  const badgeLabel = { verified:'&#9679; Verified', pending:'&#9679; Pending review', expired:'&#9679; Expired', rejected:'&#9679; Rejected' };
   const badge = document.getElementById('myStatusBadge');
-  badge.className = 'dc-badge '+(badgeMap[status]||'dcb-amber');
-  badge.innerHTML = badgeLabel[status]||'Pending';
+  badge.className = 'dc-badge ' + (badgeMap[status] || 'dcb-amber');
+  badge.innerHTML = badgeLabel[status] || 'Pending';
 
-  const fmt = d => d ? new Date(d).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  const fmt   = d => d ? new Date(d).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' }) : '—';
   const start = profile.verification_date ? new Date(profile.verification_date) : null;
-  const pct = (expiry&&start) ? Math.max(0,Math.min(100,100-((now-start)/(expiry-start)*100))) : 0;
-  const days = expiry ? Math.max(0,Math.round((expiry-now)/86400000)) : 0;
-  const barClass = days>365?'ef-good':days>90?'ef-warn':'ef-bad';
+  const pct   = (expiry && start) ? Math.max(0, Math.min(100, 100 - ((now - start) / (expiry - start) * 100))) : 0;
+  const days  = expiry ? Math.max(0, Math.round((expiry - now) / 86400000)) : 0;
+  const barClass = days > 365 ? 'ef-good' : days > 90 ? 'ef-warn' : 'ef-bad';
 
   document.getElementById('myVerificationBody').innerHTML = `
     <div class="my-profile-row">
-      ${profile.selfie_url?`<img src="${profile.selfie_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--blue-light);flex-shrink:0">`:'<div class="my-avatar">&#128100;</div>'}
-      <div><div class="my-name">${profile.name||session.user.email}</div><div class="my-cat">${profile.service_category||'Service provider'}</div></div>
-      <div class="my-status"><span class="status-pill ${status==='verified'?'sp-verified':status==='expired'?'sp-expired':'sp-pending'}">${status==='verified'?'&#10003; Verified':status==='expired'?'&#9888; Expired':status==='rejected'?'&#10007; Rejected':'&#8987; '+status.charAt(0).toUpperCase()+status.slice(1)}</span></div>
+      ${profile.selfie_url
+        ? `<img src="${profile.selfie_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 0 0 2px var(--blue-light);flex-shrink:0">`
+        : '<div class="my-avatar">&#128100;</div>'}
+      <div>
+        <div class="my-name">${profile.name || session.user.email}</div>
+        <div class="my-cat">${profile.service_category || 'Service provider'}</div>
+      </div>
+      <div class="my-status">
+        <span class="status-pill ${status === 'verified' ? 'sp-verified' : status === 'expired' ? 'sp-expired' : 'sp-pending'}">
+          ${status === 'verified' ? '&#10003; Verified' : status === 'expired' ? '&#9888; Expired' : status === 'rejected' ? '&#10007; Rejected' : '&#8987; ' + status.charAt(0).toUpperCase() + status.slice(1)}
+        </span>
+      </div>
     </div>
     <div class="two-col">
       <div class="info-box"><div class="ib-label">Verified on</div><div class="ib-val">${fmt(profile.verification_date)}</div></div>
       <div class="info-box"><div class="ib-label">Expires on</div><div class="ib-val">${fmt(profile.expiry_date)}</div></div>
+      <div class="info-box"><div class="ib-label">Document type</div><div class="ib-val">${profile.doc_type === 'sa_id' ? 'SA ID' : profile.doc_type === 'passport' ? 'Passport' : profile.doc_type === 'drivers' ? "Driver's Licence" : '—'}</div></div>
+      <div class="info-box"><div class="ib-label">ID number</div><div class="ib-val" style="font-family:monospace;font-size:0.85rem">${profile.id_number || '—'}</div></div>
     </div>
-    ${profile.public_id?`
-      <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem">Your permanent badge ID (admin reference)</div>
-      <div class="id-row"><span>${profile.public_id}</span><button type="button" class="copy-btn" onclick="copyText('${profile.public_id}','Code copied!')">Copy</button></div>
+    ${profile.public_id ? `
+      <div style="font-size:0.75rem;font-weight:600;color:var(--muted);margin-bottom:0.5rem;margin-top:0.75rem">Badge ID</div>
+      <div class="id-row">
+        <span>${profile.public_id}</span>
+        <button type="button" class="copy-btn" onclick="copyText('${profile.public_id}','Badge ID copied!')">Copy</button>
+      </div>
       <div class="expiry-wrap">
-        <div class="expiry-labels"><span>Validity</span><span>${days>0?days+' days remaining':'Expired'}</span></div>
+        <div class="expiry-labels"><span>Validity</span><span>${days > 0 ? days + ' days remaining' : 'Expired'}</span></div>
         <div class="expiry-track"><div class="expiry-fill ${barClass}" style="width:${pct}%"></div></div>
+      </div>
+      <div style="margin-top:0.75rem">
+        <a href="/verify.html?id=${profile.public_id}" target="_blank" style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:var(--blue);font-weight:600;text-decoration:none">
+          &#128279; View my public profile &rarr;
+        </a>
       </div>`
-    :`<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">&#9201; Your application is under review. We'll email you within 48 hours when approved.</div>`}
+    : `<div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:0.85rem 1rem;font-size:0.875rem;color:var(--amber);margin-top:0.5rem;line-height:1.6">
+        &#9201; Your application is under review. We'll notify you within 48 hours when approved.
+      </div>`}
   `;
 
   if (status === 'verified') {
@@ -431,10 +477,11 @@ async function renderDashboard(session) {
   renderDocStatus(profile);
 }
 
+// ── Document status ───────────────────────────────────────────────────
 function renderDocStatus(profile) {
   const hasSelfie = !!profile.selfie_url;
-  const hasId = !!profile.id_document_url;
-  const docBadge = document.getElementById('docStatusBadge');
+  const hasId     = !!profile.id_document_url;
+  const docBadge  = document.getElementById('docStatusBadge');
   if (hasSelfie && hasId) {
     docBadge.className = 'dc-badge dcb-green';
     docBadge.innerHTML = '&#10003; Documents uploaded';
@@ -449,15 +496,19 @@ function renderDocStatus(profile) {
       <div class="doc-status-icon">&#129315;</div>
       <div class="doc-status-info">
         <div class="doc-status-name">Selfie photo</div>
-        <div class="doc-status-sub" style="color:${hasSelfie?'var(--green)':'var(--red)'}">${hasSelfie?'&#10003; Uploaded':'&#10060; Not uploaded'}</div>
+        <div class="doc-status-sub" style="color:${hasSelfie ? 'var(--green)' : 'var(--red)'}">
+          ${hasSelfie ? '&#10003; Uploaded' : '&#10060; Not uploaded'}
+        </div>
       </div>
-      ${hasSelfie?`<img src="${profile.selfie_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--green-border)">`:''}
+      ${hasSelfie ? `<img src="${profile.selfie_url}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--green-border)">` : ''}
     </div>`;
     statusHtml += `<div class="doc-status-row">
       <div class="doc-status-icon">&#128196;</div>
       <div class="doc-status-info">
         <div class="doc-status-name">ID document</div>
-        <div class="doc-status-sub" style="color:${hasId?'var(--green)':'var(--red)'}">${hasId?'&#10003; Uploaded':'&#10060; Not uploaded'}</div>
+        <div class="doc-status-sub" style="color:${hasId ? 'var(--green)' : 'var(--red)'}">
+          ${hasId ? '&#10003; Uploaded' : '&#10060; Not uploaded'}
+        </div>
       </div>
     </div>`;
     statusHtml += '</div>';
@@ -475,31 +526,33 @@ window.handleDocFile = (input, boxId, labelId) => {
 
 window.uploadDocuments = async () => {
   const selfieFile = document.getElementById('newSelfieFile').files[0];
-  const idFile = document.getElementById('newIdFile').files[0];
-  const btn = document.getElementById('docSubmitBtn');
-  const result = document.getElementById('docUploadResult');
+  const idFile     = document.getElementById('newIdFile').files[0];
+  const btn        = document.getElementById('docSubmitBtn');
+  const result     = document.getElementById('docUploadResult');
   if (!selfieFile && !idFile) { showToast('Please select at least one document to upload.'); return; }
   btn.textContent = 'Uploading...'; btn.disabled = true;
   result.innerHTML = '';
-  const userId = currentSession.user.id;
-  const token = currentSession.access_token;
+
+  const userId      = currentSession.user.id;
+  const token       = currentSession.access_token;
   const SUPABASE_URL = 'https://oymmmevtzbzoneujtkhn.supabase.co';
-  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
+  const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bW1tZXZ0emJ6b25ldWp0a2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTE4MTQsImV4cCI6MjA5MzU4NzgxNH0.sRrw5cthKfF7k0vP0_ONCLiQN6J4CIerzzu5NRUCXlU';
 
   async function uploadDirect(bucket, path, file) {
-    const fd = new FormData(); fd.append('', file, file.name);
+    const fd = new FormData();
+    fd.append('', file, file.name);
     const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY },
       body: fd
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error||e.message); }
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || e.message); }
     return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
   }
 
   let selfieUrl = currentProfile.selfie_url;
-  let idDocUrl = currentProfile.id_document_url;
-  let errors = [];
+  let idDocUrl  = currentProfile.id_document_url;
+  const errors  = [];
 
   try {
     if (selfieFile) {
@@ -541,34 +594,27 @@ window.uploadDocuments = async () => {
   const { data: updated } = await supabase.from('profiles').select('*').eq('id', userId).single();
   if (updated) { currentProfile = updated; renderDocStatus(updated); }
 
-  document.getElementById('newSelfieFile').value = '';
-  document.getElementById('newIdFile').value = '';
-  document.getElementById('selfieUploadBox').classList.remove('uploaded');
-  document.getElementById('idUploadBox').classList.remove('uploaded');
-  document.getElementById('selfieFileLabel').style.display = 'none';
-  document.getElementById('idFileLabel').style.display = 'none';
+  ['newSelfieFile','newIdFile'].forEach(id => document.getElementById(id).value = '');
+  ['selfieUploadBox','idUploadBox'].forEach(id => document.getElementById(id).classList.remove('uploaded'));
+  ['selfieFileLabel','idFileLabel'].forEach(id => document.getElementById(id).style.display = 'none');
 };
 
+// ── Ratings ───────────────────────────────────────────────────────────
 async function loadMyRatings(userId) {
   const badge = document.getElementById('myRatingsBadge');
-  const body = document.getElementById('myRatingsBody');
+  const body  = document.getElementById('myRatingsBody');
   if (!badge || !body) return;
 
-  const { data: ratingsData } = await supabase.from('ratings').select('*').eq('provider_id', userId).order('created_at',{ascending:false});
-  const ratings = ratingsData || [];
-  const total = ratings.length;
-  const verifiedCount = ratings.filter(r=>r.rater_verified).length;
-  const unverifiedCount = ratings.filter(r=>!r.rater_verified).length;
-  const weightedSum = ratings.reduce((s,r)=>s+(r.stars*(r.rater_verified?1.5:1)),0);
-  const weightedTotal = ratings.reduce((s,r)=>s+(r.rater_verified?1.5:1),0);
-  const score = weightedTotal>0 ? weightedSum/weightedTotal : 0;
-  const summary = {
-    five_star: ratings.filter(r=>r.stars===5).length,
-    four_star: ratings.filter(r=>r.stars===4).length,
-    three_star: ratings.filter(r=>r.stars===3).length,
-    two_star: ratings.filter(r=>r.stars===2).length,
-    one_star: ratings.filter(r=>r.stars===1).length,
-  };
+  const { data: ratingsData } = await supabase.from('ratings').select('*').eq('provider_id', userId).order('created_at', { ascending: false });
+  const ratings      = ratingsData || [];
+  const total        = ratings.length;
+  const verifiedCnt  = ratings.filter(r => r.rater_verified).length;
+  const unverifiedCnt= ratings.filter(r => !r.rater_verified).length;
+  const ws           = ratings.reduce((s, r) => s + (r.stars * (r.rater_verified ? 1.5 : 1)), 0);
+  const wt           = ratings.reduce((s, r) => s + (r.rater_verified ? 1.5 : 1), 0);
+  const score        = wt > 0 ? ws / wt : 0;
+  const counts       = { 5:0, 4:0, 3:0, 2:0, 1:0 };
+  ratings.forEach(r => counts[r.stars]++);
 
   if (total === 0) {
     badge.className = 'dc-badge dcb-amber';
@@ -581,38 +627,37 @@ async function loadMyRatings(userId) {
     return;
   }
 
-  badge.className = score>=4.5?'dc-badge dcb-green':score>=3.5?'dc-badge dcb-green':score>=2.5?'dc-badge dcb-amber':'dc-badge dcb-red';
+  badge.className = score >= 3.5 ? 'dc-badge dcb-green' : score >= 2.5 ? 'dc-badge dcb-amber' : 'dc-badge dcb-red';
   badge.innerHTML = `&#11088; ${score.toFixed(1)} / 5`;
 
-  const stars = '&#11088;'.repeat(Math.floor(score))+'&#10025;'.repeat(5-Math.floor(score));
-  const trustBadge = score>=4.5?'&#129351; Excellent':score>=3.5?'&#128077; Good':score>=2.5?'&#128522; Average':'&#9888; Poor';
-  const trustCls = score>=4.5?'tsb-excellent':score>=3.5?'tsb-good':score>=2.5?'tsb-average':'tsb-poor';
+  const stars      = '&#11088;'.repeat(Math.floor(score)) + '&#10025;'.repeat(5 - Math.floor(score));
+  const trustBadge = score >= 4.5 ? '&#129351; Excellent' : score >= 3.5 ? '&#128077; Good' : score >= 2.5 ? '&#128522; Average' : '&#9888; Poor';
+  const trustCls   = score >= 4.5 ? 'tsb-excellent' : score >= 3.5 ? 'tsb-good' : score >= 2.5 ? 'tsb-average' : 'tsb-poor';
 
-  const breakdown = [5,4,3,2,1].map(n => {
-    const count = summary[['','one','two','three','four','five'][n]+'_star']||0;
-    const pct = total>0?Math.round((count/total)*100):0;
+  const breakdown = [5, 4, 3, 2, 1].map(n => {
+    const pct = total > 0 ? Math.round((counts[n] / total) * 100) : 0;
     return `<div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;font-size:0.8rem">
       <div style="width:40px;text-align:right;color:var(--muted);font-weight:600">${n} &#11088;</div>
       <div style="flex:1;height:8px;background:var(--bg-soft);border-radius:999px;overflow:hidden;border:1px solid var(--border)">
         <div style="height:100%;border-radius:999px;width:${pct}%;background:${n>=4?'#16a34a':n===3?'#fbbf24':n===2?'#fb923c':'#ef4444'}"></div>
       </div>
-      <div style="width:24px;color:var(--muted);font-size:0.75rem">${count}</div>
+      <div style="width:24px;color:var(--muted);font-size:0.75rem">${counts[n]}</div>
     </div>`;
   }).join('');
 
   const ratingsList = ratings.map(r => {
-    const ratingStars = '&#11088;'.repeat(r.stars)+'&#10025;'.repeat(5-r.stars);
-    const date = new Date(r.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-    const raterBadge = r.rater_verified
-      ? `<span style="display:inline-flex;align-items:center;gap:0.25rem;background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified user</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:0.25rem;background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified user</span>`;
+    const rStars = '&#11088;'.repeat(r.stars) + '&#10025;'.repeat(5 - r.stars);
+    const date   = new Date(r.created_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
+    const rBadge = r.rater_verified
+      ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified user</span>`
+      : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified user</span>`;
     return `<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem;border-left:3px solid ${r.stars<=2?'var(--red)':'var(--green)'}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;flex-wrap:wrap;gap:0.5rem">
         <div style="font-weight:700;font-size:0.875rem">${r.rater_name}</div>
-        <div style="font-size:1rem;letter-spacing:1px">${ratingStars}</div>
+        <div style="font-size:1rem;letter-spacing:1px">${rStars}</div>
       </div>
-      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">${raterBadge} <span>${date}</span></div>
-      ${r.comment?`<div style="font-size:0.82rem;color:var(--body);line-height:1.6;font-style:italic">"${r.comment}"</div>`:''}
+      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.35rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">${rBadge} <span>${date}</span></div>
+      ${r.comment ? `<div style="font-size:0.82rem;color:var(--body);line-height:1.6;font-style:italic">"${r.comment}"</div>` : ''}
     </div>`;
   }).join('');
 
@@ -624,23 +669,23 @@ async function loadMyRatings(userId) {
           <div style="flex:1">
             <div style="font-size:1.2rem;letter-spacing:2px">${stars}</div>
             <div style="font-weight:700;font-size:0.875rem;margin-top:0.2rem">Trust Score</div>
-            <div style="font-size:0.78rem;color:var(--muted)">${verifiedCount} verified · ${unverifiedCount} unverified raters</div>
+            <div style="font-size:0.78rem;color:var(--muted)">${verifiedCnt} verified · ${unverifiedCnt} unverified raters</div>
           </div>
           <span style="font-size:0.72rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:999px;white-space:nowrap" class="${trustCls}">${trustBadge}</span>
         </div>
         <div>${breakdown}</div>
       </div>
       <div>
-        <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem">${total} rating${total!==1?'s':''}</div>
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.75rem">${total} rating${total !== 1 ? 's' : ''}</div>
         <div style="max-height:400px;overflow-y:auto">${ratingsList}</div>
       </div>
     </div>`;
 }
 
-// ── My risk flags ──
+// ── Risk flags ────────────────────────────────────────────────────────
 async function loadMyRiskFlags(userId) {
-  const card = document.getElementById('riskFlagsCard');
-  const body = document.getElementById('riskFlagsBody');
+  const card  = document.getElementById('riskFlagsCard');
+  const body  = document.getElementById('riskFlagsBody');
   const badge = document.getElementById('riskFlagsBadge');
   if (!card || !body) return;
 
@@ -650,10 +695,7 @@ async function loadMyRiskFlags(userId) {
     .eq('provider_id', userId)
     .order('created_at', { ascending: false });
 
-  if (!flags || flags.length === 0) {
-    card.style.display = 'none';
-    return;
-  }
+  if (!flags || flags.length === 0) { card.style.display = 'none'; return; }
 
   card.style.display = 'block';
   const count = flags.length;
@@ -689,7 +731,7 @@ async function loadMyRiskFlags(userId) {
         If you believe a flag is unfair, please <a href="mailto:support@onlinemarketsecurity.co.za" style="color:var(--blue);font-weight:600">contact support</a>.
       </p>
       ${flags.map(f => {
-        const date = new Date(f.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+        const date = new Date(f.created_at).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
         const typeLabel = flagTypeLabels[f.flag_type] || f.flag_type || 'Report';
         return `<div class="risk-flag-row">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;flex-wrap:wrap;gap:0.35rem">
@@ -706,6 +748,59 @@ async function loadMyRiskFlags(userId) {
     </div>`;
 }
 
+// ── Verification activity (NEW) ───────────────────────────────────────
+async function loadActivity(userId) {
+  const card  = document.getElementById('activityCard');
+  const body  = document.getElementById('activityBody');
+  const badge = document.getElementById('activityBadge');
+  if (!card || !body) return;
+
+  const { data: logs } = await supabase
+    .from('verification_logs')
+    .select('*')
+    .eq('provider_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (!logs || logs.length === 0) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  badge.textContent  = logs.length + ' verification' + (logs.length !== 1 ? 's' : '');
+
+  const verifiedViewers  = logs.filter(l => l.viewer_verified).length;
+  const inPersonMatches  = logs.filter(l => l.source === 'in_person_match').length;
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.25rem">
+      <div class="info-box"><div class="ib-label">Total lookups</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--blue)">${logs.length}</div></div>
+      <div class="info-box"><div class="ib-label">Verified viewers</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--green)">${verifiedViewers}</div></div>
+      <div class="info-box"><div class="ib-label">In-person matches</div><div class="ib-val" style="font-size:1.5rem;font-weight:800;color:var(--teal,#0d9488)">${inPersonMatches}</div></div>
+    </div>
+    ${logs.map(l => {
+      const ts   = l.created_at || l.viewed_at;
+      const date = new Date(ts).toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
+      const time = new Date(ts).toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' });
+      const vBadge = l.viewer_verified
+        ? `<span style="background:var(--blue-light);color:var(--blue);font-size:0.68rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid #bfdbfe">&#10003; Verified</span>`
+        : `<span style="background:var(--bg-soft);color:var(--muted);font-size:0.68rem;font-weight:600;padding:0.15rem 0.5rem;border-radius:999px;border:1px solid var(--border)">Unverified</span>`;
+      return `<div class="activity-row">
+        <div>
+          <div style="font-size:0.875rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+            ${l.viewer_name || 'Anonymous'} ${vBadge}
+          </div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.15rem">
+            ${l.source === 'in_person_match' ? '&#10003; Confirmed in-person identity match' : 'Verified your identity'}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:0.82rem;font-weight:600">${date}</div>
+          <div style="font-size:0.75rem;color:var(--muted)">${time}</div>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── Verify someone (inline lookup) ───────────────────────────────────
 window.doLookup = async () => {
   const code = document.getElementById('lookupInput').value.trim().toUpperCase();
   if (!code) { showToast('Please enter a code'); return; }
@@ -737,14 +832,23 @@ window.doLookup = async () => {
   window.location.href = `/verify.html?token=${encodeURIComponent(code)}`;
 };
 
-window.copyText = (text,msg) => { navigator.clipboard.writeText(text).catch(()=>{}); showToast('&#128203; '+msg); };
-window.showToast = msg => { const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
+// ── Utilities ─────────────────────────────────────────────────────────
+window.copyText  = (text, msg) => { navigator.clipboard.writeText(text).catch(() => {}); showToast('&#128203; ' + msg); };
+window.showToast = msg => {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+};
 
+// ── Boot ──────────────────────────────────────────────────────────────
 const { data: { session } } = await supabase.auth.getSession();
 await renderDashboard(session);
 if (session) {
-  await loadMyRatings(session.user.id);
-  await loadMyRiskFlags(session.user.id);
+  await Promise.all([
+    loadMyRatings(session.user.id),
+    loadMyRiskFlags(session.user.id),
+    loadActivity(session.user.id),
+  ]);
 }
 
 supabase.auth.onAuthStateChange(async (event, session) => {
